@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OTP Verify</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, sans-serif;
+            background: #3a3a3a;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .page-title {
+            position: absolute;
+            top: 25px;
+            left: 40px;
+            color: #888;
+            font-size: 16px;
+            font-weight: 400;
+            opacity: 0;
+            animation: fadeIn 0.8s ease-out 0.2s forwards;
+        }
+
+        .otp-container {
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            padding: 40px 35px;
+            width: 100%;
+            max-width: 550px;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: slideInUp 0.6s ease-out 0.3s forwards;
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 35px;
+            opacity: 0;
+            animation: fadeIn 0.6s ease-out 0.6s forwards;
+        }
+
+        .logo::before {
+            content: "♪";
+            margin-right: 8px;
+            font-size: 24px;
+            color: #333;
+        }
+
+        .otp-content {
+            opacity: 0;
+            animation: fadeIn 0.6s ease-out 0.8s forwards;
+        }
+
+        .otp-title {
+            font-size: 16px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+
+        .otp-subtitle {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 35px;
+            line-height: 1.4;
+        }
+
+        .otp-input-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .otp-input {
+            width: 50px;
+            height: 50px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            background: #ffffff;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .otp-input:focus {
+            border-color: #666;
+            box-shadow: 0 0 0 3px rgba(102, 102, 102, 0.1);
+            transform: scale(1.05);
+        }
+
+        .otp-input.filled {
+            border-color: #333;
+            background: #f8f8f8;
+        }
+
+        .verify-button {
+            width: 80%;
+            padding: 14px;
+            background: #000000;
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .verify-button:hover {
+            background: #1a1a1a;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .verify-button:active {
+            transform: translateY(0);
+        }
+
+        .verify-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .resend-text {
+            font-size: 14px;
+            color: #666;
+            margin-top: 15px;
+        }
+
+        .resend-link {
+            color: #333;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .resend-link:hover {
+            color: #000;
+            text-decoration: underline;
+        }
+
+        /* Loading spinner */
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Error state */
+        .otp-input.error {
+            border-color: #e53e3e;
+            box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.1);
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        /* Success state */
+        .otp-input.success {
+            border-color: #38a169;
+            box-shadow: 0 0 0 3px rgba(56, 161, 105, 0.1);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 480px) {
+            .otp-container {
+                padding: 30px 25px;
+                max-width: 350px;
+            }
+
+            .otp-input {
+                width: 45px;
+                height: 45px;
+                font-size: 16px;
+            }
+
+            .otp-input-container {
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-title"></div>
+    
+    <div class="otp-container">
+        <div class="logo">Melodia</div>
+        
+        <div class="otp-content">
+            <div class="otp-title">Enter the OTP which was sent</div>
+            <div class="otp-subtitle">to your email</div>
+            
+            <form id="otpForm" action="/verify-otp" method="POST">
+                <div class="otp-input-container">
+                    <input type="text" class="otp-input" maxlength="1" name="otp1" data-index="1" required>
+                    <input type="text" class="otp-input" maxlength="1" name="otp2" data-index="2" required>
+                    <input type="text" class="otp-input" maxlength="1" name="otp3" data-index="3" required>
+                    <input type="text" class="otp-input" maxlength="1" name="otp4" data-index="4" required>
+                    <input type="text" class="otp-input" maxlength="1" name="otp5" data-index="5" required>
+                    <input type="text" class="otp-input" maxlength="1" name="otp6" data-index="6" required>
+                </div>
+                <input type="hidden" name="otp" id="combinedOtp">
+                
+                <button type="submit" class="verify-button">Verify</button>
+            </form>
+            
+            <div class="resend-text">
+                Didn't receive the code? <a href="#" class="resend-link" onclick="resendOTP()">Resend</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // OTP input functionality
+        const otpInputs = document.querySelectorAll('.otp-input');
+        
+        otpInputs.forEach((input, index) => {
+            input.addEventListener('input', function(e) {
+                const value = e.target.value;
+                
+                // Only allow numbers
+                if (!/^[0-9]$/.test(value)) {
+                    e.target.value = '';
+                    return;
+                }
+                
+                // Add filled class
+                if (value) {
+                    e.target.classList.add('filled');
+                    // Move to next input
+                    if (index < otpInputs.length - 1) {
+                        otpInputs[index + 1].focus();
+                    }
+                } else {
+                    e.target.classList.remove('filled');
+                }
+                
+                // Remove error state
+                e.target.classList.remove('error');
+                
+                // Check if all inputs are filled
+                const allFilled = Array.from(otpInputs).every(input => input.value);
+                const verifyBtn = document.querySelector('.verify-button');
+                verifyBtn.disabled = !allFilled;
+            });
+            
+            input.addEventListener('keydown', function(e) {
+                // Handle backspace
+                if (e.key === 'Backspace' && !e.target.value && index > 0) {
+                    otpInputs[index - 1].focus();
+                    otpInputs[index - 1].value = '';
+                    otpInputs[index - 1].classList.remove('filled');
+                }
+                
+                // Handle paste
+                if (e.key === 'v' && (e.ctrlKey || e.metaKey)) {
+                    e.preventDefault();
+                    navigator.clipboard.readText().then(text => {
+                        const digits = text.replace(/[^0-9]/g, '').slice(0, 4);
+                        digits.split('').forEach((digit, i) => {
+                            if (otpInputs[i]) {
+                                otpInputs[i].value = digit;
+                                otpInputs[i].classList.add('filled');
+                            }
+                        });
+                        
+                        // Focus last filled input
+                        const lastIndex = Math.min(digits.length - 1, otpInputs.length - 1);
+                        if (lastIndex >= 0) {
+                            otpInputs[lastIndex].focus();
+                        }
+                        
+                        // Check if all inputs are filled
+                        const allFilled = Array.from(otpInputs).every(input => input.value);
+                        document.querySelector('.verify-button').disabled = !allFilled;
+                    });
+                }
+            });
+        });
+        
+        // Form submission
+        document.getElementById('otpForm').addEventListener('submit', function(e) {
+            const otp = Array.from(otpInputs).map(input => input.value).join('');
+            
+            console.log('Frontend OTP combination:', otp);
+            console.log('Individual inputs:', Array.from(otpInputs).map(input => input.value));
+            console.log('Hidden field value before setting:', document.getElementById('combinedOtp').value);
+            
+            // Set the combined OTP value in the hidden field
+            document.getElementById('combinedOtp').value = otp;
+            
+            // Disable individual input fields so they don't get submitted
+            otpInputs.forEach(input => {
+                input.disabled = true;
+            });
+            
+            console.log('Hidden field value after setting:', document.getElementById('combinedOtp').value);
+            
+            if (otp.length !== 6) {
+                e.preventDefault();
+                // Re-enable inputs since validation failed
+                otpInputs.forEach(input => {
+                    input.disabled = false;
+                    if (!input.value) {
+                        input.classList.add('error');
+                    }
+                });
+                return;
+            }
+            
+            // Show loading state
+            const verifyBtn = this.querySelector('.verify-button');
+            const originalText = verifyBtn.innerHTML;
+            verifyBtn.innerHTML = '<div class="loading-spinner"></div> Verifying...';
+            verifyBtn.disabled = true;
+            
+            // Create hidden input with complete OTP
+            const hiddenInput = document.createElement('input');
+            hiddenInput.type = 'hidden';
+            hiddenInput.name = 'otp';
+            hiddenInput.value = otp;
+            this.appendChild(hiddenInput);
+        });
+        
+        // Resend OTP function
+        function resendOTP() {
+            const resendLink = document.querySelector('.resend-link');
+            resendLink.textContent = 'Sending...';
+            resendLink.style.pointerEvents = 'none';
+            
+            // Make request to resend OTP
+            fetch('/resend-otp', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    resendLink.textContent = 'Sent!';
+                    setTimeout(() => {
+                        resendLink.textContent = 'Resend';
+                        resendLink.style.pointerEvents = 'auto';
+                    }, 2000);
+                } else {
+                    resendLink.textContent = 'Error';
+                    setTimeout(() => {
+                        resendLink.textContent = 'Resend';
+                        resendLink.style.pointerEvents = 'auto';
+                    }, 2000);
+                }
+            })
+            .catch(error => {
+                resendLink.textContent = 'Error';
+                setTimeout(() => {
+                    resendLink.textContent = 'Resend';
+                    resendLink.style.pointerEvents = 'auto';
+                }, 2000);
+            });
+        }
+        
+    </script>
+
+    <!-- Flash message handling -->
+    <% if (typeof error !== 'undefined') { %>
+        <script>
+            // Show error on all inputs
+            const otpInputsError = document.querySelectorAll('.otp-input');
+            otpInputsError.forEach(input => {
+                input.classList.add('error');
+            });
+            alert('<%= error %>');
+        </script>
+    <% } %>
+    
+    <% if (typeof success !== 'undefined') { %>
+        <script>
+            // Show success on all inputs
+            const otpInputsSuccess = document.querySelectorAll('.otp-input');
+            otpInputsSuccess.forEach(input => {
+                input.classList.add('success');
+            });
+            alert('<%= success %>');
+        </script>
+    <% } %>
+</body>
+</html>
