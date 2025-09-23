@@ -20,6 +20,7 @@ exports.loadLandingPage=(req,res)=>{
         console.log("error in loading landing page",err);
         res.render('error/500',{tittle:'server error'});
     }
+    console.log("landing page loaded")
 }
 
 // Render login page
