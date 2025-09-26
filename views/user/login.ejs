@@ -202,6 +202,63 @@
             transform: translateY(-1px);
         }
 
+        /* Error and Success Messages */
+        .error-message {
+            background: #fee;
+            border: 1px solid #fcc;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            color: #c53030;
+            font-size: 14px;
+            font-weight: 500;
+            text-align: center;
+            width: 100%;
+            max-width: 280px;
+            opacity: 0;
+            transform: translateY(-10px);
+            animation: slideInError 0.4s ease-out forwards;
+        }
+
+        .success-message {
+            background: #f0fff4;
+            border: 1px solid #9ae6b4;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            color: #2f855a;
+            font-size: 14px;
+            font-weight: 500;
+            text-align: center;
+            width: 100%;
+            max-width: 280px;
+            opacity: 0;
+            transform: translateY(-10px);
+            animation: slideInError 0.4s ease-out forwards;
+        }
+
+        @keyframes slideInError {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideOutError {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+        }
+
         .login-form {
             width: 100%;
             max-width: 280px;
@@ -241,6 +298,20 @@
         .form-input::placeholder {
             color: #999;
             font-size: 14px;
+        }
+
+        /* Form field error states */
+        .field-error {
+            border-color: #e53e3e !important;
+            box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.1) !important;
+        }
+
+        .field-error-message {
+            color: #e53e3e;
+            font-size: 12px;
+            margin-top: 4px;
+            opacity: 0;
+            animation: fadeIn 0.3s ease-out 0.1s forwards;
         }
 
         .password-container {
@@ -302,6 +373,7 @@
             font-weight: 400;
             font-size: 13px;
             transition: all 0.3s ease;
+            margin-left: 150px;
         }
 
         .forgot-password:hover {
@@ -333,6 +405,13 @@
             transform: translateY(0);
         }
 
+        .login-button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
         .divider {
             display: flex;
             align-items: center;
@@ -362,9 +441,9 @@
         }
 
         .social-button {
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
+            width: 300px;
+            height: 48px;
+            border-radius: 10%;
             border: 1.5px solid #ddd;
             background: #ffffff;
             display: flex;
@@ -385,10 +464,6 @@
             color: #db4437;
         }
 
-        .facebook-btn {
-            color: #4267B2;
-        }
-
         /* Loading spinner */
         .loading-spinner {
             display: inline-block;
@@ -403,6 +478,16 @@
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
+        }
+
+        .shake {
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
         }
 
         /* Responsive Design */
@@ -434,27 +519,11 @@
             .tab-container {
                 width: 300px;
             }
-        }
 
-        /* Form validation states */
-        .form-input.error {
-            border-color: #e53e3e;
-            box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.1);
-        }
-
-        .form-input.success {
-            border-color: #38a169;
-            box-shadow: 0 0 0 3px rgba(56, 161, 105, 0.1);
-        }
-
-        .shake {
-            animation: shake 0.5s ease-in-out;
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
+            .error-message,
+            .success-message {
+                max-width: 300px;
+            }
         }
     </style>
 </head>
@@ -479,6 +548,46 @@
                 <button class="tab-button" type="button" onclick="window.location.href='/signUp'">Register</button>
             </div>
 
+            <!-- Error and Success Messages -->
+            <% if (typeof error !== 'undefined' && error) { %>
+                <div class="error-message">
+                    <% if (error.includes('Invalid') || error.includes('invalid')) { %>
+                        Invalid email or password. Please try again.
+                    <% } else if (error.includes('blocked') || error.includes('Blocked')) { %>
+                        Your account has been blocked. Please contact support.
+                    <% } else if (error.includes('not found') || error.includes('Not found')) { %>
+                        Account not found. Please check your credentials.
+                    <% } else { %>
+                        <%= error %>
+                    <% } %>
+                </div>
+            <% } %>
+
+            <% if (typeof success !== 'undefined' && success) { %>
+                <div class="success-message">
+                    <%= success %>
+                </div>
+            <% } %>
+
+            <!-- Handle URL query errors -->
+            <% if (typeof query !== 'undefined' && query.error) { %>
+                <div class="error-message">
+                    <% if (query.error === 'oauth_failed') { %>
+                        Google authentication failed. Please try again.
+                    <% } else if (query.error === 'auth_failed') { %>
+                        Authentication failed. Please try again.
+                    <% } else if (query.error === 'account_blocked') { %>
+                        Your account has been blocked. Contact administrator.
+                    <% } else if (query.error === 'session_error') { %>
+                        Session error occurred. Please try logging in again.
+                    <% } else if (query.error === 'invalid_credentials') { %>
+                        Invalid email or password. Please try again.
+                    <% } else { %>
+                        An error occurred during authentication.
+                    <% } %>
+                </div>
+            <% } %>
+
             <form action="/login" method="POST" class="login-form" id="loginForm">
                 <div class="form-group">
                     <label for="email" class="form-label">Email Address</label>
@@ -488,6 +597,7 @@
                         name="email" 
                         class="form-input" 
                         placeholder="Enter your Email Address"
+                        value="<%= typeof email !== 'undefined' ? email : '' %>"
                         required
                     >
                 </div>
@@ -508,10 +618,7 @@
                 </div>
 
                 <div class="form-options">
-                    <label class="remember-me">
-                        <input type="checkbox" name="remember" class="remember-checkbox">
-                        Remember me
-                    </label>
+                   
                     <a href="/forgot-password" class="forgot-password">Forgot Password?</a>
                 </div>
 
@@ -523,8 +630,10 @@
             </div>
 
             <div class="social-buttons">
-                <button type="button" class="social-button google-btn" onclick="loginWithGoogle()">G</button>
-                <button type="button" class="social-button facebook-btn" onclick="loginWithFacebook()">f</button>
+                <button type="button" class="social-button google-btn" onclick="loginWithGoogle()">
+                    <img src="/image/user/login/icons8-google-48.png" alt="google-logo" style="width: 30px; padding-right: 10px;">
+                    Sign Up with Google
+                </button>
             </div>
         </div>
     </div>
@@ -548,48 +657,39 @@
             window.location.href = '/auth/google';
         }
 
-        function loginWithFacebook() {
-            window.location.href = '/auth/facebook';
-        }
-
-        // Form validation
+        // Enhanced form validation with better error display
         document.getElementById('loginForm').addEventListener('submit', function(e) {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             
             // Clear previous states
             document.querySelectorAll('.form-input').forEach(input => {
-                input.classList.remove('error', 'success', 'shake');
+                input.classList.remove('field-error', 'success', 'shake');
             });
+            
+            // Remove existing field error messages
+            document.querySelectorAll('.field-error-message').forEach(msg => msg.remove());
             
             let hasErrors = false;
             
             if (!email) {
-                const emailInput = document.getElementById('email');
-                emailInput.classList.add('error', 'shake');
+                showFieldError('email', 'Email is required');
+                hasErrors = true;
+            } else if (!isValidEmail(email)) {
+                showFieldError('email', 'Please enter a valid email');
                 hasErrors = true;
             } else {
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                const emailInput = document.getElementById('email');
-                if (!emailRegex.test(email)) {
-                    emailInput.classList.add('error', 'shake');
-                    hasErrors = true;
-                } else {
-                    emailInput.classList.add('success');
-                }
+                document.getElementById('email').classList.add('success');
             }
             
             if (!password) {
-                const passwordInput = document.getElementById('password');
-                passwordInput.classList.add('error', 'shake');
+                showFieldError('password', 'Password is required');
                 hasErrors = true;
             } else if (password.length < 6) {
-                const passwordInput = document.getElementById('password');
-                passwordInput.classList.add('error', 'shake');
+                showFieldError('password', 'Password must be at least 6 characters');
                 hasErrors = true;
             } else {
-                const passwordInput = document.getElementById('password');
-                passwordInput.classList.add('success');
+                document.getElementById('password').classList.add('success');
             }
             
             if (hasErrors) {
@@ -604,6 +704,20 @@
             loginBtn.disabled = true;
         });
 
+        function showFieldError(fieldId, message) {
+            const field = document.getElementById(fieldId);
+            field.classList.add('field-error', 'shake');
+            
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'field-error-message';
+            errorDiv.textContent = message;
+            field.parentNode.appendChild(errorDiv);
+        }
+
+        function isValidEmail(email) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        }
+
         // Remove shake class after animation
         document.addEventListener('animationend', function(e) {
             if (e.animationName === 'shake') {
@@ -611,19 +725,16 @@
             }
         });
 
+        // Auto-hide success/error messages after 5 seconds
+        document.addEventListener('DOMContentLoaded', function() {
+            const messages = document.querySelectorAll('.error-message, .success-message');
+            messages.forEach(message => {
+                setTimeout(() => {
+                    message.style.animation = 'slideOutError 0.4s ease-out forwards';
+                    setTimeout(() => message.remove(), 400);
+                }, 5000);
+            });
+        });
     </script>
-
-    <!-- Flash message handling -->
-    <% if (typeof error !== 'undefined') { %>
-        <script>
-            alert('<%= error %>');
-        </script>
-    <% } %>
-    
-    <% if (typeof success !== 'undefined') { %>
-        <script>
-            alert('<%= success %>');
-        </script>
-    <% } %>
 </body>
 </html>

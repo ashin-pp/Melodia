@@ -71,7 +71,6 @@
             }
         }
 
-        /* Left side with image */
         .register-image {
             background: #ffffff;
             flex: 1;
@@ -143,7 +142,6 @@
             transform: scale(1.02);
         }
 
-        /* Right side with form */
         .register-form-container {
             background: #f8f8f8;
             flex: 1;
@@ -217,7 +215,6 @@
             margin-bottom: 18px;
         }
 
-        /* NEW: Style for name row container */
         .name-row {
             display: flex;
             gap: 10px;
@@ -315,19 +312,6 @@
             cursor: pointer;
         }
 
-        .forgot-password {
-            color: #666;
-            text-decoration: none;
-            font-weight: 400;
-            font-size: 13px;
-            transition: all 0.3s ease;
-        }
-
-        .forgot-password:hover {
-            color: #333;
-            text-decoration: underline;
-        }
-
         .register-button {
             width: 100%;
             padding: 14px;
@@ -350,6 +334,12 @@
 
         .register-button:active {
             transform: translateY(0);
+        }
+
+        .register-button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
         }
 
         .divider {
@@ -381,9 +371,9 @@
         }
 
         .social-button {
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
+            width: 300px;
+            height: 48px;
+            border-radius:10%;
             border: 1.5px solid #ddd;
             background: #ffffff;
             display: flex;
@@ -408,7 +398,6 @@
             color: #4267B2;
         }
 
-        /* Loading spinner */
         .loading-spinner {
             display: inline-block;
             width: 16px;
@@ -424,7 +413,6 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Password strength indicator */
         .password-strength {
             font-size: 12px;
             margin-top: 5px;
@@ -435,7 +423,6 @@
         .strength-medium { color: #dd6b20; }
         .strength-strong { color: #38a169; }
 
-        /* Error message styling */
         .error-message {
             color: #e53e3e;
             font-size: 12px;
@@ -450,7 +437,6 @@
             transform: translateY(0);
         }
 
-        /* NEW: Flash notification styles - ADDED INSTEAD OF ALERT */
         .flash-notification {
             position: fixed;
             top: 20px;
@@ -494,7 +480,32 @@
             opacity: 1;
         }
 
-        /* Responsive Design */
+        .form-input.error {
+            border-color: #e53e3e;
+            box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.1);
+        }
+
+        .form-input.success {
+            border-color: #38a169;
+            box-shadow: 0 0 0 3px rgba(56, 161, 105, 0.1);
+        }
+
+        .shake {
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        #already {
+            font-size: 14px;
+            padding-bottom: 40px;
+            color: #4e4e4e;
+        }
+
         @media (max-width: 768px) {
             .register-container {
                 flex-direction: column;
@@ -524,7 +535,6 @@
                 width: 300px;
             }
 
-            /* Stack name fields on mobile */
             .name-row {
                 flex-direction: column;
                 gap: 0;
@@ -545,33 +555,6 @@
             .flash-notification.show {
                 transform: translateY(0);
             }
-        }
-
-        #already{
-            font-size: 14px;
-            padding-bottom: 40px;
-            color: #4e4e4e;
-        }
-        
-        /* Form validation states */
-        .form-input.error {
-            border-color: #e53e3e;
-            box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.1);
-        }
-
-        .form-input.success {
-            border-color: #38a169;
-            box-shadow: 0 0 0 3px rgba(56, 161, 105, 0.1);
-        }
-
-        .shake {
-            animation: shake 0.5s ease-in-out;
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
         }
     </style>
 </head>
@@ -597,7 +580,7 @@
             </div>
 
             <form action="/signUp" method="POST" class="register-form" id="registerForm">
-                <!-- MODIFIED: Name fields in one row with equal width -->
+                <!-- Name fields in one row -->
                 <div class="name-row">
                     <div class="name-field">
                         <label for="firstName" class="form-label">First name</label>
@@ -607,7 +590,10 @@
                             name="firstName" 
                             class="form-input" 
                             placeholder="First name"
+                            value="<%= typeof oldInput !== 'undefined' && oldInput.firstName ? oldInput.firstName : ''%>"
                             required
+                            pattern="[A-Za-z\s]+"
+                            title="First name should only contain letters"
                         >
                         <div class="error-message" id="firstNameError"></div>
                     </div>
@@ -619,7 +605,10 @@
                             name="lastName" 
                             class="form-input" 
                             placeholder="Last name"
+                            value="<%= typeof oldInput !== 'undefined' && oldInput.lastName ? oldInput.lastName : ''%>"
                             required
+                            pattern="[A-Za-z\s]+"
+                            title="Last name should only contain letters"
                         >
                         <div class="error-message" id="lastNameError"></div>
                     </div>
@@ -633,7 +622,10 @@
                         name="email" 
                         class="form-input" 
                         placeholder="Enter your Email Address"
+                        value="<%= typeof oldInput !== 'undefined' && oldInput.email ? oldInput.email : ''%>"
                         required
+                        pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
+                        title="Please enter a valid email address"
                     >
                     <div class="error-message" id="emailError"></div>
                 </div>
@@ -646,7 +638,10 @@
                         name="phone" 
                         class="form-input" 
                         placeholder="Enter your phone number"
+                        value="<%= typeof oldInput !== 'undefined' && oldInput.phone ? oldInput.phone : ''%>"
                         required
+                        pattern="[0-9]{10}"
+                        title="Phone number should contain exactly 10 digits"
                     >
                     <div class="error-message" id="phoneError"></div>
                 </div>
@@ -662,6 +657,8 @@
                             placeholder="Enter your Password"
                             required
                             minlength="6"
+                            pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{6,}$"
+                            title="Password must be at least 6 characters with at least one uppercase, one lowercase, and one number"
                         >
                         <button type="button" class="password-toggle" onclick="togglePassword('password')">👁</button>
                     </div>
@@ -669,7 +666,6 @@
                     <div class="error-message" id="passwordError"></div>
                 </div>
 
-                <!-- NEW CONFIRM PASSWORD FIELD -->
                 <div class="form-group">
                     <label for="confirmPassword" class="form-label">Confirm Password</label>
                     <div class="password-container">
@@ -693,10 +689,11 @@
                         Remember me
                     </label>
                 </div>
+                
                 <p id="already" class="text-sm text-center mt-6 text-gray-500">
-          Already have an account?
-          <a href="/login" id="login-link" class="text-black font-medium hover:underline" aria-label="Go to login page">Log in</a>
-        </p>
+                    Already have an account?
+                    <a href="/login" id="login-link" class="text-black font-medium hover:underline" aria-label="Go to login page">Log in</a>
+                </p>
 
                 <button type="submit" class="register-button">Register</button>
             </form>
@@ -706,13 +703,107 @@
             </div>
 
             <div class="social-buttons">
-                <button type="button" class="social-button google-btn" onclick="registerWithGoogle()">G</button>
-                <button type="button" class="social-button facebook-btn" onclick="registerWithFacebook()">f</button>
+                <button type="button" class="social-button google-btn" onclick="registerWithGoogle()"><img src="/image/user/login/icons8-google-48.png" alt="google-logo" style="width: 30px; padding-right: 10px;">Sign Up with Google</button>
             </div>
         </div>
     </div>
 
     <script>
+        // Validation utility functions
+        const ValidationUtils = {
+            // Name validation - only letters and spaces, 2-50 characters
+            validateName: function(name) {
+                if (!name || name.trim().length === 0) {
+                    return { valid: false, message: 'Name is required' };
+                }
+                if (name.trim().length < 2) {
+                    return { valid: false, message: 'Name must be at least 2 characters' };
+                }
+                if (name.trim().length > 50) {
+                    return { valid: false, message: 'Name must be less than 50 characters' };
+                }
+                const nameRegex = /^[A-Za-z\s]+$/;
+                if (!nameRegex.test(name.trim())) {
+                    return { valid: false, message: 'Name can only contain letters and spaces' };
+                }
+                return { valid: true, message: ''};
+            },
+
+            // Email validation - proper email format
+            validateEmail: function(email) {
+                if (!email || email.trim().length === 0) {
+                    return { valid: false, message: 'Email is required' };
+                }
+                const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+                if (!emailRegex.test(email.trim())) {
+                    return { valid: false, message: 'Please enter a valid email address' };
+                }
+                return { valid: true, message: ''};
+            },
+
+            // Phone validation - exactly 10 digits
+            validatePhone: function(phone) {
+                if (!phone || phone.trim().length === 0) {
+                    return { valid: false, message: 'Phone number is required' };
+                }
+                // Remove spaces, dashes, parentheses, and plus signs
+                const cleanPhone = phone.replace(/[\s\-\(\)\+]/g, '');
+                
+                // Check if it contains only digits
+                const phoneRegex = /^[0-9]+$/;
+                if (!phoneRegex.test(cleanPhone)) {
+                    return { valid: false, message: 'Phone number can only contain digits' };
+                }
+                
+                // Check length (10 digits for most countries, adjust as needed)
+                if (cleanPhone.length !== 10) {
+                    return { valid: false, message: 'Phone number must be exactly 10 digits' };
+                }
+                
+                return { valid: true, message: ''};
+            },
+
+            // Password validation - at least 6 characters, mixed case, number
+            validatePassword: function(password) {
+                if (!password || password.length === 0) {
+                    return { valid: false, message: 'Password is required' };
+                }
+                if (password.length < 6) {
+                    return { valid: false, message: 'Password must be at least 6 characters' };
+                }
+                if (password.length > 128) {
+                    return { valid: false, message: 'Password must be less than 128 characters' };
+                }
+                
+                const hasLowerCase = /[a-z]/.test(password);
+                const hasUpperCase = /[A-Z]/.test(password);
+                const hasNumbers = /\d/.test(password);
+                
+                if (!hasLowerCase) {
+                    return { valid: false, message: 'Password must contain at least one lowercase letter' };
+                }
+                if (!hasUpperCase) {
+                    return { valid: false, message: 'Password must contain at least one uppercase letter' };
+                }
+                if (!hasNumbers) {
+                    return { valid: false, message: 'Password must contain at least one number' };
+                }
+                
+                return { valid: true, message: ''};
+            },
+
+            // Confirm password validation
+            validateConfirmPassword: function(password, confirmPassword) {
+                if (!confirmPassword || confirmPassword.length === 0) {
+                    return { valid: false, message: 'Please confirm your password' };
+                }
+                if (password !== confirmPassword) {
+                    return { valid: false, message: 'Passwords do not match' };
+                }
+                return { valid: true, message: ''};
+            }
+        };
+
         function togglePassword(fieldId) {
             const passwordInput = document.getElementById(fieldId);
             const toggleBtn = passwordInput.nextElementSibling;
@@ -759,10 +850,71 @@
             strengthIndicator.textContent = password.length > 0 ? feedback : '';
         }
 
-        // Real-time password validation
+        // Real-time validation event listeners
+        document.getElementById('firstName').addEventListener('input', function() {
+            const validation = ValidationUtils.validateName(this.value);
+            if (!validation.valid && this.value.trim().length > 0) {
+                showError('firstName', validation.message);
+            } else if (validation.valid) {
+                showSuccess('firstName');
+            } else {
+                clearFieldState('firstName');
+            }
+        });
+
+        document.getElementById('lastName').addEventListener('input', function() {
+            const validation = ValidationUtils.validateName(this.value);
+            if (!validation.valid && this.value.trim().length > 0) {
+                showError('lastName', validation.message);
+            } else if (validation.valid) {
+                showSuccess('lastName');
+            } else {
+                clearFieldState('lastName');
+            }
+        });
+
+        document.getElementById('email').addEventListener('input', function() {
+            const validation = ValidationUtils.validateEmail(this.value);
+            if (!validation.valid && this.value.trim().length > 0) {
+                showError('email', validation.message);
+            } else if (validation.valid) {
+                showSuccess('email');
+            } else {
+                clearFieldState('email');
+            }
+        });
+
+        document.getElementById('phoneNumber').addEventListener('input', function() {
+            // Allow only numbers and common phone formatting characters during input
+            this.value = this.value.replace(/[^0-9\s\-\(\)\+]/g, '');
+            
+            const validation = ValidationUtils.validatePhone(this.value);
+            if (!validation.valid && this.value.trim().length > 0) {
+                showError('phoneNumber', validation.message);
+            } else if (validation.valid) {
+                showSuccess('phoneNumber');
+            } else {
+                clearFieldState('phoneNumber');
+            }
+        });
+
         document.getElementById('password').addEventListener('input', function() {
             checkPasswordStrength(this.value);
-            validatePasswordMatch();
+            
+            const validation = ValidationUtils.validatePassword(this.value);
+            if (!validation.valid && this.value.length > 0) {
+                showError('password', validation.message);
+            } else if (validation.valid) {
+                showSuccess('password');
+            } else {
+                clearFieldState('password');
+            }
+            
+            // Also validate confirm password when password changes
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            if (confirmPassword) {
+                validatePasswordMatch();
+            }
         });
 
         document.getElementById('confirmPassword').addEventListener('input', validatePasswordMatch);
@@ -770,24 +922,14 @@
         function validatePasswordMatch() {
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
-            const confirmPasswordError = document.getElementById('confirmPasswordError');
-            const confirmPasswordInput = document.getElementById('confirmPassword');
-
-            if (confirmPassword.length > 0) {
-                if (password !== confirmPassword) {
-                    confirmPasswordError.textContent = 'Passwords do not match';
-                    confirmPasswordError.classList.add('show');
-                    confirmPasswordInput.classList.add('error');
-                    confirmPasswordInput.classList.remove('success');
-                } else {
-                    confirmPasswordError.textContent = '';
-                    confirmPasswordError.classList.remove('show');
-                    confirmPasswordInput.classList.remove('error');
-                    confirmPasswordInput.classList.add('success');
-                }
+            
+            const validation = ValidationUtils.validateConfirmPassword(password, confirmPassword);
+            if (!validation.valid && confirmPassword.length > 0) {
+                showError('confirmPassword', validation.message);
+            } else if (validation.valid) {
+                showSuccess('confirmPassword');
             } else {
-                confirmPasswordError.classList.remove('show');
-                confirmPasswordInput.classList.remove('error', 'success');
+                clearFieldState('confirmPassword');
             }
         }
 
@@ -800,15 +942,13 @@
             window.location.href = '/auth/facebook';
         }
 
-        // NEW: Flash notification function - REPLACES ALERT
+        // Flash notification function
         function showFlashNotification(message, type = 'error') {
-            // Remove existing notifications
             const existingNotification = document.querySelector('.flash-notification');
             if (existingNotification) {
                 existingNotification.remove();
             }
 
-            // Create new notification
             const notification = document.createElement('div');
             notification.className = `flash-notification ${type}`;
             notification.innerHTML = `
@@ -818,12 +958,10 @@
 
             document.body.appendChild(notification);
 
-            // Show notification
             setTimeout(() => {
                 notification.classList.add('show');
             }, 100);
 
-            // Auto-hide after 5 seconds
             setTimeout(() => {
                 if (notification && notification.parentElement) {
                     notification.classList.remove('show');
@@ -834,6 +972,43 @@
                     }, 300);
                 }
             }, 5000);
+        }
+
+        function showError(fieldId, message) {
+            const input = document.getElementById(fieldId);
+            const errorDiv = document.getElementById(fieldId + 'Error');
+            
+            if (input && errorDiv) {
+                input.classList.add('error', 'shake');
+                input.classList.remove('success');
+                errorDiv.textContent = message;
+                errorDiv.classList.add('show');
+            }
+        }
+
+        function showSuccess(fieldId) {
+            const input = document.getElementById(fieldId);
+            const errorDiv = document.getElementById(fieldId + 'Error');
+            
+            if (input) {
+                input.classList.add('success');
+                input.classList.remove('error');
+            }
+            if (errorDiv) {
+                errorDiv.classList.remove('show');
+            }
+        }
+
+        function clearFieldState(fieldId) {
+            const input = document.getElementById(fieldId);
+            const errorDiv = document.getElementById(fieldId + 'Error');
+            
+            if (input) {
+                input.classList.remove('error', 'success');
+            }
+            if (errorDiv) {
+                errorDiv.classList.remove('show');
+            }
         }
 
         // Enhanced form validation
@@ -854,74 +1029,63 @@
             });
             
             let hasErrors = false;
+            const errors = [];
             
             // First name validation
-            if (!firstName.trim()) {
-                showError('firstName', 'First name is required');
-                hasErrors = true;
-            } else if (firstName.trim().length < 2) {
-                showError('firstName', 'First name must be at least 2 characters');
+            const firstNameValidation = ValidationUtils.validateName(firstName);
+            if (!firstNameValidation.valid) {
+                showError('firstName', firstNameValidation.message);
+                errors.push('First Name: ' + firstNameValidation.message);
                 hasErrors = true;
             } else {
                 showSuccess('firstName');
             }
             
-            // Last name validation
-            if (!lastName.trim()) {
-                showError('lastName', 'Last name is required');
-                hasErrors = true;
-            } else if (lastName.trim().length < 2) {
-                showError('lastName', 'Last name must be at least 2 characters');
+            // Last name validation - FIXED THE LOGICAL ERROR HERE
+            const lastNameValidation = ValidationUtils.validateName(lastName);
+            if (!lastNameValidation.valid) {
+                showError('lastName', lastNameValidation.message);
+                errors.push('Last Name: ' + lastNameValidation.message);
                 hasErrors = true;
             } else {
                 showSuccess('lastName');
             }
             
             // Email validation
-            if (!email) {
-                showError('email', 'Email is required');
+            const emailValidation = ValidationUtils.validateEmail(email);
+            if (!emailValidation.valid) {
+                showError('email', emailValidation.message);
+                errors.push('Email: ' + emailValidation.message);
                 hasErrors = true;
             } else {
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                if (!emailRegex.test(email)) {
-                    showError('email', 'Please enter a valid email address');
-                    hasErrors = true;
-                } else {
-                    showSuccess('email');
-                }
+                showSuccess('email');
             }
             
-            // Phone validation
-            if (!phoneNumber.trim()) {
-                showError('phoneNumber', 'Phone number is required');
+            // Phone validation - FIXED THE LOGICAL ERROR HERE
+            const phoneValidation = ValidationUtils.validatePhone(phoneNumber);
+            if (!phoneValidation.valid) {
+                showError('phoneNumber', phoneValidation.message);
+                errors.push('Phone: ' + phoneValidation.message);
                 hasErrors = true;
             } else {
-                const phoneRegex = /^[\d\+\-\s\(\)]{10,}$/;
-                if (!phoneRegex.test(phoneNumber.replace(/\s/g, ''))) {
-                    showError('phoneNumber', 'Please enter a valid phone number');
-                    hasErrors = true;
-                } else {
-                    showSuccess('phoneNumber');
-                }
+                showSuccess('phoneNumber');
             }
             
             // Password validation
-            if (!password) {
-                showError('password', 'Password is required');
-                hasErrors = true;
-            } else if (password.length < 6) {
-                showError('password', 'Password must be at least 6 characters');
+            const passwordValidation = ValidationUtils.validatePassword(password);
+            if (!passwordValidation.valid) {
+                showError('password', passwordValidation.message);
+                errors.push('Password: ' + passwordValidation.message);
                 hasErrors = true;
             } else {
                 showSuccess('password');
             }
             
             // Confirm password validation
-            if (!confirmPassword) {
-                showError('confirmPassword', 'Please confirm your password');
-                hasErrors = true;
-            } else if (password !== confirmPassword) {
-                showError('confirmPassword', 'Passwords do not match');
+            const confirmPasswordValidation = ValidationUtils.validateConfirmPassword(password, confirmPassword);
+            if (!confirmPasswordValidation.valid) {
+                showError('confirmPassword', confirmPasswordValidation.message);
+                errors.push('Confirm Password: ' + confirmPasswordValidation.message);
                 hasErrors = true;
             } else {
                 showSuccess('confirmPassword');
@@ -929,6 +1093,7 @@
             
             if (hasErrors) {
                 e.preventDefault();
+                showFlashNotification('Please fix the validation errors before submitting.', 'error');
                 return;
             }
 
@@ -947,63 +1112,61 @@
             }, 10000);
         });
 
-        function showError(fieldId, message) {
-            const input = document.getElementById(fieldId);
-            const errorDiv = document.getElementById(fieldId + 'Error');
-            
-            input.classList.add('error', 'shake');
-            errorDiv.textContent = message;
-            errorDiv.classList.add('show');
-        }
-
-        function showSuccess(fieldId) {
-            const input = document.getElementById(fieldId);
-            input.classList.add('success');
-            input.classList.remove('error');
-        }
-
         // Remove shake class after animation
         document.addEventListener('animationend', function(e) {
             if (e.animationName === 'shake') {
                 e.target.classList.remove('shake');
             }
         });
+
+        // Prevent form submission on Enter key if there are validation errors
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const activeElement = document.activeElement;
+                if (activeElement && activeElement.classList.contains('form-input') && activeElement.classList.contains('error')) {
+                    e.preventDefault();
+                    return false;
+                }
+            }
+        });
     </script>
 
-    <!-- MODIFIED: Flash message handling - REMOVED ALERT, ADDED ELEGANT NOTIFICATION -->
+    <!-- FIXED: Proper error message handling -->
     <% if (typeof message !== 'undefined' && message) { %>
         <script>
             document.addEventListener('DOMContentLoaded', function() {
                 const message = '<%= message %>';
-                // const isError = <%= typeof isError !== 'undefined' ? isError : 'true' %>;
+                const isError = <%= typeof isError !== 'undefined' ? isError : true %>;
                 
-                // Show elegant notification instead of alert
+                // Show elegant notification
                 showFlashNotification(message, isError ? 'error' : 'success');
                 
-                // Initialize field-specific error styling
+                // Field-specific error highlighting
                 if (isError) {
-                    // Email field errors
-                    if (message.includes('Email') || message.includes('email')) {
+                    const msgLower = message.toLowerCase();
+                    
+                    // Email-related errors
+                    if (msgLower.includes('email')) {
                         showError('email', message);
                     }
-                    
-                    // Phone field errors  
-                    if (message.includes('Phone') || message.includes('phone')) {
+                    // Phone-related errors
+                    else if (msgLower.includes('phone')) {
                         showError('phoneNumber', message);
                     }
-                    
-                    // Password field errors
-                    if (message.includes('Password') || message.includes('password')) {
-                        showError('password', message);
+                    // Password-related errors
+                    else if (msgLower.includes('password')) {
+                        if (msgLower.includes('match')) {
+                            showError('confirmPassword', message);
+                        } else {
+                            showError('password', message);
+                        }
                     }
-                    
-                    // Name field errors
-                    if (message.includes('name') || message.includes('Name')) {
+                    // Name-related errors
+                    else if (msgLower.includes('name')) {
                         showError('firstName', message);
                     }
-                    
                     // General validation errors
-                    if (message.includes('required') || message.includes('All fields')) {
+                    else if (msgLower.includes('required') || msgLower.includes('all fields')) {
                         showError('firstName', message);
                     }
                 }

@@ -4,10 +4,14 @@ const dotenv = require('dotenv');
 const session = require('express-session');
 const flash = require('connect-flash');
 const mongoose = require('mongoose');
-const passport = require('passport');
 const app = express();
+const userRoutes = require('./routes/userRoutes');
+const adminRoutes=require('./routes/adminRoutes');
+dotenv.config();
 
-// IMPROVED: MongoDB connection with error handling
+require('./config/passport');
+const passport = require('passport');
+
 mongoose.connect('mongodb://localhost:27017/melodia', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -17,58 +21,83 @@ mongoose.connect('mongodb://localhost:27017/melodia', {
 })
 .catch((error) => {
   console.error('❌ MongoDB connection error:', error.message);
-  console.log('\n🔧 To fix this:');
-  console.log('1. Make sure MongoDB is installed');
-  console.log('2. Start MongoDB service: Run "services.msc" and start MongoDB service');
-  console.log('3. Or start manually: Run "mongod" in command prompt as administrator');
   process.exit(1);
 });
 
-// Handle connection events
-mongoose.connection.on('connected', () => {
-  console.log('🟢 Mongoose connected to MongoDB');
+// Express middleware setup
+app.use(express.json());
+app.use(express.urlencoded({extended: true}));
+app.use(express.static('public'));
+
+// Disable ETag/304 caching and enforce no-store for dynamic pages
+app.disable('etag');
+app.set('etag', false);
+
+// Global cache-control for all routes 
+app.use((req, res, next) => {
+  res.set({
+    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+    'Pragma': 'no-cache',
+    'Expires': '0',
+    'Surrogate-Control': 'no-store'
+  });
+  next();
 });
 
-mongoose.connection.on('error', (err) => {
-  console.error('🔴 Mongoose connection error:', err);
-});
 
-mongoose.connection.on('disconnected', () => {
-  console.log('🟡 Mongoose disconnected');
-});
-
-// Rest of your code remains the same...
 app.use(session({
   secret: 'your-secret-key-here',
   resave: false,
   saveUninitialized: false,
   cookie: { 
     secure: false,
-    maxAge: 24 * 60 * 60 * 1000  // 1 day
+    maxAge: 24 * 60 * 60 * 1000,  // 1 day
+    httpOnly: true,
   } 
 }));
-app.use((req,res,next)=>{
-  console.log(req.url)
-  console.log(req.method);
-  console.log(req.body);
-  next()})
 
-app.use(express.json());
-app.use(express.urlencoded({extended: true}));
-app.use(express.static('public'));
+app.use(passport.initialize());
+app.use(passport.session());
+
 app.use(flash());
+
+
+
+// Logging middleware AFTER session
+app.use((req,res,next)=>{
+  console.log(req.url,"url<<<")
+  console.log(req.method,"<method<<");
+  console.log(req.body,"body<<<<");
+  next()
+});
+
+
+
 app.set('view engine', 'ejs');
 app.set('views', 'views');
 
-const userRoutes = require('./routes/userRoutes');
-app.use('/', userRoutes);
-
-// Middleware to prevent caching of restricted pages
 app.use((req, res, next) => {
-  res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
-  res.set('Pragma', 'no-cache');   
-  res.set('Expires', '0');         
+  if (req.session && req.session.admin) {
+    if (!req.originalUrl.startsWith('/admin')) {
+      return res.redirect('/admin/dashboard');
+    }
+  }
   next();
 });
 
-app.listen(3000, () => console.log(`🚀 Server running on port: http://localhost:3000`));
+app.use('/user', userRoutes);  // Mount with /user prefix
+app.use('/admin',adminRoutes);
+app.use('/', userRoutes);      // Also mount at root for landing page
+
+
+
+// Error handling
+app.use((req, res) => {
+  res.status(404).render('error/404', { title: '404 Not Found' });
+});
+app.use((err, req, res, next) => {
+  console.error('Global error handler:', err.stack);
+  res.status(500).render('error/500', { title: 'Server Error' });
+});
+
+app.listen(3000, () => console.log(`Server running on port: http://localhost:3000`));

@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OTP Verify</title>
+    <!-- SweetAlert2 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         * {
             margin: 0;
@@ -104,6 +106,16 @@
             line-height: 1.4;
         }
 
+        .email-display {
+            font-size: 14px;
+            color: #333;
+            font-weight: 500;
+            margin-bottom: 25px;
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 6px;
+        }
+
         .otp-input-container {
             display: flex;
             justify-content: center;
@@ -185,6 +197,13 @@
             text-decoration: underline;
         }
 
+        .resend-link:disabled,
+        .resend-link.disabled {
+            color: #ccc;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
         /* Loading spinner */
         .loading-spinner {
             display: inline-block;
@@ -220,6 +239,35 @@
             box-shadow: 0 0 0 3px rgba(56, 161, 105, 0.1);
         }
 
+        /* Timer display */
+        .timer-display {
+            font-size: 13px;
+            color: #666;
+            margin-top: 10px;
+            margin-bottom: 15px;
+        }
+
+        .timer-display.expired {
+            color: #e53e3e;
+        }
+
+        /* Back to login link */
+        .back-to-login {
+            margin-top: 20px;
+        }
+
+        .back-to-login a {
+            color: #666;
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.3s ease;
+        }
+
+        .back-to-login a:hover {
+            color: #333;
+            text-decoration: underline;
+        }
+
         /* Responsive Design */
         @media (max-width: 480px) {
             .otp-container {
@@ -249,44 +297,89 @@
             <div class="otp-title">Enter the OTP which was sent</div>
             <div class="otp-subtitle">to your email</div>
             
+            <% if (typeof email !== 'undefined' && email) { %>
+                <div class="email-display"><%= email %></div>
+            <% } %>
+            
             <form id="otpForm" action="/verify-otp" method="POST">
                 <div class="otp-input-container">
-                    <input type="text" class="otp-input" maxlength="1" name="otp1" data-index="1" required>
-                    <input type="text" class="otp-input" maxlength="1" name="otp2" data-index="2" required>
-                    <input type="text" class="otp-input" maxlength="1" name="otp3" data-index="3" required>
-                    <input type="text" class="otp-input" maxlength="1" name="otp4" data-index="4" required>
-                    <input type="text" class="otp-input" maxlength="1" name="otp5" data-index="5" required>
-                    <input type="text" class="otp-input" maxlength="1" name="otp6" data-index="6" required>
+                    <input type="text" class="otp-input" maxlength="1" name="otp1" data-index="0" required>
+                    <input type="text" class="otp-input" maxlength="1" name="otp2" data-index="1" required>
+                    <input type="text" class="otp-input" maxlength="1" name="otp3" data-index="2" required>
+                    <input type="text" class="otp-input" maxlength="1" name="otp4" data-index="3" required>
+                    <input type="text" class="otp-input" maxlength="1" name="otp5" data-index="4" required>
+                    <input type="text" class="otp-input" maxlength="1" name="otp6" data-index="5" required>
                 </div>
-                <input type="hidden" name="otp" id="combinedOtp">
                 
-                <button type="submit" class="verify-button">Verify</button>
+                <!-- Hidden fields for backend -->
+                <input type="hidden" name="otp" id="combinedOtp">
+                <% if (typeof email !== 'undefined' && email) { %>
+                    <input type="hidden" name="email" value="<%= email %>">
+                <% } %>
+                
+                <button type="submit" class="verify-button" disabled>Verify</button>
             </form>
             
+            <!-- Timer display -->
+            <% if (typeof otpExpires !== 'undefined' && otpExpires) { %>
+                <div class="timer-display" id="timerDisplay">
+                    OTP expires in: <span id="countdown"></span>
+                </div>
+            <% } %>
+            
             <div class="resend-text">
-                Didn't receive the code? <a href="#" class="resend-link" onclick="resendOTP()">Resend</a>
+                Didn't receive the code? <a href="#" class="resend-link" id="resendLink" onclick="resendOTP(event)">Resend</a>
+            </div>
+            
+            <div class="back-to-login">
+                <a href="/signUp">← Back to Signup</a>
             </div>
         </div>
     </div>
 
     <script>
+        // OTP Timer countdown
+        <% if (typeof otpExpires !== 'undefined' && otpExpires) { %>
+            let otpExpiresAt = <%= otpExpires %>;
+            
+            function updateCountdown() {
+                const now = Date.now();
+                const timeLeft = otpExpiresAt - now;
+                
+                if (timeLeft <= 0) {
+                    document.getElementById('countdown').textContent = 'Expired';
+                    document.getElementById('timerDisplay').classList.add('expired');
+                    document.querySelector('.verify-button').disabled = true;
+                    clearInterval(countdownInterval);
+                    return;
+                }
+                
+                const minutes = Math.floor(timeLeft / 60000);
+                const seconds = Math.floor((timeLeft % 60000) / 1000);
+                document.getElementById('countdown').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            }
+            
+            const countdownInterval = setInterval(updateCountdown, 1000);
+            updateCountdown(); // Initial call
+        <% } %>
+
         // OTP input functionality
         const otpInputs = document.querySelectorAll('.otp-input');
+        const verifyBtn = document.querySelector('.verify-button');
         
         otpInputs.forEach((input, index) => {
             input.addEventListener('input', function(e) {
                 const value = e.target.value;
                 
                 // Only allow numbers
-                if (!/^[0-9]$/.test(value)) {
+                if (!/^[0-9]$/.test(value) && value !== '') {
                     e.target.value = '';
                     return;
                 }
                 
-                // Add filled class
+                // Add filled class and move to next input
                 if (value) {
                     e.target.classList.add('filled');
-                    // Move to next input
                     if (index < otpInputs.length - 1) {
                         otpInputs[index + 1].focus();
                     }
@@ -298,9 +391,7 @@
                 e.target.classList.remove('error');
                 
                 // Check if all inputs are filled
-                const allFilled = Array.from(otpInputs).every(input => input.value);
-                const verifyBtn = document.querySelector('.verify-button');
-                verifyBtn.disabled = !allFilled;
+                updateVerifyButton();
             });
             
             input.addEventListener('keydown', function(e) {
@@ -309,13 +400,14 @@
                     otpInputs[index - 1].focus();
                     otpInputs[index - 1].value = '';
                     otpInputs[index - 1].classList.remove('filled');
+                    updateVerifyButton();
                 }
                 
                 // Handle paste
                 if (e.key === 'v' && (e.ctrlKey || e.metaKey)) {
                     e.preventDefault();
                     navigator.clipboard.readText().then(text => {
-                        const digits = text.replace(/[^0-9]/g, '').slice(0, 4);
+                        const digits = text.replace(/[^0-9]/g, '').slice(0, 6);
                         digits.split('').forEach((digit, i) => {
                             if (otpInputs[i]) {
                                 otpInputs[i].value = digit;
@@ -329,37 +421,39 @@
                             otpInputs[lastIndex].focus();
                         }
                         
-                        // Check if all inputs are filled
-                        const allFilled = Array.from(otpInputs).every(input => input.value);
-                        document.querySelector('.verify-button').disabled = !allFilled;
+                        updateVerifyButton();
                     });
                 }
+                
+                // Handle arrow keys
+                if (e.key === 'ArrowRight' && index < otpInputs.length - 1) {
+                    otpInputs[index + 1].focus();
+                }
+                if (e.key === 'ArrowLeft' && index > 0) {
+                    otpInputs[index - 1].focus();
+                }
+            });
+            
+            // Handle focus - select all text
+            input.addEventListener('focus', function(e) {
+                e.target.select();
             });
         });
         
+        function updateVerifyButton() {
+            const allFilled = Array.from(otpInputs).every(input => input.value);
+            verifyBtn.disabled = !allFilled;
+        }
+        
         // Form submission
         document.getElementById('otpForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
             const otp = Array.from(otpInputs).map(input => input.value).join('');
             
-            console.log('Frontend OTP combination:', otp);
-            console.log('Individual inputs:', Array.from(otpInputs).map(input => input.value));
-            console.log('Hidden field value before setting:', document.getElementById('combinedOtp').value);
-            
-            // Set the combined OTP value in the hidden field
-            document.getElementById('combinedOtp').value = otp;
-            
-            // Disable individual input fields so they don't get submitted
-            otpInputs.forEach(input => {
-                input.disabled = true;
-            });
-            
-            console.log('Hidden field value after setting:', document.getElementById('combinedOtp').value);
-            
             if (otp.length !== 6) {
-                e.preventDefault();
-                // Re-enable inputs since validation failed
+                showError('Please enter all 6 digits');
                 otpInputs.forEach(input => {
-                    input.disabled = false;
                     if (!input.value) {
                         input.classList.add('error');
                     }
@@ -367,25 +461,28 @@
                 return;
             }
             
+            // Set the combined OTP value
+            document.getElementById('combinedOtp').value = otp;
+            
             // Show loading state
-            const verifyBtn = this.querySelector('.verify-button');
             const originalText = verifyBtn.innerHTML;
             verifyBtn.innerHTML = '<div class="loading-spinner"></div> Verifying...';
             verifyBtn.disabled = true;
             
-            // Create hidden input with complete OTP
-            const hiddenInput = document.createElement('input');
-            hiddenInput.type = 'hidden';
-            hiddenInput.name = 'otp';
-            hiddenInput.value = otp;
-            this.appendChild(hiddenInput);
+            // Submit the form
+            this.submit();
         });
         
         // Resend OTP function
-        function resendOTP() {
-            const resendLink = document.querySelector('.resend-link');
+        function resendOTP(event) {
+            event.preventDefault();
+            
+            const resendLink = document.getElementById('resendLink');
+            const originalText = resendLink.textContent;
+            
+            // Disable the link
+            resendLink.classList.add('disabled');
             resendLink.textContent = 'Sending...';
-            resendLink.style.pointerEvents = 'none';
             
             // Make request to resend OTP
             fetch('/resend-otp', {
@@ -393,54 +490,131 @@
                 headers: {
                     'Content-Type': 'application/json',
                 },
+                body: JSON.stringify({
+                    email: document.querySelector('input[name="email"]')?.value || '' 
+                })
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    resendLink.textContent = 'Sent!';
-                    setTimeout(() => {
-                        resendLink.textContent = 'Resend';
-                        resendLink.style.pointerEvents = 'auto';
-                    }, 2000);
+                    showSuccess('OTP has been resent to your email!');
+                    
+                    // Reset timer if available
+                    <% if (typeof otpExpires !== 'undefined') { %>
+                        otpExpiresAt = Date.now() + (5 * 60 * 1000); // 5 minutes from now
+                        document.getElementById('timerDisplay').classList.remove('expired');
+                        clearInterval(countdownInterval);
+                        const newCountdownInterval = setInterval(updateCountdown, 1000);
+                        updateCountdown();
+                    <% } %>
+                    
+                    // Clear current inputs
+                    otpInputs.forEach(input => {
+                        input.value = '';
+                        input.classList.remove('filled', 'error');
+                    });
+                    otpInputs[0].focus();
+                    updateVerifyButton();
+                    
                 } else {
-                    resendLink.textContent = 'Error';
-                    setTimeout(() => {
-                        resendLink.textContent = 'Resend';
-                        resendLink.style.pointerEvents = 'auto';
-                    }, 2000);
+                    showError(data.message || 'Failed to resend OTP. Please try again.');
                 }
             })
             .catch(error => {
-                resendLink.textContent = 'Error';
+                console.error('Error:', error);
+                showError('Network error. Please check your connection and try again.');
+            })
+            .finally(() => {
+                // Re-enable the link after 10 seconds
                 setTimeout(() => {
-                    resendLink.textContent = 'Resend';
-                    resendLink.style.pointerEvents = 'auto';
-                }, 2000);
+                    resendLink.classList.remove('disabled');
+                    resendLink.textContent = originalText;
+                }, 10000);
             });
         }
         
+        // SweetAlert functions
+        function showSuccess(message) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: message,
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                toast: true,
+                position: 'top-end',
+                background: '#f0fff4',
+                color: '#2f855a'
+            });
+        }
+        
+        function showError(message) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: message,
+                showConfirmButton: false,
+                timer: 4000,
+                timerProgressBar: true,
+                toast: true,
+                position: 'top-end',
+                background: '#fef5e7',
+                color: '#c53030'
+            });
+        }
+        
+        function showInfo(message) {
+            Swal.fire({
+                icon: 'info',
+                title: 'Info',
+                text: message,
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                toast: true,
+                position: 'top-end',
+                background: '#ebf8ff',
+                color: '#2b6cb0'
+            });
+        }
+        
+        // Auto-focus first input on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            otpInputs[0].focus();
+        });
     </script>
 
-    <!-- Flash message handling -->
-    <% if (typeof error !== 'undefined') { %>
+    <!-- Enhanced flash message handling with SweetAlert2 -->
+    <% if (typeof message !== 'undefined' && message) { %>
         <script>
-            // Show error on all inputs
-            const otpInputsError = document.querySelectorAll('.otp-input');
-            otpInputsError.forEach(input => {
-                input.classList.add('error');
+            document.addEventListener('DOMContentLoaded', function() {
+                const message = '<%= message %>';
+                const isError = <%= typeof isError !== 'undefined' ? isError : true %>;
+                
+                if (isError) {
+                    showError(message);
+                    
+                    // Add error state to all inputs for invalid OTP
+                    if (message.toLowerCase().includes('otp') || message.toLowerCase().includes('invalid') || message.toLowerCase().includes('expired')) {
+                        otpInputs.forEach(input => {
+                            input.classList.add('error');
+                        });
+                        
+                        // Clear inputs and focus first one
+                        setTimeout(() => {
+                            otpInputs.forEach(input => {
+                                input.value = '';
+                                input.classList.remove('filled');
+                            });
+                            otpInputs[0].focus();
+                            updateVerifyButton();
+                        }, 1000);
+                    }
+                } else {
+                    showSuccess(message);
+                }
             });
-            alert('<%= error %>');
-        </script>
-    <% } %>
-    
-    <% if (typeof success !== 'undefined') { %>
-        <script>
-            // Show success on all inputs
-            const otpInputsSuccess = document.querySelectorAll('.otp-input');
-            otpInputsSuccess.forEach(input => {
-                input.classList.add('success');
-            });
-            alert('<%= success %>');
         </script>
     <% } %>
 </body>
