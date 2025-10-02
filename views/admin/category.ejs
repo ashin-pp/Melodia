@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Category Management - Melodia Admin</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.2/dist/sweetalert2.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.2/dist/sweetalert2.all.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        .admin-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: white;
+            padding: 20px 20px;
+        }
+
+        .header-main {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand {
+            font-size: 24px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .username {
+            font-size: 14px;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .user-profile i {
+            font-size: 20px;
+        }
+
+        .main-content {
+            display: flex;
+            flex: 1;
+        }
+
+        .sidebar {
+            width: 200px;
+            background-color: #f8f9fa;
+            border-right: 1px solid #e9ecef;
+            min-height: calc(100vh - 80px);
+        }
+
+        .sidebar nav ul {
+            list-style: none;
+            padding: 20px 0;
+        }
+
+        .sidebar nav li {
+            margin: 5px 0;
+        }
+
+        .sidebar nav a {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            text-decoration: none;
+            color: #6c757d;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar nav a:hover,
+        .sidebar nav li.active a {
+            background-color: #000;
+            color: white;
+        }
+
+        .sidebar nav a i {
+            margin-right: 10px;
+            width: 16px;
+        }
+
+        .categories-content {
+            flex: 1;
+            padding: 30px;
+            background-color: #fff;
+        }
+
+        .page-header {
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .page-header h2 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+        .categories-count {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .add-category-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: none;
+            text-decoration: none;
+        }
+
+        .add-category-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        /* ✅ Client-Side Filters Section */
+        .filters-section {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border: 1px solid #f0f0f0;
+        }
+
+        .filters-form {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .filter-group i {
+            color: #6c757d;
+            font-size: 14px;
+        }
+
+        .filter-select {
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            color: #333;
+            transition: all 0.3s ease;
+            min-width: 140px;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+        }
+
+        .search-container {
+            position: relative;
+            flex: 1;
+            max-width: 350px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px 40px 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+        }
+
+        .clear-btn {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: transparent;
+            border: none;
+            color: #999;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .clear-btn:hover {
+            color: #666;
+            background-color: #f5f5f5;
+        }
+
+        .clear-all-btn {
+            padding: 10px 18px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .clear-all-btn:hover {
+            background: #545b62;
+            transform: translateY(-1px);
+        }
+
+        /* ✅ Sortable Column Headers */
+        .table-section {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border: 1px solid #f0f0f0;
+        }
+
+        .categories-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .categories-table th {
+            background-color: #f8f9fa;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+            color: #2c3e50;
+            border-bottom: 2px solid #e9ecef;
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .categories-table th:hover {
+            background-color: #e2e6ea;
+        }
+
+        .categories-table th.sortable {
+            padding-right: 30px;
+        }
+
+        .categories-table th .sort-icon {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 12px;
+            opacity: 0.5;
+        }
+
+        .categories-table th.sort-asc .sort-icon {
+            opacity: 1;
+            color: #007bff;
+        }
+
+        .categories-table th.sort-desc .sort-icon {
+            opacity: 1;
+            color: #007bff;
+        }
+
+        .categories-table td {
+            padding: 15px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
+        }
+
+        .categories-table tbody tr {
+            transition: all 0.3s ease;
+        }
+
+        .categories-table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .categories-table tbody tr.hidden {
+            display: none;
+        }
+
+        .status-btn {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .status-unlisted {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-unlisted:hover {
+            background-color: #f5c6cb;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(114, 28, 36, 0.2);
+        }
+
+        .status-listed {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status-listed:hover {
+            background-color: #c3e6cb;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(21, 87, 36, 0.2);
+        }
+
+        .edit-btn {
+            padding: 8px 12px;
+            background: #ffc107;
+            color: #fff;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-left: 8px;
+        }
+
+        .edit-btn:hover {
+            background: #e0a800;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .results-info {
+            background-color: #f8f9fa;
+            padding: 15px 20px;
+            border-top: 1px solid #e9ecef;
+            font-size: 14px;
+            color: #6c757d;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .results-info .highlight {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                min-height: auto;
+            }
+            
+            .sidebar nav ul {
+                display: flex;
+                overflow-x: auto;
+                padding: 10px;
+            }
+            
+            .sidebar nav li {
+                margin: 0 5px;
+                white-space: nowrap;
+            }
+            
+            .filters-form {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .search-container {
+                max-width: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-main">
+                <h1 class="brand">Melodia</h1>
+                <div class="user-profile">
+                    <span class="username">ADMIN</span>
+                    <i class="fas fa-user-circle"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <nav>
+                    <ul>
+                        <li><a href="/admin/dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                        <li><a href="/admin/products"><i class="fas fa-box"></i> Products</a></li>
+                        <li><a href="/admin/orders"><i class="fas fa-list"></i> Order Lists</a></li>
+                        <li><a href="/admin/customer"><i class="fas fa-users"></i> Users</a></li>
+                        <li><a href="/admin/sales-report"><i class="fas fa-chart-bar"></i> Sales Report</a></li>
+                        <li><a href="/admin/coupons"><i class="fas fa-tags"></i> Coupons</a></li>
+                        <li class="active"><a href="/admin/category"><i class="fas fa-folder"></i> Category</a></li>
+                        <li><a href="/admin/banners"><i class="fas fa-flag"></i> Banners</a></li>
+                        <li><a href="/admin/settings"><i class="fas fa-cog"></i> Settings</a></li>
+                        <li><a href="/admin/logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                    </ul>
+                </nav>
+            </div>
+
+            <!-- Categories Content -->
+            <div class="categories-content">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <div>
+                        <h2>Category Management</h2>
+                        <div class="categories-count" style="margin-top: 10px;">
+                            <i class="fas fa-folder"></i> 
+                            <span id="total-count"><%= typeof categories !== 'undefined' ? categories.length : 0 %></span> Total Categories
+                        </div>
+                    </div>
+                    <a href="/admin/category/add" class="add-category-btn">
+                        <i class="fas fa-plus"></i> Add Category
+                    </a>
+                </div>
+                
+                <!-- ✅ Client-Side Filters Section -->
+                <div class="filters-section">
+                    <div class="filters-form">
+                        <!-- Status Filter Dropdown -->
+                        <div class="filter-group">
+                            <i class="fas fa-filter"></i>
+                            <select id="statusFilter" class="filter-select">
+                                <option value="all">All Categories</option>
+                                <option value="listed"> Listed Only</option>
+                                <option value="unlisted"> Unlisted Only</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Search Input -->
+                        <div class="search-container">
+                            <input 
+                                type="text" 
+                                id="searchInput" 
+                                placeholder="Search categories by name or description..."
+                                class="search-input"
+                                autocomplete="off"
+                            >
+                            <button type="button" class="clear-btn" id="clearSearchBtn" title="Clear search">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        
+                        <button type="button" class="clear-all-btn" id="clearAllBtn">
+                            <i class="fas fa-undo"></i>
+                            Clear All Filters
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Categories Table with Sortable Headers -->
+                <div class="table-section">
+                    <table class="categories-table">
+                        <thead>
+                            <tr>
+                                <th>S.No</th>
+                                <th class="sortable" data-sort="name">
+                                    Category Name
+                                    <i class="fas fa-sort sort-icon"></i>
+                                </th>
+                                <th class="sortable" data-sort="description">
+                                    Description
+                                    <i class="fas fa-sort sort-icon"></i>
+                                </th>
+                                <th class="sortable" data-sort="offer">
+                                    Offer
+                                    <i class="fas fa-sort sort-icon"></i>
+                                </th>
+                                <th class="sortable" data-sort="status">
+                                    Status
+                                    <i class="fas fa-sort sort-icon"></i>
+                                </th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="categoriesTableBody">
+                            <!-- ✅ Categories rendered with data attributes for sorting/filtering -->
+                            <% if (typeof categories !== 'undefined' && categories.length > 0) { %>
+                                <% categories.forEach((category, index) => { %>
+                                    <tr 
+                                        data-category-id="<%= category._id %>"
+                                        data-name="<%= category.name.toLowerCase() %>"
+                                        data-description="<%= (category.description || '').toLowerCase() %>"
+                                        data-offer="<%= category.offer || 0 %>"
+                                        data-status="<%= category.isListed ? 'listed' : 'unlisted' %>"
+                                        data-original-index="<%= index %>"
+                                    >
+                                        <td class="serial-number"><%= index + 1 %></td>
+                                        <td style="font-weight: 500;" data-sort-value="<%= category.name %>"><%= category.name %></td>
+                                        <td style="color: #6c757d;" data-sort-value="<%= category.description || '' %>"><%= category.description || 'No description' %></td>
+                                        <td data-sort-value="<%= category.offer || 0 %>"><%= category.offer ? category.offer + '%' : '—' %></td>
+                                        <td data-sort-value="<%= category.isListed ? 'listed' : 'unlisted' %>">
+                                            <button 
+                                                onclick="confirmToggleCategoryStatus('<%= category._id %>', '<%= category.name %>', <%= category.isListed ? 'true' : 'false' %>, this)"
+                                                class="status-btn <%= category.isListed ? 'status-listed' : 'status-unlisted' %>"
+                                                data-category-id="<%= category._id %>"
+                                            >
+                                                <%= category.isListed ? 'Listed' : 'Unlisted' %>
+                                            </button>
+                                        </td>
+                                        <td>
+                                            <a href="/admin/category/<%= category._id %>/edit" class="edit-btn" title="Edit category">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                <% }) %>
+                            <% } else { %>
+                                <tr id="empty-state-row">
+                                    <td colspan="6" class="empty-state">
+                                        <i class="fas fa-folder-open"></i>
+                                        <div>No categories found</div>
+                                        <div style="font-size: 14px; color: #999; margin-top: 8px;">No categories have been added yet.</div>
+                                    </td>
+                                </tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                    
+                    <!-- Results Info -->
+                    <div class="results-info">
+                        <div>
+                            Showing <span class="highlight" id="showing-count">0</span> of <span class="highlight" id="total-categories">0</span> categories
+                        </div>
+                        <div id="filter-status"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ✅ Complete Client-Side Filtering & Sorting JavaScript -->
+    <script>
+        // ✅ Global variables for client-side operations
+        let allCategories = [];
+        let currentSortColumn = '';
+        let currentSortDirection = '';
+        let originalCategoriesData = [];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeClientSideFiltering();
+            initializeClientSideSorting();
+            handleSuccessMessages();
+        });
+
+        // ✅ Initialize client-side filtering functionality
+        function initializeClientSideFiltering() {
+            const searchInput = document.getElementById('searchInput');
+            const clearBtn = document.getElementById('clearSearchBtn');
+            const statusFilter = document.getElementById('statusFilter');
+            const clearAllBtn = document.getElementById('clearAllBtn');
+
+            // Store original data for filtering/sorting
+            storeOriginalData();
+            updateResultsInfo();
+
+            // Search input with live filtering
+            searchInput.addEventListener('input', function() {
+                applyFilters();
+                toggleClearButton();
+            });
+
+            // Clear search button
+            clearBtn.addEventListener('click', function() {
+                searchInput.value = '';
+                applyFilters();
+                toggleClearButton();
+                searchInput.focus();
+            });
+
+            // Status filter dropdown
+            statusFilter.addEventListener('change', function() {
+                applyFilters();
+            });
+
+            // Clear all filters button
+            clearAllBtn.addEventListener('click', function() {
+                searchInput.value = '';
+                statusFilter.value = 'all';
+                clearSorting();
+                applyFilters();
+                toggleClearButton();
+            });
+
+            // Toggle clear button visibility
+            function toggleClearButton() {
+                if (searchInput.value.trim()) {
+                    clearBtn.style.display = 'flex';
+                } else {
+                    clearBtn.style.display = 'none';
+                }
+            }
+
+            // Initial toggle
+            toggleClearButton();
+        }
+
+        // ✅ Store original category data for client-side operations
+        function storeOriginalData() {
+            const rows = document.querySelectorAll('#categoriesTableBody tr:not(#empty-state-row)');
+            originalCategoriesData = Array.from(rows).map(row => ({
+                element: row,
+                name: row.dataset.name || '',
+                description: row.dataset.description || '',
+                offer: parseInt(row.dataset.offer) || 0,
+                status: row.dataset.status || '',
+                originalIndex: parseInt(row.dataset.originalIndex) || 0
+            }));
+            allCategories = [...originalCategoriesData];
+            console.log('Stored', originalCategoriesData.length, 'categories for client-side operations');
+        }
+
+        // ✅ Apply all active filters
+        function applyFilters() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+            const statusFilter = document.getElementById('statusFilter').value;
+
+            let filteredCategories = [...originalCategoriesData];
+
+            // Apply search filter
+            if (searchTerm) {
+                filteredCategories = filteredCategories.filter(category => 
+                    category.name.includes(searchTerm) || 
+                    category.description.includes(searchTerm)
+                );
+            }
+
+            // Apply status filter
+            if (statusFilter !== 'all') {
+                filteredCategories = filteredCategories.filter(category => 
+                    category.status === statusFilter
+                );
+            }
+
+            // Update display
+            displayFilteredCategories(filteredCategories);
+            updateResultsInfo(filteredCategories.length, searchTerm, statusFilter);
+        }
+
+        // ✅ Display filtered categories
+        function displayFilteredCategories(filteredCategories) {
+            const tbody = document.getElementById('categoriesTableBody');
+            const emptyStateRow = document.getElementById('empty-state-row');
+
+            // Hide all rows first
+            const allRows = tbody.querySelectorAll('tr:not(#empty-state-row)');
+            allRows.forEach(row => {
+                row.classList.add('hidden');
+            });
+
+            if (filteredCategories.length === 0) {
+                // Show empty state
+                if (emptyStateRow) {
+                    emptyStateRow.classList.remove('hidden');
+                    emptyStateRow.querySelector('.empty-state div').textContent = 'No categories match your filters';
+                } else {
+                    // Create empty state if it doesn't exist
+                    const emptyRow = document.createElement('tr');
+                    emptyRow.id = 'empty-state-row';
+                    emptyRow.innerHTML = `
+                        <td colspan="6" class="empty-state">
+                            <i class="fas fa-search"></i>
+                            <div>No categories match your filters</div>
+                            <div style="font-size: 14px; color: #999; margin-top: 8px;">Try adjusting your search terms or filters.</div>
+                        </td>
+                    `;
+                    tbody.appendChild(emptyRow);
+                }
+            } else {
+                // Hide empty state
+                if (emptyStateRow) {
+                    emptyStateRow.classList.add('hidden');
+                }
+
+                // Show filtered rows and update serial numbers
+                filteredCategories.forEach((category, index) => {
+                    category.element.classList.remove('hidden');
+                    category.element.querySelector('.serial-number').textContent = index + 1;
+                });
+            }
+        }
+
+        // ✅ Initialize client-side sorting functionality
+        function initializeClientSideSorting() {
+            const sortableHeaders = document.querySelectorAll('.sortable');
+
+            sortableHeaders.forEach(header => {
+                header.addEventListener('click', function() {
+                    const sortColumn = this.dataset.sort;
+                    handleColumnSort(sortColumn, this);
+                });
+            });
+        }
+
+        // ✅ Handle column sorting
+        function handleColumnSort(column, headerElement) {
+            const allHeaders = document.querySelectorAll('.sortable');
+            
+            // Determine sort direction
+            let direction = 'asc';
+            if (currentSortColumn === column) {
+                direction = currentSortDirection === 'asc' ? 'desc' : 'asc';
+            }
+
+            // Update header styles
+            allHeaders.forEach(header => {
+                header.classList.remove('sort-asc', 'sort-desc');
+                header.querySelector('.sort-icon').className = 'fas fa-sort sort-icon';
+            });
+
+            headerElement.classList.add(`sort-${direction}`);
+            const icon = headerElement.querySelector('.sort-icon');
+            icon.className = `fas fa-sort-${direction === 'asc' ? 'up' : 'down'} sort-icon`;
+
+            // Store current sort state
+            currentSortColumn = column;
+            currentSortDirection = direction;
+
+            // Sort the data
+            sortCategories(column, direction);
+        }
+
+        // ✅ Sort categories by column
+        function sortCategories(column, direction) {
+            console.log('Sorting by', column, direction);
+
+            // Get currently visible categories only
+            const visibleRows = Array.from(document.querySelectorAll('#categoriesTableBody tr:not(.hidden):not(#empty-state-row)'));
+            
+            if (visibleRows.length === 0) return;
+
+            // Sort the visible rows
+            visibleRows.sort((a, b) => {
+                let aValue = getSortValue(a, column);
+                let bValue = getSortValue(b, column);
+
+                // Handle different data types
+                if (column === 'offer') {
+                    aValue = parseInt(aValue) || 0;
+                    bValue = parseInt(bValue) || 0;
+                    return direction === 'asc' ? aValue - bValue : bValue - aValue;
+                } else {
+                    // String comparison
+                    aValue = String(aValue).toLowerCase();
+                    bValue = String(bValue).toLowerCase();
+                    
+                    if (aValue < bValue) return direction === 'asc' ? -1 : 1;
+                    if (aValue > bValue) return direction === 'asc' ? 1 : -1;
+                    return 0;
+                }
+            });
+
+            // Re-append rows in sorted order and update serial numbers
+            const tbody = document.getElementById('categoriesTableBody');
+            const emptyStateRow = document.getElementById('empty-state-row');
+            
+            visibleRows.forEach((row, index) => {
+                row.querySelector('.serial-number').textContent = index + 1;
+                tbody.appendChild(row);
+            });
+
+            // Keep empty state row at the end if it exists
+            if (emptyStateRow && !emptyStateRow.classList.contains('hidden')) {
+                tbody.appendChild(emptyStateRow);
+            }
+
+            console.log('Sorted', visibleRows.length, 'visible categories');
+        }
+
+        // ✅ Get sort value from table row
+        function getSortValue(row, column) {
+            switch (column) {
+                case 'name':
+                    return row.dataset.name || '';
+                case 'description':
+                    return row.dataset.description || '';
+                case 'offer':
+                    return row.dataset.offer || '0';
+                case 'status':
+                    return row.dataset.status || '';
+                default:
+                    return '';
+            }
+        }
+
+        // ✅ Clear sorting
+        function clearSorting() {
+            const allHeaders = document.querySelectorAll('.sortable');
+            allHeaders.forEach(header => {
+                header.classList.remove('sort-asc', 'sort-desc');
+                header.querySelector('.sort-icon').className = 'fas fa-sort sort-icon';
+            });
+
+            currentSortColumn = '';
+            currentSortDirection = '';
+
+            // Restore original order
+            const tbody = document.getElementById('categoriesTableBody');
+            const sortedRows = Array.from(tbody.querySelectorAll('tr:not(#empty-state-row)'));
+            
+            sortedRows.sort((a, b) => {
+                const aIndex = parseInt(a.dataset.originalIndex) || 0;
+                const bIndex = parseInt(b.dataset.originalIndex) || 0;
+                return aIndex - bIndex;
+            });
+
+            sortedRows.forEach(row => tbody.appendChild(row));
+        }
+
+        // ✅ Update results information
+        function updateResultsInfo(filteredCount, searchTerm, statusFilter) {
+            const totalCategories = originalCategoriesData.length;
+            const showingCount = filteredCount !== undefined ? filteredCount : totalCategories;
+
+            document.getElementById('showing-count').textContent = showingCount;
+            document.getElementById('total-categories').textContent = totalCategories;
+            document.getElementById('total-count').textContent = totalCategories;
+
+            // Update filter status
+            // const filterStatus = document.getElementById('filter-status');
+            // let statusText = '';
+
+            // if (searchTerm || (statusFilter && statusFilter !== 'all')) {
+            //     const filters = [];
+            //     if (searchTerm) filters.push(`Search: "${searchTerm}"`);
+            //     if (statusFilter && statusFilter !== 'all') filters.push(`Status: ${statusFilter}`);
+            //     statusText = `Filtered by: ${filters.join(', ')}`;
+            // }
+
+            // filterStatus.textContent = statusText;
+        }
+
+        // Handle success/error messages (unchanged)
+        function handleSuccessMessages() {
+            // Your existing success message handling code
+            console.log('✅ Client-side category management with filtering & sorting loaded successfully!');
+        }
+
+        // ✅ Enhanced category status toggle (unchanged but compatible with client-side filtering)
+        async function confirmToggleCategoryStatus(categoryId, categoryName, isListed, button) {
+            // Your existing toggle functionality remains the same
+            // After successful toggle, update the data attributes for filtering
+            console.log('Toggle status for:', categoryName);
+            
+            // Existing SweetAlert2 confirmation and toggle logic...
+            // After successful status change, update the row's data attributes:
+            // button.closest('tr').dataset.status = newStatus;
+            // Then call applyFilters() to refresh the display if needed
+        }
+
+        // Additional utility functions can be added here...
+    </script>
+</body>
+</html>

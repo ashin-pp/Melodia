@@ -1,3 +1,5 @@
+const User = require('../model/userSchema');
+
 // FIXED: Enhanced authentication middleware
 exports.isAuthenticated = (req, res, next) => {
   console.log('=== isAuthenticated MIDDLEWARE ===');
@@ -76,21 +78,25 @@ exports.isAdmin = (req, res, next) => {
 exports.checkUserBlocked = async (req, res, next) => {
   try {
     if (req.session && req.session.user) {
-      const user = await User.findOne({ email: req.session.user.email });
+      const user = await User.findById(req.session.user.id);
       if (!user || user.isBlocked) {
         const email = req.session.user.email;
-        req.session.user = null;
-        return res.render('user/login', {
-          message: "Your account has been blocked by admin.",
-          isError: true,
-          oldInput: { email },
+        return req.session.destroy((err) => {
+          if (err) console.error('Session destroy error:', err);
+          return res.render('user/login', {
+            error: 'Your account has been blocked. Contact administrator.',
+            success: null,
+            email,
+            query: req.query,
+            justRegistered: false,
+          });
         });
       }
     }
-    next();
+    return next();
   } catch (err) {
     console.error('Error in checkUserBlocked middleware:', err);
-    res.status(500).render('error/500', { title: 'Server Error' });
+    return res.status(500).render('error/500', { title: 'Server Error' });
   }
 };
 
@@ -125,7 +131,3 @@ exports.validateUserSession = (req, res, next) => {
   
   next();
 };
-
-
-
-

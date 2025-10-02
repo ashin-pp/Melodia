@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Edit Product - Superkicks</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" />
+  <style>
+    #cropper-modal {
+      transition: opacity 0.3s ease;
+    }
+    #cropper-modal.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+    .cropper-container {
+      margin: 0 auto;
+    }
+    .animate-spin {
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .image-type-badge {
+      position: absolute;
+      bottom: 2px;
+      left: 2px;
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 10px;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 font-sans">
+  <main class="flex-1 p-6">
+    <header class="flex justify-end mb-4">
+      <div class="flex items-center gap-2 text-gray-700">
+        <i class="fas fa-user"></i>
+        <span class="font-semibold">ADMIN</span>
+      </div>
+    </header>
+
+    <div class="max-w-2xl mx-auto bg-white shadow-lg rounded-lg p-8">
+      <h2 class="text-2xl font-semibold text-gray-800 mb-6 flex items-center gap-3">
+        <i class="fas fa-edit text-yellow-500"></i> Edit Product
+      </h2>
+
+      <% if (typeof errors !== "undefined" && errors.length > 0) { %>
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded mb-4">
+          <ul class="list-disc ml-5">
+            <% errors.forEach(function(msg) { %>
+              <li><%= msg %></li>
+            <% }) %>
+          </ul>
+        </div>
+      <% } %>
+
+      <form id="edit-product-form" action="/admin/products/<%= product._id %>/edit" method="POST" enctype="multipart/form-data" class="space-y-5">
+        <!-- Product Details -->
+        <input type="hidden" name="_id" value="<%= product._id %>">
+        
+        <div>
+          <label class="block text-gray-600 font-medium mb-1">Product Name <span class="text-red-500">*</span></label>
+          <input type="text" name="productName" required
+            value="<%= old && old.productName ? old.productName : product.productName %>"
+            class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <div>
+          <label class="block text-gray-600 font-medium mb-1">Brand <span class="text-red-500">*</span></label>
+          <input type="text" name="brand" required
+            value="<%= old && old.brand ? old.brand : product.brand %>"
+            class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <div>
+          <label class="block text-gray-600 font-medium mb-1">Category <span class="text-red-500">*</span></label>
+          <select name="categoryId" required class="w-full px-3 py-2 border rounded">
+            <% categories.forEach(cat => { %>
+              <option value="<%= cat._id %>"
+                <%= 
+                  (old && old.categoryId == cat._id.toString()) ||
+                  (!old && product.categoryId && product.categoryId._id && product.categoryId._id.toString() == cat._id.toString()) 
+                    ? 'selected' 
+                    : '' 
+                %>>
+                <%= cat.name %>
+              </option>
+            <% }) %>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-gray-600 font-medium mb-1">Description <span class="text-red-500">*</span></label>
+          <textarea name="description" rows="3" required
+            class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"><%= old && old.description ? old.description : product.description %></textarea>
+        </div>
+
+        <div>
+          <label class="block text-gray-600 font-medium mb-1">Offer (%)</label>
+          <input type="number" min="0" max="100" name="offer"
+            value="<%= old && typeof old.offer !== 'undefined' ? old.offer : (product.offer || 0) %>"
+            class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <div>
+          <label class="block text-gray-600 font-medium mb-1">Status</label>
+          <div class="flex items-center">
+            <input type="radio" id="listed" name="isListed" value="true"
+              <%= ((old && old.isListed === true) || (!old && product.isListed === true)) ? 'checked' : '' %> class="mr-2">
+            <label for="listed" class="mr-4">Listed</label>
+            <input type="radio" id="unlisted" name="isListed" value="false"
+              <%= ((old && old.isListed === false) || (!old && product.isListed === false)) ? 'checked' : '' %> class="mr-2">
+            <label for="unlisted">Unlisted</label>
+          </div>
+        </div>
+
+        <!-- Image Upload Section -->
+        <div>
+          <label class="block text-gray-600 font-medium mb-1">Product Images <span class="text-red-500">*</span></label>
+          <p class="text-sm text-gray-500 mb-3">
+            Current images: <span id="image-count">0</span> | 
+          
+          </p>
+          
+          <input type="file" id="file-input" name="images" accept="image/*" style="display: none;" multiple>
+
+          <!-- Hidden inputs for tracking images -->
+          <input type="hidden" name="existingImages" id="existing-images" value="<%= JSON.stringify(product.images) %>">
+          <input type="hidden" name="deletedImages" id="deleted-images" value="[]">
+          <input type="hidden" name="newImages" id="new-images" value="[]">
+
+          <button type="button" onclick="document.getElementById('file-input').click()" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 mb-4">
+            <i class="fas fa-plus mr-2"></i> Add New Images (Cloudinary)
+          </button>
+          
+          <!-- Cropper Modal -->
+          <div id="cropper-modal" class="fixed inset-0 bg-black bg-opacity-75 z-50 hidden">
+            <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-4/5 max-w-2xl bg-white p-4 rounded-lg">
+              <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold">Crop Image (will be uploaded to Cloudinary)</h3>
+                <button type="button" onclick="closeCropper()" class="text-gray-500 hover:text-gray-700">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+              <div class="h-96">
+                <img id="image-to-crop" class="max-h-full max-w-full">
+              </div>
+              <div class="mt-4 flex justify-end gap-2">
+                <button type="button" onclick="closeCropper()" class="px-4 py-2 bg-gray-300 rounded">Cancel</button>
+                <button type="button" onclick="saveCroppedImage()" class="px-4 py-2 bg-blue-600 text-white rounded">Save to Cloudinary</button>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Preview Container -->
+          <div id="image-previews" class="grid grid-cols-3 gap-4 mt-4">
+            <!-- Images will be loaded dynamically via JavaScript -->
+          </div>
+          
+          <!-- Hidden data container for JS -->
+          <div id="image-data" data-images='<%= JSON.stringify(product.images) %>' style="display: none;"></div>
+        </div>
+
+        <!-- Variants Section -->
+        <div>
+          <label class="block text-gray-600 font-medium mb-2">Variants (Color, Price, Stock)</label>
+          <div id="variants-area">
+            <% product.variants.forEach((variant, i) => { %>
+              <div class="flex gap-2 mb-2 variant-row">
+                <input type="text" name="variants[<%= i %>][color]" placeholder="Color" required
+                  value="<%= variant.color %>"
+                  class="w-1/4 px-2 py-1 border rounded focus:ring-2 focus:ring-blue-500">
+                <input type="number" min="0" step="0.01" name="variants[<%= i %>][price]" placeholder="Price" required
+                  value="<%= variant.regularPrice %>"
+                  class="w-1/4 px-2 py-1 border rounded focus:ring-2 focus:ring-blue-500">
+                <input type="number" min="0" name="variants[<%= i %>][stock]" placeholder="Stock"
+                  value="<%= variant.stock %>"
+                  class="w-1/4 px-2 py-1 border rounded focus:ring-2 focus:ring-blue-500">
+                <input type="hidden" name="variants[<%= i %>][_id]" value="<%= variant._id %>">
+                <button type="button" onclick="removeVariantRow(this)" class="bg-red-500 text-white px-2 rounded hover:bg-red-700 font-bold">-</button>
+              </div>
+            <% }) %>
+          </div>
+          <button type="button" id="add-variant-btn" class="mt-1 px-4 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">+ Add Variant</button>
+        </div>
+
+        <div class="flex justify-between items-center mt-8">
+          <a href="/admin/products" class="px-5 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded font-semibold">Back</a>
+          <button type="submit" id="submit-btn" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded font-semibold">
+            <i class="fas fa-save mr-2"></i>Save Changes
+          </button>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script>
+    // Get the product ID from the form action URL
+    const productId = '<%= product._id %>';
+    
+    // Global variables
+    let cropper;
+    let currentFile;
+    const existingImages = JSON.parse(document.getElementById('image-data').dataset.images || '[]');
+    const deletedImages = [];
+    const newImages = [];
+
+    // Helper functions for image type detection
+    function isCloudinaryImage(img) {
+      if (typeof img === 'string') {
+        return img.includes('cloudinary.com') || img.includes('res.cloudinary.com');
+      }
+      return img && img.publicId; // Object with publicId = Cloudinary
+    }
+
+    function getImageUrl(img) {
+      return typeof img === 'string' ? img : img.url;
+    }
+
+    function getImageId(img) {
+      if (typeof img === 'string') {
+        return img; // Legacy: use URL as ID
+      }
+      return img.publicId || img.url; // Cloudinary: prefer publicId, fallback to url
+    }
+
+    function getImageType(img) {
+      return isCloudinaryImage(img) ? 'cloudinary' : 'local';
+    }
+
+    // Initialize on DOM load
+    document.addEventListener('DOMContentLoaded', () => {
+      // Load existing images
+      existingImages.forEach(img => {
+        addImageToPreview(img, false);
+      });
+      updateImageCount();
+
+      // File input handler
+      document.getElementById('file-input').addEventListener('change', function(e) {
+        if (e.target.files.length > 0) {
+          currentFile = e.target.files[0];
+          openCropper(currentFile);
+        }
+      });
+    });
+
+    // Image preview management
+    function addImageToPreview(imgData, isNew = false) {
+      const imageUrl = getImageUrl(imgData);
+      const imageId = getImageId(imgData);
+      const imageType = getImageType(imgData);
+      
+      const previewDiv = document.createElement('div');
+      previewDiv.className = 'relative';
+      previewDiv.dataset.image = imageId;
+      previewDiv.dataset.type = imageType;
+      if (isNew) previewDiv.classList.add('new-image');
+      
+      const badgeColor = imageType === 'cloudinary' ? 'bg-blue-600' : 'bg-green-600';
+      const badgeText = imageType === 'cloudinary' ? 'Cloud' : 'Local';
+      
+      previewDiv.innerHTML = `
+        <img src="${imageUrl}" class="w-full h-32 object-cover rounded border" 
+             onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSI+PHBhdGggZD0iTTEyIDJMMTMuMDkgOC4yNkwyMCA5TDEzLjA5IDE1Ljc0TDEyIDIyTDEwLjkxIDE1Ljc0TDQgOUwxMC45MSA4LjI2TDEyIDJaIiBmaWxsPSIjY2NjIi8+PC9zdmc+'; this.alt='Image not found';">
+        <button type="button" onclick="removeImage(this)" 
+                class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600">
+          &times;
+        </button>
+        <div class="image-type-badge ${badgeColor}">${badgeText}</div>
+      `;
+      
+      document.getElementById('image-previews').appendChild(previewDiv);
+      
+      if (isNew) {
+        newImages.push(imgData);
+        updateNewImagesInput();
+      }
+      
+      updateHiddenInputs();
+      updateImageCount();
+    }
+
+    function updateImageCount() {
+      const count = document.getElementById('image-previews').children.length;
+      document.getElementById('image-count').textContent = count;
+    }
+
+    function updateHiddenInputs() {
+      // Update existing images (exclude deleted ones)
+      const remaining = existingImages.filter(img => {
+        const imgId = getImageId(img);
+        return !deletedImages.includes(imgId);
+      });
+      document.getElementById('existing-images').value = JSON.stringify(remaining);
+      document.getElementById('deleted-images').value = JSON.stringify(deletedImages);
+    }
+
+    function updateNewImagesInput() {
+      document.getElementById('new-images').value = JSON.stringify(newImages);
+    }
+
+    // Image cropper functions
+    function openCropper(file) {
+      const modal = document.getElementById('cropper-modal');
+      const image = document.getElementById('image-to-crop');
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        image.src = e.target.result;
+        modal.classList.remove('hidden');
+        
+        if (cropper) cropper.destroy();
+        
+        cropper = new Cropper(image, {
+          aspectRatio: 1,
+          viewMode: 1,
+          autoCropArea: 0.8,
+          responsive: true,
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function closeCropper() {
+      document.getElementById('cropper-modal').classList.add('hidden');
+      if (cropper) {
+        cropper.destroy();
+        cropper = null;
+      }
+      document.getElementById('file-input').value = '';
+    }
+
+    async function saveCroppedImage() {
+      const canvas = cropper.getCroppedCanvas({
+        width: 800,
+        height: 800,
+        fillColor: '#fff'
+      });
+
+      canvas.toBlob(async (blob) => {
+        const loadingId = 'loading-' + Date.now();
+        document.getElementById('image-previews').insertAdjacentHTML('beforeend', `
+          <div id="${loadingId}" class="relative bg-gray-200 rounded flex items-center justify-center" style="height: 8rem;">
+            <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500"></div>
+            <div class="image-type-badge bg-blue-600">Uploading...</div>
+          </div>
+        `);
+
+        try {
+          const formData = new FormData();
+          formData.append('image', blob, 'cropped-' + Date.now() + '.jpg');
+          
+          const response = await axios.post(`/admin/products/${productId}/edit-image`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+          });
+
+          document.getElementById(loadingId).remove();
+          
+          // Create Cloudinary image object
+          const cloudinaryImg = {
+            url: response.data.url,
+            publicId: response.data.publicId
+          };
+          
+          addImageToPreview(cloudinaryImg, true);
+          closeCropper();
+        } catch (error) {
+          console.error('Upload failed:', error);
+          document.getElementById(loadingId).remove();
+          alert('Failed to upload image. Please try again.');
+        }
+      }, 'image/jpeg', 0.8);
+    }
+
+    function removeImage(button) {
+      const container = button.parentElement;
+      const imageId = container.dataset.image;
+      const imageType = container.dataset.type;
+      
+      if (container.classList.contains('new-image')) {
+        // Remove from new images array
+        const index = newImages.findIndex(img => getImageId(img) === imageId);
+        if (index > -1) {
+          newImages.splice(index, 1);
+          updateNewImagesInput();
+        }
+        
+        
+        if (imageType === 'cloudinary') {
+          axios.delete(`/admin/delete-temp-image`, { data: { publicId: imageId } })
+            .catch(err => console.warn('Cleanup failed:', err));
+        }
+      } else {
+        // Mark existing image for deletion
+        if (!deletedImages.includes(imageId)) {
+          deletedImages.push(imageId);
+        }
+      }
+      
+      container.remove();
+      updateHiddenInputs();
+      updateImageCount();
+    }
+
+    // Variant management
+    document.getElementById('add-variant-btn').addEventListener('click', function() {
+      const area = document.getElementById('variants-area');
+      const index = area.querySelectorAll('.variant-row').length;
+      
+      const row = document.createElement('div');
+      row.className = 'flex gap-2 mb-2 variant-row';
+      row.innerHTML = `
+        <input type="text" name="variants[${index}][color]" placeholder="Color" required class="w-1/4 px-2 py-1 border rounded">
+        <input type="number" name="variants[${index}][price]" step="0.01" placeholder="Price" required class="w-1/4 px-2 py-1 border rounded">
+        <input type="number" name="variants[${index}][stock]" placeholder="Stock" class="w-1/4 px-2 py-1 border rounded">
+        <input type="hidden" name="variants[${index}][_id]" value="">
+        <button type="button" onclick="removeVariantRow(this)" class="bg-red-500 text-white px-2 rounded hover:bg-red-700 font-bold">-</button>
+      `;
+      
+      area.appendChild(row);
+    });
+
+    // FIXED: Track variant deletion
+    function removeVariantRow(btn) {
+      const row = btn.closest('.variant-row');
+      const variantId = row.querySelector('[name*="_id"]')?.value;
+      
+      // If this is an existing variant, track it for deletion
+      if (variantId) {
+        deletedVariants.push(variantId);
+        document.getElementById('deleted-variants').value = JSON.stringify(deletedVariants);
+      }
+      
+      row.remove();
+    }
+
+    // Form submission
+    document.getElementById('edit-product-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const form = e.target;
+      const submitBtn = document.getElementById('submit-btn');
+      const originalBtnText = submitBtn.innerHTML;
+      
+      // Validate at least one image
+      if (document.getElementById('image-previews').children.length === 0) {
+        alert('Please add at least one product image');
+        return;
+      }
+      
+      // Update all hidden inputs before submission
+      updateHiddenInputs();
+      updateNewImagesInput();
+      
+      // Prepare FormData
+      const formData = new FormData(form);
+      
+      const variants = [];
+      let variantError = null;
+      document.querySelectorAll('.variant-row').forEach((row, idx) => {
+        const color = row.querySelector('[name*="color"]').value.trim();
+        const price = parseFloat(row.querySelector('[name*="price"]').value);
+        const stockVal = row.querySelector('[name*="stock"]').value;
+        const stock = stockVal !== '' ? parseInt(stockVal, 10) : 0;
+        const variantId = row.querySelector('[name*="_id"]')?.value || null;
+
+        if (!color) {
+          variantError = `Variant ${idx + 1}: Color is required.`;
+        } else if (isNaN(price) || price < 0) {
+          variantError = `Variant ${idx + 1}: Price must be a positive number.`;
+        } else if (isNaN(stock) || stock < 0) {
+          variantError = `Variant ${idx + 1}: Stock must be zero or a positive number.`;
+        }
+
+        variants.push({ _id: variantId, color, price, stock });
+      });
+
+      if (variantError) {
+        alert(variantError);
+        return;
+      }
+
+      if (variants.length === 0) {
+        alert('Please add at least one variant.');
+        return;
+      }
+      // Update button state
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Saving...';
+      
+      try {
+        const response = await axios.post(form.action, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        
+        if (response.data.success) {
+          window.location.href = '/admin/products';
+        } else {
+          alert(response.data.message || 'Failed to update product');
+        }
+      } catch (error) {
+        console.error('Submission error:', error);
+        alert('An error occurred. Please try again.');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalBtnText;
+      }
+    });
+  </script>
+</body>
+</html>

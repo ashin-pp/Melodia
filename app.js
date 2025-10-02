@@ -7,6 +7,7 @@ const mongoose = require('mongoose');
 const app = express();
 const userRoutes = require('./routes/userRoutes');
 const adminRoutes=require('./routes/adminRoutes');
+const { getImageUrl } = require('./helper/imageHandler');;
 dotenv.config();
 
 require('./config/passport');
@@ -22,12 +23,14 @@ mongoose.connect('mongodb://localhost:27017/melodia', {
 .catch((error) => {
   console.error('❌ MongoDB connection error:', error.message);
   process.exit(1);
+  
 });
 
 // Express middleware setup
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 app.use(express.static('public'));
+app.locals.getImageUrl = getImageUrl;
 
 // Disable ETag/304 caching and enforce no-store for dynamic pages
 app.disable('etag');

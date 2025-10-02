@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Category - Melodia Admin</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- SweetAlert2 CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.2/dist/sweetalert2.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.2/dist/sweetalert2.all.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        .admin-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header Styles */
+        .header {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: white;
+            padding: 20px 20px;
+        }
+
+        .header-main {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand {
+            font-size: 24px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .username {
+            font-size: 14px;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .user-profile i {
+            font-size: 20px;
+        }
+
+        /* Main Content Layout */
+        .main-content {
+            display: flex;
+            flex: 1;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 200px;
+            background-color: #f8f9fa;
+            border-right: 1px solid #e9ecef;
+            min-height: calc(100vh - 80px);
+        }
+
+        .sidebar nav ul {
+            list-style: none;
+            padding: 20px 0;
+        }
+
+        .sidebar nav li {
+            margin: 5px 0;
+        }
+
+        .sidebar nav a {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            text-decoration: none;
+            color: #6c757d;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar nav a:hover,
+        .sidebar nav li.active a {
+            background-color: #000;
+            color: white;
+        }
+
+        .sidebar nav a i {
+            margin-right: 10px;
+            width: 16px;
+        }
+
+        /* Content Area */
+        .content-area {
+            flex: 1;
+            padding: 30px;
+            background-color: #fff;
+        }
+
+        .page-header {
+            margin-bottom: 30px;
+        }
+
+        .page-header h2 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+        .breadcrumb-nav {
+            font-size: 14px;
+            color: #6c757d;
+            margin-bottom: 8px;
+        }
+
+        .breadcrumb-nav a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .breadcrumb-nav a:hover {
+            text-decoration: underline;
+        }
+
+        /* Form Container */
+        .form-container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border: 1px solid #f0f0f0;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .form-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .form-title h3 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .form-title i {
+            font-size: 28px;
+            color: #28a745;
+        }
+
+        /* Error Messages */
+        .error-container {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f1aeb5;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 25px;
+        }
+
+        .error-container ul {
+            margin-left: 20px;
+            margin-bottom: 0;
+        }
+
+        .error-container li {
+            margin-bottom: 5px;
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .required {
+            color: #dc3545;
+            margin-left: 2px;
+        }
+
+        .form-input,
+        .form-textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .form-input:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        /* Checkbox Styling */
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .checkbox-input {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .checkbox-input:checked {
+            background-color: #667eea;
+            border-color: #667eea;
+        }
+
+        .checkbox-input:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .checkbox-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #2c3e50;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        /* Helper Text */
+        .helper-text {
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+
+        /* Form Actions */
+        .form-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 40px;
+            padding-top: 25px;
+            border-top: 1px solid #e9ecef;
+            gap: 15px;
+        }
+
+        .back-btn {
+            background: #6c757d;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: none;
+        }
+
+        .back-btn:hover {
+            background: #545b62;
+            color: white;
+            text-decoration: none;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+        }
+
+        .save-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: none;
+        }
+
+        .save-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .save-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Loading state */
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .spinner {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Success/Info Messages */
+        .info-box {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 25px;
+        }
+
+        .info-box i {
+            margin-right: 8px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                min-height: auto;
+            }
+            
+            .sidebar nav ul {
+                display: flex;
+                overflow-x: auto;
+                padding: 10px;
+            }
+            
+            .sidebar nav li {
+                margin: 0 5px;
+                white-space: nowrap;
+            }
+            
+            .content-area {
+                padding: 20px;
+            }
+            
+            .form-container {
+                padding: 20px;
+                margin: 0;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .form-actions .back-btn,
+            .form-actions .save-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        /* Custom SweetAlert2 Styling */
+        .swal2-popup {
+            border-radius: 15px !important;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+        }
+
+        .swal2-title {
+            font-size: 24px !important;
+            font-weight: 600 !important;
+        }
+
+        .swal2-content {
+            font-size: 16px !important;
+            color: #6c757d !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-main">
+                <h1 class="brand">Melodia</h1>
+                <div class="user-profile">
+                    <span class="username">ADMIN</span>
+                    <i class="fas fa-user-circle"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <nav>
+                    <ul>
+                        <li><a href="/admin/dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                        <li><a href="/admin/products"><i class="fas fa-box"></i> Products</a></li>
+                        <li><a href="/admin/orders"><i class="fas fa-list"></i> Order Lists</a></li>
+                        <li><a href="/admin/customer"><i class="fas fa-users"></i> Users</a></li>
+                        <li><a href="/admin/sales-report"><i class="fas fa-chart-bar"></i> Sales Report</a></li>
+                        <li><a href="/admin/coupons"><i class="fas fa-tags"></i> Coupons</a></li>
+                        <li class="active"><a href="/admin/category"><i class="fas fa-folder"></i> Category</a></li>
+                        <li><a href="/admin/banners"><i class="fas fa-flag"></i> Banners</a></li>
+                        <li><a href="/admin/settings"><i class="fas fa-cog"></i> Settings</a></li>
+                        <li><a href="/admin/logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                    </ul>
+                </nav>
+            </div>
+
+            <!-- Content Area -->
+            <div class="content-area">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <div class="breadcrumb-nav">
+                        <a href="/admin/category">Category Management</a> / Add Category
+                    </div>
+                    <h2>Add New Category</h2>
+                </div>
+
+                <!-- Form Container -->
+                <div class="form-container">
+                    <!-- Form Title -->
+                    <div class="form-title">
+                        <i class="fas fa-plus-circle"></i>
+                        <h3>Create New Category</h3>
+                    </div>
+
+                    <!-- Error Messages -->
+                    <% if (typeof errors !== "undefined" && errors.length > 0) { %>
+                        <div class="error-container">
+                            <strong><i class="fas fa-exclamation-triangle"></i> Please fix the following errors:</strong>
+                            <ul>
+                                <% errors.forEach(function(msg) { %>
+                                    <li><%= msg %></li>
+                                <% }) %>
+                            </ul>
+                        </div>
+                    <% } %>
+
+                    <!-- Add Category Form -->
+                    <form action="/admin/category/add" method="POST" id="categoryForm">
+                        <!-- Category Name -->
+                        <div class="form-group">
+                            <label for="name" class="form-label">
+                                Category Name <span class="required">*</span>
+                            </label>
+                            <input 
+                                type="text" 
+                                id="name" 
+                                name="name" 
+                                required
+                                value="<%= typeof old !== 'undefined' && old.name ? old.name : '' %>"
+                                class="form-input"
+                                placeholder="Enter category name (e.g., Electronics, Clothing)"
+                                maxlength="50"
+                            />
+                            <div class="helper-text">Choose a clear, descriptive name for your category</div>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="form-group">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea 
+                                id="description" 
+                                name="description"
+                                class="form-textarea"
+                                placeholder="Provide a detailed description of this category..."
+                                maxlength="500"
+                            ><%= typeof old !== 'undefined' && old.description ? old.description : '' %></textarea>
+                            <div class="helper-text">Optional: Describe what products belong in this category</div>
+                        </div>
+
+                        <!-- Offer Percentage -->
+                        <div class="form-group">
+                            <label for="offer" class="form-label">Offer Percentage (%)</label>
+                            <input 
+                                type="number" 
+                                min="0" 
+                                max="100" 
+                                step="1"
+                                id="offer" 
+                                name="offer"
+                                value="<%= typeof old !== 'undefined' && old.offer !== undefined ? old.offer : 0 %>"
+                                class="form-input"
+                                placeholder="Enter offer percentage (0-100)"
+                            />
+                            <div class="helper-text">Set a discount percentage for all products in this category (0 = no offer)</div>
+                        </div>
+
+                        <!-- Category Status -->
+                        <div class="checkbox-group">
+                            <input 
+                                type="checkbox" 
+                                id="isListed" 
+                                name="isListed"
+                                class="checkbox-input"
+                                <%= typeof old === 'undefined' || old.isListed === undefined || old.isListed === "on" ? 'checked' : '' %>
+                            />
+                            <label for="isListed" class="checkbox-label">
+                                <i class="fas fa-eye"></i> List Category (Make visible to customers)
+                            </label>
+                        </div>
+                        <div class="helper-text" style="margin-top: -15px; margin-bottom: 25px;">
+                            Uncheck to hide this category from customers while you set it up
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="form-actions">
+                            <a href="/admin/category" class="back-btn">
+                                <i class="fas fa-arrow-left"></i> Back to Categories
+                            </a>
+                            <button type="submit" class="save-btn" id="submitBtn">
+                                <i class="fas fa-save"></i> Save Category
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Enhanced JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeForm();
+        });
+
+        function initializeForm() {
+            const form = document.getElementById('categoryForm');
+            const submitBtn = document.getElementById('submitBtn');
+            const nameInput = document.getElementById('name');
+            const offerInput = document.getElementById('offer');
+            
+            // Form validation and enhancement
+            form.addEventListener('submit', function(e) {
+                // Validate category name
+                const categoryName = nameInput.value.trim();
+                if (categoryName.length < 2) {
+                    e.preventDefault();
+                    showValidationError('Category name must be at least 2 characters long.');
+                    nameInput.focus();
+                    return false;
+                }
+
+                // Validate offer percentage
+                const offerValue = parseInt(offerInput.value);
+                if (offerValue < 0 || offerValue > 100) {
+                    e.preventDefault();
+                    showValidationError('Offer percentage must be between 0 and 100.');
+                    offerInput.focus();
+                    return false;
+                }
+
+                // Show loading state
+                showLoadingState();
+                return true;
+            });
+
+            // Real-time validation feedback
+            nameInput.addEventListener('input', function() {
+                const value = this.value.trim();
+                if (value.length > 0 && value.length < 2) {
+                    this.style.borderColor = '#dc3545';
+                } else {
+                    this.style.borderColor = '#ddd';
+                }
+            });
+
+            offerInput.addEventListener('input', function() {
+                const value = parseInt(this.value);
+                if (value < 0 || value > 100) {
+                    this.style.borderColor = '#dc3545';
+                } else {
+                    this.style.borderColor = '#ddd';
+                }
+            });
+
+            // Auto-format category name (capitalize first letter)
+            nameInput.addEventListener('blur', function() {
+                const value = this.value.trim();
+                if (value) {
+                    this.value = value.charAt(0).toUpperCase() + value.slice(1);
+                }
+            });
+
+            console.log('✅ Add Category form initialized successfully');
+        }
+
+        function showValidationError(message) {
+            Swal.fire({
+                title: 'Validation Error',
+                text: message,
+                icon: 'error',
+                confirmButtonColor: '#667eea',
+                confirmButtonText: 'OK'
+            });
+        }
+
+        function showLoadingState() {
+            const submitBtn = document.getElementById('submitBtn');
+            const originalText = submitBtn.innerHTML;
+            
+            submitBtn.innerHTML = '<i class="fas fa-spinner spinner"></i> Saving Category...';
+            submitBtn.disabled = true;
+            submitBtn.classList.add('loading');
+            
+            // Re-enable after 10 seconds (failsafe)
+            setTimeout(() => {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('loading');
+            }, 10000);
+        }
+
+        // Handle form success (if redirected back with success message)
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('success') === 'true') {
+            Swal.fire({
+                title: 'Success!',
+                text: 'Category has been created successfully.',
+                icon: 'success',
+                confirmButtonColor: '#28a745',
+                timer: 3000,
+                timerProgressBar: true
+            });
+        }
+    </script>
+</body>
+</html>

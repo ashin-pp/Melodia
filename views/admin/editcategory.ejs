@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Category - Melodia Admin</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- SweetAlert2 CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.2/dist/sweetalert2.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.2/dist/sweetalert2.all.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        .admin-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header Styles - EXACT CUSTOMER PAGE DESIGN */
+        .header {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: white;
+            padding: 20px 20px;
+        }
+
+        .header-main {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand {
+            font-size: 24px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .username {
+            font-size: 14px;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .user-profile i {
+            font-size: 20px;
+        }
+
+        /* Main Content Layout */
+        .main-content {
+            display: flex;
+            flex: 1;
+        }
+
+        /* Sidebar Styles - EXACT CUSTOMER PAGE DESIGN */
+        .sidebar {
+            width: 200px;
+            background-color: #f8f9fa;
+            border-right: 1px solid #e9ecef;
+            min-height: calc(100vh - 80px);
+        }
+
+        .sidebar nav ul {
+            list-style: none;
+            padding: 20px 0;
+        }
+
+        .sidebar nav li {
+            margin: 5px 0;
+        }
+
+        .sidebar nav a {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            text-decoration: none;
+            color: #6c757d;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar nav a:hover,
+        .sidebar nav li.active a {
+            background-color: #000;
+            color: white;
+        }
+
+        .sidebar nav a i {
+            margin-right: 10px;
+            width: 16px;
+        }
+
+        /* Content Area */
+        .content-area {
+            flex: 1;
+            padding: 30px;
+            background-color: #fff;
+        }
+
+        .page-header {
+            margin-bottom: 30px;
+        }
+
+        .page-header h2 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+        .breadcrumb-nav {
+            font-size: 14px;
+            color: #6c757d;
+            margin-bottom: 8px;
+        }
+
+        .breadcrumb-nav a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .breadcrumb-nav a:hover {
+            text-decoration: underline;
+        }
+
+        /* Form Container - KEEPS YOUR EXISTING FORM DESIGN */
+        .form-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            padding: 32px;
+        }
+
+        .form-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .form-title i {
+            color: #eab308;
+        }
+
+        /* Error Messages */
+        .error-container {
+            background-color: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #b91c1c;
+            padding: 16px;
+            border-radius: 6px;
+            margin-bottom: 16px;
+        }
+
+        .error-container ul {
+            list-style-type: disc;
+            margin-left: 20px;
+        }
+
+        /* Form Elements - MATCHES YOUR ORIGINAL DESIGN */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            color: #4b5563;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .required {
+            color: #ef4444;
+        }
+
+        .form-input,
+        .form-textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .form-textarea {
+            resize: vertical;
+        }
+
+        /* Checkbox Styling - MATCHES YOUR ORIGINAL */
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .checkbox-input {
+            margin-right: 8px;
+            height: 20px;
+            width: 20px;
+            color: #2563eb;
+            border-color: #d1d5db;
+            border-radius: 4px;
+        }
+
+        .checkbox-label {
+            color: #374151;
+        }
+
+        /* Form Actions - MATCHES YOUR ORIGINAL */
+        .form-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 32px;
+        }
+
+        .back-btn {
+            padding: 8px 20px;
+            background-color: #d1d5db;
+            color: #374151;
+            border-radius: 6px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background-color: #9ca3af;
+            color: #374151;
+            text-decoration: none;
+        }
+
+        .save-btn {
+            padding: 8px 20px;
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .save-btn:hover {
+            background-color: #1d4ed8;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                min-height: auto;
+            }
+            
+            .sidebar nav ul {
+                display: flex;
+                overflow-x: auto;
+                padding: 10px;
+            }
+            
+            .sidebar nav li {
+                margin: 0 5px;
+                white-space: nowrap;
+            }
+            
+            .content-area {
+                padding: 20px;
+            }
+            
+            .form-container {
+                padding: 20px;
+                margin: 0;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .form-actions .back-btn,
+            .form-actions .save-btn {
+                width: 100%;
+                text-align: center;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Header - EXACT CUSTOMER PAGE DESIGN -->
+        <div class="header">
+            <div class="header-main">
+                <h1 class="brand">Melodia</h1>
+                <div class="user-profile">
+                    <span class="username">ADMIN</span>
+                    <i class="fas fa-user-circle"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <!-- Sidebar - EXACT CUSTOMER PAGE DESIGN -->
+            <div class="sidebar">
+                <nav>
+                    <ul>
+                        <li><a href="/admin/dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                        <li><a href="/admin/products"><i class="fas fa-box"></i> Products</a></li>
+                        <li><a href="/admin/orders"><i class="fas fa-list"></i> Order Lists</a></li>
+                        <li><a href="/admin/customer"><i class="fas fa-users"></i> Users</a></li>
+                        <li><a href="/admin/sales-report"><i class="fas fa-chart-bar"></i> Sales Report</a></li>
+                        <li><a href="/admin/coupons"><i class="fas fa-tags"></i> Coupons</a></li>
+                        <li class="active"><a href="/admin/category"><i class="fas fa-folder"></i> Category</a></li>
+                        <li><a href="/admin/banners"><i class="fas fa-flag"></i> Banners</a></li>
+                        <li><a href="/admin/settings"><i class="fas fa-cog"></i> Settings</a></li>
+                        <li><a href="/admin/logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                    </ul>
+                </nav>
+            </div>
+
+            <!-- Content Area -->
+            <div class="content-area">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <div class="breadcrumb-nav">
+                        <a href="/admin/category">Category Management</a> / Edit Category
+                    </div>
+                    <h2>Edit Category</h2>
+                </div>
+
+                <!-- Form Container - KEEPS YOUR EXACT FORM CONTENT -->
+                <div class="form-container">
+                    <h2 class="form-title">
+                        <i class="fas fa-edit"></i> Edit Category
+                    </h2>
+
+                    <!-- Error Messages - KEEPS YOUR EXACT ERROR HANDLING -->
+                    <% if (typeof errors !== "undefined" && errors.length > 0) { %>
+                        <div class="error-container">
+                            <ul>
+                                <% errors.forEach(function(msg) { %>
+                                    <li><%= msg %></li>
+                                <% }) %>
+                            </ul>
+                        </div>
+                    <% } %>
+
+                    <!-- Form - KEEPS YOUR EXACT FORM CONTENT -->
+                    <form action="/admin/category/<%= category._id %>/edit" method="POST" class="space-y-5">
+                        <!-- Category Name -->
+                        <div class="form-group">
+                            <label for="name" class="form-label">
+                                Category Name <span class="required">*</span>
+                            </label>
+                            <input
+                                type="text"
+                                id="name"
+                                name="name"
+                                required
+                                value="<%= typeof old !== 'undefined' && old.name !== undefined ? old.name : category.name %>"
+                                class="form-input"
+                            />
+                        </div>
+
+                        <!-- Description -->
+                        <div class="form-group">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea
+                                id="description"
+                                name="description"
+                                class="form-textarea"
+                                rows="3"
+                            ><%= typeof old !== 'undefined' && old.description !== undefined ? old.description : category.description %></textarea>
+                        </div>
+
+                        <!-- Offer -->
+                        <div class="form-group">
+                            <label for="offer" class="form-label">Offer (%)</label>
+                            <input
+                                type="number"
+                                min="0"
+                                max="100"
+                                id="offer"
+                                name="offer"
+                                value="<%= typeof old !== 'undefined' && old.offer !== undefined ? old.offer : (category.offer || 0) %>"
+                                class="form-input"
+                            />
+                        </div>
+
+                        <!-- Checkbox - KEEPS YOUR EXACT CHECKBOX LOGIC -->
+                        <div class="checkbox-container">
+                            <input
+                                type="checkbox"
+                                id="isListed"
+                                name="isListed"
+                                class="checkbox-input"
+                                <%= (typeof old !== 'undefined'
+                                      ? old.isListed === "on"
+                                      : category.isListed) ? 'checked' : '' %>
+                            />
+                            <label for="isListed" class="checkbox-label">Listed (Show Category to Users)</label>
+                        </div>
+
+                        <!-- Form Actions - KEEPS YOUR EXACT BUTTONS -->
+                        <div class="form-actions">
+                            <a href="/admin/category" class="back-btn">Back</a>
+                            <button type="submit" class="save-btn">
+                                <i class="fas fa-save"></i>Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Enhanced JavaScript for Better UX -->
+    <script>
+        // Form submission enhancement
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const saveBtn = document.querySelector('.save-btn');
+            const originalContent = saveBtn.innerHTML;
+            
+            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            saveBtn.disabled = true;
+            
+            // Re-enable after 5 seconds as failsafe
+            setTimeout(() => {
+                saveBtn.innerHTML = originalContent;
+                saveBtn.disabled = false;
+            }, 5000);
+        });
+
+        // Success message handling
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('updated') === 'true') {
+            Swal.fire({
+                title: 'Success!',
+                text: 'Category has been updated successfully.',
+                icon: 'success',
+                confirmButtonColor: '#2563eb',
+                timer: 3000,
+                timerProgressBar: true
+            });
+        }
+
+        // Real-time validation
+        document.getElementById('name').addEventListener('input', function() {
+            if (this.value.trim().length < 2 && this.value.length > 0) {
+                this.style.borderColor = '#ef4444';
+            } else {
+                this.style.borderColor = '#d1d5db';
+            }
+        });
+
+        document.getElementById('offer').addEventListener('input', function() {
+            const value = parseInt(this.value);
+            if ((value < 0 || value > 100) && this.value !== '') {
+                this.style.borderColor = '#ef4444';
+            } else {
+                this.style.borderColor = '#d1d5db';
+            }
+        });
+    </script>
+</body>
+</html>

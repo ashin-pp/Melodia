@@ -430,6 +430,7 @@ exports.verifyOtp = async (req, res) => {
       name: savedUser.name,
       role: savedUser.role,
       email: savedUser.email,
+     
     };
     
     req.session.justRegistered = true;
@@ -932,7 +933,3 @@ exports.postResetPassword = async (req, res) => {
     });
   }
 };
-
-
-
-

@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Users - Melodia Admin</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- SweetAlert2 CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.2/dist/sweetalert2.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.2/dist/sweetalert2.all.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        .admin-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header Styles */
+        .header {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: white;
+            padding: 20px 20px;
+        }
+
+        .breadcrumb {
+            font-size: 12px;
+            opacity: 0.7;
+            margin-bottom: 8px;
+        }
+
+        .header-main {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand {
+            font-size: 24px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .username {
+            font-size: 14px;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .user-profile i {
+            font-size: 20px;
+        }
+
+        /* Main Content Layout */
+        .main-content {
+            display: flex;
+            flex: 1;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 200px;
+            background-color: #f8f9fa;
+            border-right: 1px solid #e9ecef;
+            min-height: calc(100vh - 80px);
+        }
+
+        .sidebar nav ul {
+            list-style: none;
+            padding: 20px 0;
+        }
+
+        .sidebar nav li {
+            margin: 5px 0;
+        }
+
+        .sidebar nav a {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            text-decoration: none;
+            color: #6c757d;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar nav a:hover,
+        .sidebar nav li.active a {
+            background-color: #000;
+            color: white;
+        }
+
+        .sidebar nav a i {
+            margin-right: 10px;
+            width: 16px;
+        }
+
+        /* Users Content */
+        .users-content {
+            flex: 1;
+            padding: 30px;
+            background-color: #fff;
+        }
+
+        .page-header {
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .page-header h2 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+        .users-count {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* Filters Section */
+        .filters-section {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border: 1px solid #f0f0f0;
+        }
+
+        .filters-form {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .filter-group i {
+            color: #6c757d;
+            font-size: 14px;
+        }
+
+        .filter-select {
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            color: #333;
+            transition: all 0.3s ease;
+            min-width: 140px;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+        }
+
+        /* Search Input with Clear Button - ONLY SHOWS WHEN CONTENT EXISTS */
+        .search-container {
+            position: relative;
+            flex: 1;
+            max-width: 350px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px 40px 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+        }
+
+        /* Clear button - HIDDEN by default, ONLY shows when input has content */
+        .clear-btn {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: transparent;
+            border: none;
+            color: #999;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            /* HIDDEN BY DEFAULT */
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        /* SHOW clear button only when input has content */
+        .clear-btn.show {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+        }
+
+        .clear-btn:hover {
+            color: #666;
+            background-color: #f5f5f5;
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .clear-btn:active {
+            transform: translateY(-50%) scale(0.95);
+        }
+
+        .filter-btn {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .filter-btn:hover {
+            background: #0056b3;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2);
+        }
+
+        /* Clear All Button */
+        .clear-all-btn {
+            padding: 10px 18px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .clear-all-btn:hover {
+            background: #545b62;
+            color: white;
+            text-decoration: none;
+            transform: translateY(-1px);
+        }
+
+        /* Table Section */
+        .table-section {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border: 1px solid #f0f0f0;
+        }
+
+        .users-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .users-table th {
+            background-color: #f8f9fa;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+            color: #2c3e50;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .users-table td {
+            padding: 15px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
+        }
+
+        .users-table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .status-btn {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .status-block {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-block:hover {
+            background-color: #f5c6cb;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(114, 28, 36, 0.2);
+        }
+
+        .status-unblock {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status-unblock:hover {
+            background-color: #c3e6cb;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(21, 87, 36, 0.2);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-state div {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .empty-state .suggestion {
+            font-size: 14px;
+            color: #999;
+        }
+
+        /* Enhanced Pagination */
+        .pagination-section {
+            background-color: #f8f9fa;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid #e9ecef;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .pagination-info {
+            font-size: 14px;
+            color: #6c757d;
+        }
+
+        .pagination-info .font-medium {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .pagination-controls {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .page-btn {
+            padding: 8px 12px;
+            text-decoration: none;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #6c757d;
+            background: white;
+            transition: all 0.3s ease;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .page-btn:hover {
+            background-color: #f8f9fa;
+            border-color: #999;
+            text-decoration: none;
+            transform: translateY(-1px);
+        }
+
+        .page-btn.active {
+            background-color: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+
+        .page-btn.active:hover {
+            background-color: #0056b3;
+        }
+
+        .page-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Jump to page input */
+        .page-jump {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: 15px;
+            font-size: 14px;
+            color: #6c757d;
+        }
+
+        .page-jump input {
+            width: 60px;
+            padding: 6px 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .page-jump button {
+            padding: 6px 12px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        /* Loading states */
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .spinner {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Custom SweetAlert2 Styling */
+        .swal2-popup {
+            border-radius: 15px !important;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+        }
+
+        .swal2-title {
+            font-size: 24px !important;
+            font-weight: 600 !important;
+        }
+
+        .swal2-content {
+            font-size: 16px !important;
+            color: #6c757d !important;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                min-height: auto;
+            }
+            
+            .sidebar nav ul {
+                display: flex;
+                overflow-x: auto;
+                padding: 10px;
+            }
+            
+            .sidebar nav li {
+                margin: 0 5px;
+                white-space: nowrap;
+            }
+            
+            .filters-form {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .search-container {
+                max-width: none;
+            }
+            
+            .users-table {
+                font-size: 12px;
+            }
+            
+            .users-table th,
+            .users-table td {
+                padding: 10px 8px;
+            }
+            
+            .pagination-section {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .pagination-controls {
+                justify-content: center;
+            }
+
+            .page-jump {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-main">
+                <h1 class="brand">Melodia</h1>
+                <div class="user-profile">
+                    <span class="username">ADMIN</span>
+                    <i class="fas fa-user-circle"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <nav>
+                    <ul>
+                        <li><a href="/admin/dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                        <li><a href="/admin/products"><i class="fas fa-box"></i> Products</a></li>
+                        <li><a href="/admin/orders"><i class="fas fa-list"></i> Order Lists</a></li>
+                        <li class="active"><a href="/admin/customer"><i class="fas fa-users"></i> Users</a></li>
+                        <li><a href="/admin/sales-report"><i class="fas fa-chart-bar"></i> Sales Report</a></li>
+                        <li><a href="/admin/coupons"><i class="fas fa-tags"></i> Coupons</a></li>
+                        <li><a href="/admin/category"><i class="fas fa-folder"></i> Category</a></li>
+                        <li><a href="/admin/banners"><i class="fas fa-flag"></i> Banners</a></li>
+                        <li><a href="/admin/settings"><i class="fas fa-cog"></i> Settings</a></li>
+                        <li><a href="/admin/logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                    </ul>
+                </nav>
+            </div>
+
+            <!-- Users Content -->
+            <div class="users-content">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <h2>Users Management</h2>
+                    <% if (typeof totalUsers !== 'undefined' && totalUsers > 0) { %>
+                        <div class="users-count">
+                            <i class="fas fa-users"></i> <%= totalUsers %> Total Users
+                        </div>
+                    <% } %>
+                </div>
+                
+                <!-- Filters and Search -->
+                <div class="filters-section">
+                    <form method="GET" class="filters-form" id="searchForm">
+                        <!-- Filter Dropdown -->
+                        <div class="filter-group">
+                            <i class="fas fa-filter"></i>
+                            <select name="status" class="filter-select" id="statusFilter">
+                                <option value="all" <%= typeof status !== 'undefined' && status === 'all' ? 'selected' : '' %>>All Users</option>
+                                <option value="unblock" <%= typeof status !== 'undefined' && status === 'unblock' ? 'selected' : '' %>>Active Users</option>
+                                <option value="blocked" <%= typeof status !== 'undefined' && status === 'blocked' ? 'selected' : '' %>>Blocked Users</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Search Input with Clear Button - ONLY shows when content exists -->
+                        <div class="search-container">
+                            <input 
+                                type="text" 
+                                name="search" 
+                                value="<%= typeof search !== 'undefined' ? search : '' %>" 
+                                placeholder="Search users by name,or email..."
+                                class="search-input"
+                                id="searchInput"
+                                autocomplete="off"
+                            >
+                            <!-- Clear button - ONLY visible when input has content -->
+                            <button type="button" class="clear-btn" id="clearSearchBtn" title="Clear search">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        
+                        <button type="submit" class="filter-btn" id="filterBtn">
+                            <i class="fas fa-search"></i>
+                            Search
+                        </button>
+
+                        <!-- Clear All Filters Button -->
+                        <% if ((typeof search !== 'undefined' && search) || (typeof status !== 'undefined' && status !== 'all')) { %>
+                            <a href="/admin/customer" class="clear-all-btn">
+                                <i class="fas fa-undo"></i>
+                                Clear All
+                            </a>
+                        <% } %>
+                    </form>
+                </div>
+                
+                <!-- Users Table -->
+                <div class="table-section">
+                    <table class="users-table">
+                        <thead>
+                            <tr>
+                                <th>S.No</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Mobile</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody">
+                            <% if (typeof users !== 'undefined' && users.length > 0) { %>
+                                <% users.forEach((user, index) => { %>
+                                    <tr data-user-id="<%= user._id %>">
+                                        <td><%= ((typeof currentPage !== 'undefined' ? currentPage : 1) - 1) * 10 + index + 1 %></td>
+                                        <td style="font-weight: 500;"><%= user.name %></td>
+                                        <td style="color: #6c757d;"><%= user.email %></td>
+                                        <td style="color: #6c757d;"><%= user.phone || 'N/A' %></td>
+                                        <td>
+                                            <button 
+                                                onclick="confirmToggleUserStatus('<%= user._id %>', '<%= user.name %>', <%= user.isBlocked %>, this)"
+                                                class="status-btn <%= user.isBlocked ? 'status-block' : 'status-unblock' %>"
+                                                data-user-id="<%= user._id %>"
+                                            >
+                                                <%= user.isBlocked ? 'Block' : 'Unblock' %>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                <% }) %>
+                            <% } else { %>
+                                <tr>
+                                    <td colspan="5" class="empty-state">
+                                        <i class="fas fa-users"></i>
+                                        <div>No users found</div>
+                                        <% if (typeof search !== 'undefined' && search) { %>
+                                            <div class="suggestion">Try adjusting your search terms or <a href="/admin/customer">view all users</a></div>
+                                        <% } else { %>
+                                            <div class="suggestion">No users are registered yet</div>
+                                        <% } %>
+                                    </td>
+                                </tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                    
+                    <!-- Enhanced Pagination -->
+                    <% if (typeof totalPages !== 'undefined' && totalPages > 1) { %>
+                        <div class="pagination-section">
+                            <div class="pagination-info">
+                                Showing 
+                                <span class="font-medium"><%= typeof startRecord !== 'undefined' ? startRecord : 1 %></span>
+                                to 
+                                <span class="font-medium"><%= typeof endRecord !== 'undefined' ? endRecord : (typeof users !== 'undefined' ? users.length : 0) %></span>
+                                of 
+                                <span class="font-medium"><%= typeof totalUsers !== 'undefined' ? totalUsers : 0 %></span> 
+                                results
+                            </div>
+                             
+                            <div class="pagination-controls">
+                                <!-- First Page -->
+                                <% if (typeof currentPage !== 'undefined' && currentPage > 2) { %>
+                                    <a href="?page=1<%= typeof search !== 'undefined' && search ? '&search=' + encodeURIComponent(search) : '' %><%= typeof status !== 'undefined' && status !== 'all' ? '&status=' + status : '' %>" 
+                                       class="page-btn" title="First page">
+                                        <i class="fas fa-angle-double-left"></i>
+                                    </a>
+                                <% } %>
+                                
+                                <!-- Previous Page -->
+                                <% if (typeof hasPrevPage !== 'undefined' && hasPrevPage) { %>
+                                    <a href="?page=<%= (typeof currentPage !== 'undefined' ? currentPage : 1) - 1 %><%= typeof search !== 'undefined' && search ? '&search=' + encodeURIComponent(search) : '' %><%= typeof status !== 'undefined' && status !== 'all' ? '&status=' + status : '' %>" 
+                                       class="page-btn" title="Previous page">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </a>
+                                <% } %>
+                                
+                                <!-- Page Numbers -->
+                                <% if (typeof pageNumbers !== 'undefined') { %>
+                                    <% pageNumbers.forEach(pageNum => { %>
+                                        <a href="?page=<%= pageNum %><%= typeof search !== 'undefined' && search ? '&search=' + encodeURIComponent(search) : '' %><%= typeof status !== 'undefined' && status !== 'all' ? '&status=' + status : '' %>" 
+                                           class="page-btn <%= (typeof currentPage !== 'undefined' ? currentPage : 1) === pageNum ? 'active' : '' %>">
+                                            <%= pageNum %>
+                                        </a>
+                                    <% }) %>
+                                <% } %>
+                                
+                                <!-- Next Page -->
+                                <% if (typeof hasNextPage !== 'undefined' && hasNextPage) { %>
+                                    <a href="?page=<%= (typeof currentPage !== 'undefined' ? currentPage : 1) + 1 %><%= typeof search !== 'undefined' && search ? '&search=' + encodeURIComponent(search) : '' %><%= typeof status !== 'undefined' && status !== 'all' ? '&status=' + status : '' %>" 
+                                       class="page-btn" title="Next page">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                <% } %>
+                                
+                                <!-- Last Page -->
+                                <% if (typeof currentPage !== 'undefined' && typeof totalPages !== 'undefined' && currentPage < totalPages - 1) { %>
+                                    <a href="?page=<%= totalPages %><%= typeof search !== 'undefined' && search ? '&search=' + encodeURIComponent(search) : '' %><%= typeof status !== 'undefined' && status !== 'all' ? '&status=' + status : '' %>" 
+                                       class="page-btn" title="Last page">
+                                        <i class="fas fa-angle-double-right"></i>
+                                    </a>
+                                <% } %>
+
+                                <!-- Jump to Page -->
+                                <% if (typeof totalPages !== 'undefined' && totalPages > 5) { %>
+                                    <div class="page-jump">
+                                        <span>Go to:</span>
+                                        <input type="number" id="jumpToPage" min="1" max="<%= totalPages %>" placeholder="<%= typeof currentPage !== 'undefined' ? currentPage : 1 %>">
+                                        <button type="button" onclick="jumpToPage()">Go</button>
+                                    </div>
+                                <% } %>
+                            </div>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    
+    <!-- Enhanced JavaScript with SweetAlert2 and Smart Clear Button -->
+    <script>
+        // Search functionality - Clear button only shows when there's content
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('searchInput');
+            const clearBtn = document.getElementById('clearSearchBtn');
+            const statusFilter = document.getElementById('statusFilter');
+            
+            // Show/hide clear button based on input content
+            function toggleClearButton() {
+                if (searchInput.value.trim()) {
+                    clearBtn.classList.add('show');
+                } else {
+                    clearBtn.classList.remove('show');
+                }
+            }
+            
+            // Initial check
+            toggleClearButton();
+            
+            // Monitor input changes
+            searchInput.addEventListener('input', toggleClearButton);
+            searchInput.addEventListener('keyup', toggleClearButton);
+            
+            // Clear search input
+            clearBtn.addEventListener('click', function() {
+                searchInput.value = '';
+                searchInput.focus();
+                toggleClearButton();
+            });
+            
+            // Auto-submit on Enter key
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    document.getElementById('searchForm').submit();
+                }
+            });
+            
+            // Auto-submit when status filter changes
+            statusFilter.addEventListener('change', function() {
+                document.getElementById('searchForm').submit();
+            });
+        });
+
+        // SweetAlert2 Confirmation for Block/Unblock with beautiful design
+        async function confirmToggleUserStatus(userId, userName, isBlocked, button) {
+            // Derive current status from button class to avoid stale values from initial render
+            isBlocked = button.classList.contains('status-block');
+            const action = isBlocked ? 'unblock' : 'block';
+            const actionText = isBlocked ? 'Unblock' : 'Block';
+            const actionPastTense = isBlocked ? 'unblocked' : 'blocked';
+            
+            // SweetAlert2 Confirmation Dialog
+            const result = await Swal.fire({
+                title: `${actionText} User?`,
+                html: `Are you sure you want to <strong>${action}</strong> user <br><strong>"${userName}"</strong>?`,
+                icon: isBlocked ? 'question' : 'warning',
+                showCancelButton: true,
+                confirmButtonColor: isBlocked ? '#28a745' : '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: `Yes, ${actionText}!`,
+                cancelButtonText: 'Cancel',
+                reverseButtons: true,
+                focusCancel: !isBlocked, // Focus cancel for blocking, confirm for unblocking
+                customClass: {
+                    popup: 'animated fadeInDown',
+                    confirmButton: 'btn-confirm',
+                    cancelButton: 'btn-cancel'
+                },
+                buttonsStyling: true,
+                allowOutsideClick: false,
+                allowEscapeKey: true
+            });
+
+            if (result.isConfirmed) {
+                // User confirmed, proceed with the action
+                await toggleUserStatus(userId, button, actionPastTense, userName);
+            }
+        }
+
+        // Toggle user status with SweetAlert2 success/error messages
+        async function toggleUserStatus(userId, button, actionPastTense, userName) {
+            const originalContent = button.innerHTML;
+            
+            try {
+                // Show loading state
+                button.innerHTML = '<i class="fas fa-spinner spinner"></i> Processing...';
+                button.disabled = true;
+                
+                const response = await fetch(`/admin/customer/${userId}/toggle`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'same-origin'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Update button appearance based on server-provided label
+                    if (data.newStatus === 'Block') {
+                        button.className = 'status-btn status-block';
+                    } else {
+                        button.className = 'status-btn status-unblock';
+                    }
+                    button.textContent = data.newStatus;
+                    
+                    // Show SweetAlert2 success message
+                    Swal.fire({
+                        title: 'Success!',
+                        html: `User <strong>"${userName}"</strong> has been ${actionPastTense} successfully.`,
+                        icon: 'success',
+                        confirmButtonColor: '#28a745',
+                        confirmButtonText: 'OK',
+                        timer: 3000,
+                        timerProgressBar: true,
+                        customClass: {
+                            popup: 'animated fadeInUp'
+                        }
+                    });
+                } else {
+                    // Restore original state on error
+                    button.innerHTML = originalContent;
+                    
+                    // Show SweetAlert2 error message
+                    Swal.fire({
+                        title: 'Error!',
+                        text: data.message || 'Failed to update user status',
+                        icon: 'error',
+                        confirmButtonColor: '#dc3545',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                button.innerHTML = originalContent;
+                
+                // Show SweetAlert2 error message for network issues
+                Swal.fire({
+                    title: 'Network Error!',
+                    text: 'An error occurred while updating user status. Please check your connection and try again.',
+                    icon: 'error',
+                    confirmButtonColor: '#dc3545',
+                    confirmButtonText: 'OK'
+                });
+            } finally {
+                button.disabled = false;
+            }
+        }
+
+        // Jump to page functionality with SweetAlert2 validation
+        function jumpToPage() {
+            const pageInput = document.getElementById('jumpToPage');
+            const pageNumber = parseInt(pageInput.value);
+            const maxPages = parseInt(pageInput.max);
+            
+            if (pageNumber && pageNumber >= 1 && pageNumber <= maxPages) {
+                const currentUrl = new URL(window.location);
+                currentUrl.searchParams.set('page', pageNumber);
+                window.location.href = currentUrl.toString();
+            } else {
+                Swal.fire({
+                    title: 'Invalid Page Number!',
+                    text: `Please enter a valid page number between 1 and ${maxPages}`,
+                    icon: 'warning',
+                    confirmButtonColor: '#ffc107',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    pageInput.focus();
+                    pageInput.select();
+                });
+            }
+        }
+
+        // Enhanced form loading states
+        document.getElementById('searchForm').addEventListener('submit', function(e) {
+            const submitBtn = document.getElementById('filterBtn');
+            submitBtn.innerHTML = '<i class="fas fa-spinner spinner"></i> Searching...';
+            submitBtn.disabled = true;
+        });
+
+        // Prevent multiple form submissions
+        let formSubmitting = false;
+        document.getElementById('searchForm').addEventListener('submit', function(e) {
+            if (formSubmitting) {
+                e.preventDefault();
+                return false;
+            }
+            formSubmitting = true;
+        });
+
+        // Enhanced browser navigation handling
+        (function() {
+            const isUsersPage = window.location.pathname.includes('/customer') || window.location.pathname.includes('/users');
+            
+            if (isUsersPage) {
+                history.pushState(null, null, location.href);
+                
+                window.addEventListener('popstate', function(event) {
+                    history.pushState(null, null, location.href);
+                });
+                
+                document.addEventListener('visibilitychange', function() {
+                    if (document.visibilityState === 'visible') {
+                        fetch('/admin/customer', {
+                            method: 'GET',
+                            credentials: 'same-origin',
+                            cache: 'no-cache'
+                        }).then(response => {
+                            if (response.redirected || response.status === 401) {
+                                window.location.href = '/admin/login';
+                            }
+                        }).catch(error => {
+                            console.error('Session check failed:', error);
+                        });
+                    }
+                });
+            }
+            
+            window.addEventListener('pageshow', function(event) {
+                if (event.persisted) {
+                    window.location.reload();
+                }
+            });
+            
+            function handleLogout() {
+                Swal.fire({
+                    title: 'Logging out...',
+                    text: 'Please wait while we log you out securely.',
+                    icon: 'info',
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    showConfirmButton: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                        localStorage.clear();
+                        sessionStorage.clear();
+                        history.replaceState(null, null, '/admin/login');
+                        setTimeout(() => {
+                            window.location.href = '/admin/logout';
+                        }, 1000);
+                    }
+                });
+                return false;
+            }
+            
+            window.handleLogout = handleLogout;
+            
+            document.addEventListener('DOMContentLoaded', function() {
+                const logoutLinks = document.querySelectorAll('a[href*="logout"]');
+                logoutLinks.forEach(link => {
+                    link.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        handleLogout();
+                    });
+                });
+            });
+
+            console.log('Enhanced user management page with SweetAlert2 loaded successfully!');
+        })();
+    </script>
+</body>
+</html>
