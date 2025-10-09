@@ -6,8 +6,9 @@ const flash = require('connect-flash');
 const mongoose = require('mongoose');
 const app = express();
 const userRoutes = require('./routes/userRoutes');
-const adminRoutes=require('./routes/adminRoutes');
-const { getImageUrl } = require('./helper/imageHandler');;
+const adminRoutes = require('./routes/adminRoutes');
+const { getImageUrl } = require('./helper/imageHandler');
+const {validateUserSection}=require('./middleware/auth')
 dotenv.config();
 
 require('./config/passport');
@@ -17,18 +18,18 @@ mongoose.connect('mongodb://localhost:27017/melodia', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
-.then(() => {
-  console.log('✅ Connected to MongoDB successfully');
-})
-.catch((error) => {
-  console.error('❌ MongoDB connection error:', error.message);
-  process.exit(1);
-  
-});
+  .then(() => {
+    console.log('Connected to MongoDB successfully');
+  })
+  .catch((error) => {
+    console.error(' MongoDB connection error:', error.message);
+    process.exit(1);
+
+  });
 
 // Express middleware setup
 app.use(express.json());
-app.use(express.urlencoded({extended: true}));
+app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 app.locals.getImageUrl = getImageUrl;
 
@@ -36,14 +37,15 @@ app.locals.getImageUrl = getImageUrl;
 app.disable('etag');
 app.set('etag', false);
 
-// Global cache-control for all routes 
+// Cache-control for dynamic pages only
 app.use((req, res, next) => {
-  res.set({
-    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
-    'Pragma': 'no-cache',
-    'Expires': '0',
-    'Surrogate-Control': 'no-store'
-  });
+  // Only apply no-cache to HTML pages, not static assets
+  if (!req.path.match(/\.(css|js|png|jpg|jpeg|gif|ico|svg)$/)) {
+    res.set({
+      'Cache-Control': 'no-cache, must-revalidate',
+      'Pragma': 'no-cache'
+    });
+  }
   next();
 });
 
@@ -52,11 +54,11 @@ app.use(session({
   secret: 'your-secret-key-here',
   resave: false,
   saveUninitialized: false,
-  cookie: { 
+  cookie: {
     secure: false,
     maxAge: 24 * 60 * 60 * 1000,  // 1 day
     httpOnly: true,
-  } 
+  }
 }));
 
 app.use(passport.initialize());
@@ -67,10 +69,10 @@ app.use(flash());
 
 
 // Logging middleware AFTER session
-app.use((req,res,next)=>{
-  console.log(req.url,"url<<<")
-  console.log(req.method,"<method<<");
-  console.log(req.body,"body<<<<");
+app.use((req, res, next) => {
+  console.log(req.url, "url<<<")
+  console.log(req.method, "<method<<");
+  console.log(req.body, "body<<<<");
   next()
 });
 
@@ -81,7 +83,8 @@ app.set('views', 'views');
 
 app.use((req, res, next) => {
   if (req.session && req.session.admin) {
-    if (!req.originalUrl.startsWith('/admin')) {
+    // Only redirect if trying to access user routes, not static assets or other paths
+    if (req.originalUrl.startsWith('/user') || req.originalUrl === '/') {
       return res.redirect('/admin/dashboard');
     }
   }
@@ -89,8 +92,10 @@ app.use((req, res, next) => {
 });
 
 app.use('/user', userRoutes);  // Mount with /user prefix
-app.use('/admin',adminRoutes);
+app.use('/admin', adminRoutes);
 app.use('/', userRoutes);      // Also mount at root for landing page
+
+
 
 
 

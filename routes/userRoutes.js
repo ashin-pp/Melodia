@@ -32,14 +32,18 @@ router.post('/login',isNotAuthenticated,userCtrl.postLogin);
 router.post('/verify-otp',isNotAuthenticated,userCtrl.verifyOtp);
 router.post('/resend-otp',isNotAuthenticated,userCtrl.resendOtp);
 
+
+
 // Google OAuth routes
 router.get(
-  '/auth/google',isNotAuthenticated,
-  passport.authenticate('google', { scope: ['profile', 'email'],prompt: 'select_account' })
+  '/auth/google',
+  isNotAuthenticated,
+  passport.authenticate('google', { scope: ['profile', 'email'], prompt: 'select_account' })
 );
 router.get(
-  '/auth/google/callback',isNotAuthenticated,
-  passport.authenticate('google', { failureRedirect:'/user/login'}),
+  '/auth/google/callback',
+  isNotAuthenticated,
+  passport.authenticate('google', { failureRedirect: '/user/login' }),
   userCtrl.googleCallback
 );
 
@@ -48,11 +52,15 @@ router.get('/user/home', protectUser, userCtrl.loadHomePage);
 router.get('/profile', protectUser, profileCtrl.getProfile);
 router.get('/logout', protectUser, profileCtrl.logout);
 
-//product routes
-router.get('/product/list',protectUser,productCtrl.getShop);
-router.get('/products/:id', protectUser, productCtrl.getProductDetails);
-router.get('/products/variants/:variantId',protectUser, productCtrl.getVariantDetails);
+//product routes (public access for testing)
+router.get('/product/list', productCtrl.getShop);
+router.get('/products/:id', productCtrl.getProductDetails);
 
+//product routes (protected)
+router.get('/user/product/list',protectUser,productCtrl.getShop);
+router.get('/user/products/:id', protectUser, productCtrl.getProductDetails);
+router.get('/user/products/variants/:variantId',protectUser, productCtrl.getVariantDetails);
+  
 //category
 router.get('/categories/:id',protectUser,categoryCtrl.getCategoryPage);
 router.get('/categories',protectUser,categoryCtrl.getCategoriesPage)

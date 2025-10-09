@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Melodia - Premium Headphones</title>
+     <link href="https://fonts.googleapis.com/css2?family=Prata&display=swap" rel="stylesheet">
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         
@@ -49,6 +51,8 @@
             font-weight: 700;
             color: #ffffff;
             text-decoration: none;
+            font-family: 'Prata', serif;
+            letter-spacing: 1px;
         }
 
         .logo img {
@@ -987,7 +991,7 @@
                 <h3 class="product-name">Beats Solo 4</h3>
                 <p class="product-price">$199.99</p>
                 <div class="product-image-container">
-                    <img src="/image/user/home/headset1.jpg" alt="Beats Solo 4 Pink">
+                  <a href="/user/product/list"> <img src="/image/user/home/headset1.jpg" alt="Beats Solo 4 Pink"></a> 
                 </div>
                 <div class="color-options">
                     <div class="color-dot black active"></div>
@@ -999,7 +1003,7 @@
                 <h3 class="product-name">Beats Solo 4</h3>
                 <p class="product-price">$249.00</p>
                 <div class="product-image-container">
-                    <img src="/image/user/home/headset2.jpg" alt="Beats Solo 4 Black">
+                  <a href="/user/product/list"> <img src="/image/user/home/black-01-solobuds.jpg.large.2x.jpg" alt="Beats Solo 4 Black"></a> 
                 </div>
                 <div class="color-options">
                     <div class="color-dot black active"></div>
@@ -1013,7 +1017,7 @@
                 <h3 class="product-name">Beats Studio Pro</h3>
                 <p class="product-price">$349.99</p>
                 <div class="product-image-container">
-                    <img src="/image/user/home/headset3.jpg" alt="Beats Studio Pro" onerror="this.style.display='none'; this.parentNode.innerHTML='<div style=&quot;font-size:80px;color:#666;&quot;>🎧</div>';">
+                  <a href="/user/product/list">  <img src="/image/user/home/headset3.jpg" alt="Beats Studio Pro" onerror="this.style.display='none'; this.parentNode.innerHTML='<div style=&quot;font-size:80px;color:#666;&quot;>🎧</div>';"></a>
                 </div>
                 <div class="color-options">
                     <div class="color-dot dark-gray active"></div>
@@ -1032,7 +1036,7 @@
         <div class="holiday-content">
             <h2 class="holiday-title">The Beats Holiday Gift Guide</h2>
             <p class="holiday-subtitle">Perfect gifts for every music lover in your life</p>
-            <button class="shop-btn">Shop Collection</button>
+           <a href="user/product/list"> <button class="shop-btn">Shop Collection</button></a>
         </div>
     </section>
 
@@ -1204,6 +1208,29 @@
             };
             
             img.src = '/image/user/home/bottom.jpg';
+        });
+
+        // Prevent back button navigation to OAuth pages
+        window.addEventListener('load', function() {
+            // Replace the current history entry to prevent going back to OAuth
+            if (window.history.length > 1) {
+                window.history.replaceState(null, null, window.location.href);
+            }
+            
+            // Handle popstate (back button) events
+            window.addEventListener('popstate', function(event) {
+                // Prevent going back to OAuth pages
+                const currentUrl = window.location.href;
+                if (currentUrl.includes('/auth/google') || 
+                    currentUrl.includes('accounts.google.com') ||
+                    currentUrl.includes('oauth')) {
+                    // Stay on current page
+                    window.history.pushState(null, null, '/user/home');
+                }
+            });
+            
+            // Push a new state to prevent direct back navigation
+            window.history.pushState(null, null, window.location.href);
         });
     </script>
 </body>

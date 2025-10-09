@@ -3,26 +3,30 @@ const Category = require('../../model/categorySchema');
 const Review = require('../../model/reviewSchema');
 const Variant = require('../../model/variantSchema');
 const mongoose = require('mongoose');
+const productSchema = require('../../model/productSchema');
 
 
 
 exports.getShop = async (req, res) => {
   try {
+    console.log(' getShop called - User:', req.session?.user?.fullName || 'Not logged in');
     const q = req.query.q ? req.query.q.trim() : '';
     const category = req.query.category || '';
     const priceMin = req.query.priceMin !== undefined && req.query.priceMin !== '' ? Number(req.query.priceMin) : undefined;
     const priceMax = req.query.priceMax !== undefined && req.query.priceMax !== '' ? Number(req.query.priceMax) : undefined;
     const sort = req.query.sort || '';
     const page = parseInt(req.query.page) > 0 ? parseInt(req.query.page) : 1;
-    const limit = 4;
+    const limit = 6;
     const skip = (page - 1) * limit;
-    // Parse brand filters (comma-separated string -> array)
+    
     const brands = typeof req.query.brands === 'string' && req.query.brands.trim().length > 0
       ? req.query.brands.split(',').map(b => b.trim()).filter(Boolean)
       : [];
 
+    console.log('Brand filters received:', brands);
+
     // Build match stage
-    const matchStage = { isListed: true ,};
+    const matchStage = { isListed: true, };
     if (q) {
       matchStage.$or = [
         { productName: { $regex: q, $options: 'i' } },
@@ -41,7 +45,7 @@ exports.getShop = async (req, res) => {
     const pipeline = [
       { $match: matchStage },
 
-            {
+      {
         $lookup: {
           from: 'categories',
           localField: 'categoryId',
@@ -50,7 +54,7 @@ exports.getShop = async (req, res) => {
         }
       },
       { $unwind: { path: '$categoryInfo', preserveNullAndEmptyArrays: true } },
-      {$match:{'categoryInfo.isListed':true}},
+      { $match: { 'categoryInfo.isListed': true } },
       {
         $lookup: {
           from: 'variants',
@@ -113,7 +117,7 @@ exports.getShop = async (req, res) => {
       }
     });
     pipeline.push({ $unwind: { path: '$categoryInfo', preserveNullAndEmptyArrays: true } },
-      {$match:{'categoryInfo.isListed':true}}
+      { $match: { 'categoryInfo.isListed': true } }
     );
 
     // Execute query
@@ -123,16 +127,16 @@ exports.getShop = async (req, res) => {
     const countPipeline = [
       { $match: matchStage },
       {
-        $lookup:{
-          from:'categories',
-          localField:'categoryId',
-          foreignField:'_id',
-          as:'categoryInfo'
+        $lookup: {
+          from: 'categories',
+          localField: 'categoryId',
+          foreignField: '_id',
+          as: 'categoryInfo'
 
         }
       },
-      {$unwind:{path:'$categoryInfo',preserveNullAndEmptyArrays:true}},
-      {$match:{'categoryInfo.isListed':true}},
+      { $unwind: { path: '$categoryInfo', preserveNullAndEmptyArrays: true } },
+      { $match: { 'categoryInfo.isListed': true } },
       {
         $lookup: {
           from: 'variants',
@@ -161,13 +165,29 @@ exports.getShop = async (req, res) => {
     const totalProducts = countResult.length > 0 ? countResult[0].totalCount : 0;
     const totalPages = Math.ceil(totalProducts / limit);
 
-    // Get categories for filter dropdown
-    const categories = await Category.find({ isListed: true }).sort({ name: 1 });
-
+    // Get categories with product count for filter dropdown
+    const categories=await Category.aggregate([
+      {$match:{isListed:true}},
+      {
+        $lookup:{
+          from:'products',
+          localField:'_id',
+          foreignField:'categoryId',
+          as:'products'
+        }
+      },
+      {
+        $addFields:{
+          productCount:{$size:'$products'}
+        }
+      },
+      
+    ]);
+     
     // Build pagination URLs
     const baseUrl = req.originalUrl.split('?')[0];
     const currentQuery = { ...req.query };
-    
+
     function buildPageUrl(pageNum) {
       const params = new URLSearchParams(currentQuery);
       params.set('page', pageNum);
@@ -176,7 +196,7 @@ exports.getShop = async (req, res) => {
 
     const prevPageUrl = page > 1 ? buildPageUrl(page - 1) : null;
     const nextPageUrl = page < totalPages ? buildPageUrl(page + 1) : null;
-    
+
 
     // Prepare response
     const responseData = {
@@ -189,6 +209,7 @@ exports.getShop = async (req, res) => {
       sort,
       currentPage: page,
       totalPages,
+      totalProducts,
       prevPageUrl,
       nextPageUrl,
       // Echo back selected brands to the UI
@@ -198,14 +219,33 @@ exports.getShop = async (req, res) => {
     // Provide all distinct brands for filter UI (optional enhancement)
     const allBrands = await Product.distinct('brand', { isListed: true });
 
+    console.log(' Found products:', products.length);
+    console.log(' Categories:', categories.length);
+
+    // Debug: Check first product structure
+    if (products.length > 0) {
+      console.log('First product structure:', {
+        name: products[0].productName,
+        hasVariantDocs: !!products[0].variantDocs,
+        variantDocsLength: products[0].variantDocs ? products[0].variantDocs.length : 0,
+        firstVariant: products[0].variantDocs && products[0].variantDocs[0] ? {
+          color: products[0].variantDocs[0].color,
+          hasImages: !!products[0].variantDocs[0].images,
+          imagesLength: products[0].variantDocs[0].images ? products[0].variantDocs[0].images.length : 0,
+          images: products[0].variantDocs[0].images
+        } : 'No variants'
+      });
+    }
+
     // Return JSON for Axios or render EJS
     if (req.xhr || req.headers.accept?.includes('application/json')) {
       res.json({ ...responseData, allBrands });
     } else {
-      res.render('user/productlist', { 
+      res.render('user/productlist', {
         ...responseData,
         allBrands,
-        user: req.session.user || null 
+        totalProducts,
+        user: req.session.user || null
       });
     }
 
@@ -225,20 +265,21 @@ exports.getProductDetails = async (req, res) => {
     const productId = req.params.id;
 
     const product = await Product.findById(productId)
-      .populate({path:'categoryId',select:'name isListed'})
+      .populate({ path: 'categoryId', select: 'name isListed' })
       .populate('variants');
-    console.log(product)
-    if (!product || !product.categoryId||!product.isListed||!product.categoryId.isListed) {
+
+    console.log(product);
+
+    if (!product || !product.categoryId || !product.isListed || !product.categoryId.isListed) {
       return res.redirect('/user/product/list');
     }
-    
 
     // Get reviews with user info
     const reviews = await Review.find({ productId })
       .populate('user', 'fullName email')
       .sort({ createdAt: -1 });
 
-    // Get related products (same category)
+    // Get related products (same category) with their variants
     const relatedProducts = await Product.find({
       categoryId: product.categoryId?._id,
       isListed: true,
@@ -247,17 +288,29 @@ exports.getProductDetails = async (req, res) => {
       .limit(4)
       .populate('variants');
 
-   
-    
+    console.log('Related products debug:', {
+      categoryId: product.categoryId?._id,
+      totalRelated: relatedProducts.length,
+      relatedNames: relatedProducts.map(p => p.productName)
+    });
+
+    // Ensure we have variants with images
+    if (!product.variants || product.variants.length === 0) {
+      return res.redirect('/user/product/list');
+    }
+
+    // Get the first variant as default
+    const defaultVariant = product.variants[0];
+
     res.render('user/productdetail', {
       product,
-      stock:product.variants[0].stock,
+      defaultVariant,
+      stock: defaultVariant.stock,
       reviews,
       relatedProducts,
       user: req.session.user || null,
       categories: [product.categoryId],
       errorMessage: req.query.error || null,
-      
     });
 
   } catch (error) {
@@ -283,9 +336,9 @@ exports.getVariantDetails = async (req, res) => {
       .lean();
 
     if (!variant) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         success: false,
-        error: 'Variant not found' 
+        error: 'Variant not found'
       });
     }
 
@@ -294,7 +347,7 @@ exports.getVariantDetails = async (req, res) => {
     const categoryOffer = variant.productId?.categoryId?.offer || 0;
     const bestOffer = Math.max(productOffer, categoryOffer);
 
-    
+
 
     res.json({
       success: true,
@@ -309,9 +362,9 @@ exports.getVariantDetails = async (req, res) => {
 
   } catch (error) {
     console.error('Error fetching variant:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
-      error: 'Internal server error' 
+      error: 'Internal server error'
     });
   }
 };

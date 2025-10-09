@@ -2,78 +2,79 @@ const Category = require('../../model/categorySchema');
 const Product = require('../../model/productSchema');
 
 
-exports.getCategoryPage = async (req,res)=>{
-    try{
-      const {id}=req.params;
-      const page = parseInt(req.params.page)||1;
-      const limit =12;
-      const skip = (page-1)*limit;
+exports.getCategoryPage = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const page = parseInt(req.params.page) || 1;
+    const limit = 12;
+    const skip = (page - 1) * limit;
 
 
-      const {
-        q ='',
-        priceMin ='',
-        priceMax ='',
-        sort='',
-        brand='',
-      } = req.query;
+    const {
+      q = '',
+      priceMin = '',
+      priceMax = '',
+      sort = '',
+      brand = '',
+    } = req.query;
 
-      const category = await Category.findById(id).lean();
-      if(!category){
-        console.log("category not found")
-        return res.status(404).render('error/404',{
-            title:'category not found',
-            message:"the category you are looking for does not exist.",
-        }
-        );
+    const category = await Category.findById(id).lean();
+    if (!category) {
+      console.log("category not found")
+      return res.status(404).render('error/404', {
+        title: 'category not found',
+        message: "the category you are looking for does not exist.",
       }
-      if(!category.isListed){
-        console.log("category is unlisted")
-        return res.status(404).render('error/404',{
-            title :"category not available",
-            message:"the category you are looking for is unavailable"
-        })}
+      );
+    }
+    if (!category.isListed) {
+      console.log("category is unlisted")
+      return res.status(404).render('error/404', {
+        title: "category not available",
+        message: "the category you are looking for is unavailable"
+      })
+    }
 
 
 
-        const matchStage ={
-            categoryId :category._id,
-            isListed:true
-        };
+    const matchStage = {
+      categoryId: category._id,
+      isListed: true
+    };
 
-        if(q.trim()){
-            matchStage.$or=[
-                {productName :{$regex:q,$options:'i'}},
-                {brand:{$regex:q,$options:'i'}}
-            ]
+    if (q.trim()) {
+      matchStage.$or = [
+        { productName: { $regex: q, $options: 'i' } },
+        { brand: { $regex: q, $options: 'i' } }
+      ]
+    }
+
+    if (brand.trim()) {
+      matchStage.brand = { $regex: brand, $options: 'i' }
+    }
+
+
+    const pipeline = [
+      { $match: matchStage },
+      {
+        $lookup: {
+          from: 'categories',
+          localField: 'categoryId',
+          foreignField: '_id',
+          as: 'categoryInfo'
+
         }
-
-        if(brand.trim()){
-            matchStage.brand={$regex:brand,$options:'i'}
-        }
-
-
-       const pipeline = [
-        {$match:matchStage},
-        {
-            $lookup:{
-                from:'categories',
-                localField:'categoryId',
-                foreignField:'_id',
-                as:'categoryInfo'
-
-            }
-        },
-        { $unwind: { path: '$categoryInfo', preserveNullAndEmptyArrays: false } },
+      },
+      { $unwind: { path: '$categoryInfo', preserveNullAndEmptyArrays: false } },
       { $match: { 'categoryInfo.isListed': true } },
 
 
       {
-        $lookup:{
-            from:'variants',
-            localField:'variants',
-            foreignField:'_id',
-            as:'variants'
+        $lookup: {
+          from: 'variants',
+          localField: 'variants',
+          foreignField: '_id',
+          as: 'variants'
 
         }
       },
@@ -94,24 +95,24 @@ exports.getCategoryPage = async (req,res)=>{
         }
       }
 
-        ]
-    
+    ]
 
 
 
-        if(priceMin||priceMax){
-            const pricefilter = {};
-            if(priceMin) pricefilter.$gte = parseFloat(priceMin);
-            if(priceMax) pricefilter.$lte=parseFloat(priceMax);
+
+    if (priceMin || priceMax) {
+      const pricefilter = {};
+      if (priceMin) pricefilter.$gte = parseFloat(priceMin);
+      if (priceMax) pricefilter.$lte = parseFloat(priceMax);
 
 
-               pipeline.push({$match:{lowestSalePrice:pricefilter}});
+      pipeline.push({ $match: { lowestSalePrice: pricefilter } });
 
-        }
+    }
 
-     
-        let sortStage = { createdAt: -1 }; 
-      switch (sort) {
+
+    let sortStage = { createdAt: -1 };
+    switch (sort) {
       case 'priceAsc':
         sortStage = { lowestSalePrice: 1 };
         break;
@@ -127,17 +128,17 @@ exports.getCategoryPage = async (req,res)=>{
       case 'newest':
         sortStage = { createdAt: -1 };
         break;
-      }
-      pipeline.push({$sort:sortStage});
+    }
+    pipeline.push({ $sort: sortStage });
 
-      const countPipeline = [...pipeline,{$count:'total'}]
-      const countResult = await Product.aggregate(countPipeline);
-      const totalProducts = countResult[0]?.total || 0;
+    const countPipeline = [...pipeline, { $count: 'total' }]
+    const countResult = await Product.aggregate(countPipeline);
+    const totalProducts = countResult[0]?.total || 0;
 
 
-      pipeline.push({ $skip: skip }, { $limit: limit });
-     const products= await Product.aggregate(pipeline);
-const totalPages = Math.ceil(totalProducts / limit);
+    pipeline.push({ $skip: skip }, { $limit: limit });
+    const products = await Product.aggregate(pipeline);
+    const totalPages = Math.ceil(totalProducts / limit);
     const hasNextPage = page < totalPages;
     const hasPrevPage = page > 1;
 
@@ -166,8 +167,8 @@ const totalPages = Math.ceil(totalProducts / limit);
       totalProducts,
       hasNextPage,
       hasPrevPage,
-      nextPageUrl: hasNextPage ? `${req.path}?${new URLSearchParams({...req.query, page: page + 1})}` : null,
-      prevPageUrl: hasPrevPage ? `${req.path}?${new URLSearchParams({...req.query, page: page - 1})}` : null,
+      nextPageUrl: hasNextPage ? `${req.path}?${new URLSearchParams({ ...req.query, page: page + 1 })}` : null,
+      prevPageUrl: hasPrevPage ? `${req.path}?${new URLSearchParams({ ...req.query, page: page - 1 })}` : null,
       user,
       isLoggedIn,
       q,
@@ -179,9 +180,9 @@ const totalPages = Math.ceil(totalProducts / limit);
 
   } catch (error) {
     console.error('Error in getCategoryPage:', error);
-    res.status(500).render('error/500', { 
+    res.status(500).render('error/500', {
       title: 'Server Error',
-      message: 'An error occurred while loading the category page.' 
+      message: 'An error occurred while loading the category page.'
     });
   }
 };
@@ -208,38 +209,28 @@ exports.getCategoriesPage = async (req, res) => {
       ];
     }
 
-    // Get categories with product count
+    // Get categories with product count - SIMPLIFIED
     const pipeline = [
       { $match: matchStage },
       {
         $lookup: {
           from: 'products',
-          let: { categoryId: '$_id' },
-          pipeline: [
-            {
-              $match: {
-                $expr: { $eq: ['$categoryId', '$$categoryId'] },
-                isListed: true
-              }
-            },
-            { $count: 'total' }
-          ],
-          as: 'productCount'
+          localField: '_id',
+          foreignField: 'categoryId',
+          as: 'products'
         }
       },
       {
         $addFields: {
-          productCount: {
-            $ifNull: [{ $arrayElemAt: ['$productCount.total', 0] }, 0]
-          }
+          productCount: { $size: '$products' }
         }
       },
-      { $sort: { name: 1 } } // Sort alphabetically
+      { $sort: { name: 1 } }
     ];
 
     // Get total count for pagination
     const totalCategories = await Category.countDocuments(matchStage);
-    
+
     // Add pagination
     const categoriesWithCount = await Category.aggregate([
       ...pipeline,
@@ -247,30 +238,20 @@ exports.getCategoriesPage = async (req, res) => {
       { $limit: limit }
     ]);
 
-    // Get featured categories (top 4 with most products)
+    // Get featured categories (top 4 with most products) - SIMPLIFIED
     const featuredCategories = await Category.aggregate([
       { $match: { isListed: true } },
       {
         $lookup: {
           from: 'products',
-          let: { categoryId: '$_id' },
-          pipeline: [
-            {
-              $match: {
-                $expr: { $eq: ['$categoryId', '$$categoryId'] },
-                isListed: true
-              }
-            },
-            { $count: 'total' }
-          ],
-          as: 'productCount'
+          localField: '_id',
+          foreignField: 'categoryId',
+          as: 'products'
         }
       },
       {
         $addFields: {
-          productCount: {
-            $ifNull: [{ $arrayElemAt: ['$productCount.total', 0] }, 0]
-          }
+          productCount: { $size: '$products' }
         }
       },
       { $match: { productCount: { $gt: 0 } } }, // Only categories with products
@@ -309,8 +290,8 @@ exports.getCategoriesPage = async (req, res) => {
       totalCategories,
       hasNextPage,
       hasPrevPage,
-      nextPageUrl: hasNextPage ? `${req.path}?${new URLSearchParams({...req.query, page: page + 1})}` : null,
-      prevPageUrl: hasPrevPage ? `${req.path}?${new URLSearchParams({...req.query, page: page - 1})}` : null,
+      nextPageUrl: hasNextPage ? `${req.path}?${new URLSearchParams({ ...req.query, page: page + 1 })}` : null,
+      prevPageUrl: hasPrevPage ? `${req.path}?${new URLSearchParams({ ...req.query, page: page - 1 })}` : null,
       user,
       isLoggedIn,
       q // Current search query
@@ -318,10 +299,9 @@ exports.getCategoriesPage = async (req, res) => {
 
   } catch (error) {
     console.error('Error in getCategoriesPage:', error);
-    res.status(500).render('error/500', { 
+    res.status(500).render('error/500', {
       title: 'Server Error',
-      message: 'An error occurred while loading categories.' 
+      message: 'An error occurred while loading categories.'
     });
   }
 };
-

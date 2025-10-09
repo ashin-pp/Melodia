@@ -5,39 +5,43 @@ const productSchema = new mongoose.Schema({
   description: { type: String, required: true },
   categoryId: { type: mongoose.Schema.Types.ObjectId, ref: 'Category', required: true },
   brand: { type: String, required: true },
+  type: { type: String, enum: ['Wireless', 'Wired', 'Gaming'] },
+  batteryHealth: { type: Number, default: 100 },
   offer: { type: Number, default: 0, min: 0, max: 100 },
-    images: {
-    type: [mongoose.Schema.Types.Mixed], 
-    required: true
-  },
-
   isListed: { type: Boolean, default: true },
   variants: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Variant' }]
 }, { timestamps: true });
 
 
-productSchema.methods.updateVariantPrices = async function() {
+productSchema.methods.updateVariantPrices = async function () {
   const product = this.populated('categoryId') || await this.populate('categoryId');
   const Variant = mongoose.model('Variant');
-  
+
   const variants = await Variant.find({ productId: product._id });
-  
+
+  // Get the best offer (product or category)
+  const productOffer = product.offer || 0;
+  const categoryOffer = product.categoryId?.offer || 0;
+  const bestOffer = Math.max(productOffer, categoryOffer);
+
+  console.log(`Updating prices for ${variants.length} variants with ${bestOffer}% discount`);
+
   await Promise.all(
     variants.map(async variant => {
-      const effectiveDiscount = product.categoryId?.getEffectiveDiscount?.(product.offer) || product.offer;
-      const salePrice = parseFloat(
-        (variant.regularPrice * (1 - (Math.min(effectiveDiscount, 100) / 100))).toFixed(2)
-      );
-      
-      if (variant.salePrice !== salePrice) {
-        variant.salePrice = salePrice;
-        await variant.save();
+      const newSalePrice = bestOffer > 0
+        ? parseFloat((variant.regularPrice * (1 - (bestOffer / 100))).toFixed(2))
+        : variant.regularPrice;
+
+      if (variant.salePrice !== newSalePrice) {
+        variant.salePrice = newSalePrice;
+        await variant.save({ validateBeforeSave: false }); // Skip pre-save to avoid recursion
+        console.log(`Updated ${variant.color}: ₹${variant.regularPrice} → ₹${newSalePrice}`);
       }
     })
   );
 };
 
-productSchema.pre('save', async function(next) {
+productSchema.pre('save', async function (next) {
   if (this.variants?.length > 0 || this.isModified("offer")) {
     try {
       await this.updateVariantPrices();

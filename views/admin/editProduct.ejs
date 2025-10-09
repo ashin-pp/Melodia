@@ -1,517 +1,643 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Edit Product - Superkicks</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit Product - Melodia Admin</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/croppie/2.6.5/croppie.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
-    #cropper-modal {
-      transition: opacity 0.3s ease;
-    }
-    #cropper-modal.hidden {
-      opacity: 0;
-      pointer-events: none;
-    }
-    .cropper-container {
-      margin: 0 auto;
-    }
-    .animate-spin {
-      animation: spin 1s linear infinite;
-    }
-    @keyframes spin {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
-    .image-type-badge {
-      position: absolute;
-      bottom: 2px;
-      left: 2px;
-      background: rgba(0, 0, 0, 0.7);
-      color: white;
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-size: 10px;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f5f5f5; color: #333; }
+    .admin-container { min-height: 100vh; display: flex; flex-direction: column; }
+    .header { background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%); color: white; padding: 20px; }
+    .header-main { display: flex; justify-content: space-between; align-items: center; }
+    .brand { font-size: 24px; font-weight: 600; }
+    .main-content { display: flex; flex: 1; }
+    .sidebar { width: 200px; background-color: #f8f9fa; border-right: 1px solid #e9ecef; }
+    .sidebar nav ul { list-style: none; padding: 20px 0; }
+    .sidebar nav a { display: flex; align-items: center; padding: 12px 20px; text-decoration: none; color: #6c757d; }
+    .sidebar nav a:hover, .sidebar nav li.active a { background-color: #000; color: white; }
+    .products-content { flex: 1; padding: 30px; background-color: #fff; }
+    .form-container { background: white; border-radius: 12px; padding: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    .form-group { margin-bottom: 20px; }
+    .form-label { display: block; font-weight: 600; color: #2c3e50; margin-bottom: 8px; }
+    .required { color: #dc3545; }
+    .form-input, .form-select, .form-textarea { width: 100%; padding: 10px 15px; border: 1px solid #ddd; border-radius: 8px; }
+    .form-input:focus, .form-select:focus, .form-textarea:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
+    .variants-container { background: #f8f9fa; border-radius: 8px; padding: 20px; border: 1px solid #e9ecef; }
+    .variant-card { background: white; border-radius: 8px; padding: 20px; margin-bottom: 15px; border: 1px solid #ddd; }
+    .variant-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+    .variant-title { font-weight: 600; color: #2c3e50; }
+    .remove-variant-btn { background: #dc3545; color: white; border: none; border-radius: 6px; padding: 8px 12px; cursor: pointer; }
+    .variant-fields { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+    .image-upload-area { border: 2px dashed #ddd; border-radius: 8px; padding: 20px; text-align: center; margin-top: 10px; }
+    .image-previews { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; margin-top: 15px; }
+    .image-preview-item { position: relative; border-radius: 8px; overflow: hidden; border: 1px solid #e9ecef; }
+    .image-preview-item img { width: 100%; height: 100px; object-fit: cover; }
+    .remove-image-btn { position: absolute; top: 5px; right: 5px; background: #dc3545; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 12px; transition: all 0.3s ease; }
+    .remove-image-btn:hover { background: #c82333; transform: scale(1.1); }
+    .image-preview-item.deleted { opacity: 0.5; filter: grayscale(100%); }
+    .image-preview-item.deleted::after { content: 'DELETED'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(220, 53, 69, 0.9); color: white; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; }
+    .add-variant-btn { background: #667eea; color: white; padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; margin-top: 15px; }
+    .form-actions { display: flex; justify-content: space-between; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e9ecef; }
+    .back-btn { background: #6c757d; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; }
+    .save-btn { background: #667eea; color: white; padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; }
+    .error-container { background-color: #f8d7da; color: #721c24; border: 1px solid #f1aeb5; border-radius: 8px; padding: 15px; margin-bottom: 20px; }
+    .upload-btn { background: #667eea; color: white; padding: 8px 16px; border-radius: 6px; border: none; cursor: pointer; }
   </style>
 </head>
-<body class="bg-gray-100 font-sans">
-  <main class="flex-1 p-6">
-    <header class="flex justify-end mb-4">
-      <div class="flex items-center gap-2 text-gray-700">
-        <i class="fas fa-user"></i>
-        <span class="font-semibold">ADMIN</span>
+<body>
+  <div class="admin-container">
+    <div class="header">
+      <div class="header-main">
+        <h1 class="brand">Melodia</h1>
+        <div class="user-profile">
+          <span class="username">ADMIN</span>
+          <i class="fas fa-user-circle"></i>
+        </div>
       </div>
-    </header>
+    </div>
 
-    <div class="max-w-2xl mx-auto bg-white shadow-lg rounded-lg p-8">
-      <h2 class="text-2xl font-semibold text-gray-800 mb-6 flex items-center gap-3">
-        <i class="fas fa-edit text-yellow-500"></i> Edit Product
-      </h2>
-
-      <% if (typeof errors !== "undefined" && errors.length > 0) { %>
-        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded mb-4">
-          <ul class="list-disc ml-5">
-            <% errors.forEach(function(msg) { %>
-              <li><%= msg %></li>
-            <% }) %>
+    <div class="main-content">
+      <div class="sidebar">
+        <nav>
+          <ul>
+             <li><a href="/admin/dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+            <li class="active"><a href="/admin/products"><i class="fas fa-box"></i> Products</a></li>
+            <li><a href="/admin/orders"><i class="fas fa-list"></i> Order Lists</a></li>
+            <li><a href="/admin/customer"><i class="fas fa-users"></i>Users</a></li>
+             <li><a href="/admin/sales-report"><i class="fas fa-chart-bar"></i> Sales Report</a></li>
+            <li><a href="/admin/coupons"><i class="fas fa-tags"></i> Coupons</a></li>
+            <li><a href="/admin/category"><i class="fas fa-folder"></i> Category</a></li>
+            <li><a href="/admin/banners"><i class="fas fa-flag"></i> Banners</a></li>
+            <li><a href="/admin/settings"><i class="fas fa-cog"></i> Settings</a></li>
+            <li><a href="/admin/logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
           </ul>
-        </div>
-      <% } %>
+        </nav>
+      </div>
 
-      <form id="edit-product-form" action="/admin/products/<%= product._id %>/edit" method="POST" enctype="multipart/form-data" class="space-y-5">
-        <!-- Product Details -->
-        <input type="hidden" name="_id" value="<%= product._id %>">
-        
-        <div>
-          <label class="block text-gray-600 font-medium mb-1">Product Name <span class="text-red-500">*</span></label>
-          <input type="text" name="productName" required
-            value="<%= old && old.productName ? old.productName : product.productName %>"
-            class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+      <div class="products-content">
+        <div class="page-header">
+          <h2>Edit Product</h2>
         </div>
 
-        <div>
-          <label class="block text-gray-600 font-medium mb-1">Brand <span class="text-red-500">*</span></label>
-          <input type="text" name="brand" required
-            value="<%= old && old.brand ? old.brand : product.brand %>"
-            class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
-        </div>
+        <div class="form-container">
+          <form id="editProductForm" action="/admin/products/<%= product._id %>/edit" method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+              <label class="form-label">Product Name <span class="required">*</span></label>
+              <input type="text" name="productName" required value="<%= product.productName %>" class="form-input"/>
+            </div>
 
-        <div>
-          <label class="block text-gray-600 font-medium mb-1">Category <span class="text-red-500">*</span></label>
-          <select name="categoryId" required class="w-full px-3 py-2 border rounded">
-            <% categories.forEach(cat => { %>
-              <option value="<%= cat._id %>"
-                <%= 
-                  (old && old.categoryId == cat._id.toString()) ||
-                  (!old && product.categoryId && product.categoryId._id && product.categoryId._id.toString() == cat._id.toString()) 
-                    ? 'selected' 
-                    : '' 
-                %>>
-                <%= cat.name %>
-              </option>
-            <% }) %>
-          </select>
-        </div>
+            <div class="form-group">
+              <label class="form-label">Brand <span class="required">*</span></label>
+              <input type="text" name="brand" required value="<%= product.brand %>" class="form-input"/>
+            </div>
 
-        <div>
-          <label class="block text-gray-600 font-medium mb-1">Description <span class="text-red-500">*</span></label>
-          <textarea name="description" rows="3" required
-            class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"><%= old && old.description ? old.description : product.description %></textarea>
-        </div>
+            <div class="form-group">
+              <label class="form-label">Category <span class="required">*</span></label>
+              <select name="categoryId" required class="form-select">
+                <% categories.forEach(cat => { %>
+                  <option value="<%= cat._id %>" <%= product.categoryId._id.toString() === cat._id.toString() ? 'selected' : '' %>>
+                    <%= cat.name %>
+                  </option>
+                <% }) %>
+              </select>
+            </div>
 
-        <div>
-          <label class="block text-gray-600 font-medium mb-1">Offer (%)</label>
-          <input type="number" min="0" max="100" name="offer"
-            value="<%= old && typeof old.offer !== 'undefined' ? old.offer : (product.offer || 0) %>"
-            class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
-        </div>
+            <div class="form-group">
+              <label class="form-label">Description <span class="required">*</span></label>
+              <textarea name="description" rows="4" required class="form-textarea"><%= product.description %></textarea>
+            </div>
 
-        <div>
-          <label class="block text-gray-600 font-medium mb-1">Status</label>
-          <div class="flex items-center">
-            <input type="radio" id="listed" name="isListed" value="true"
-              <%= ((old && old.isListed === true) || (!old && product.isListed === true)) ? 'checked' : '' %> class="mr-2">
-            <label for="listed" class="mr-4">Listed</label>
-            <input type="radio" id="unlisted" name="isListed" value="false"
-              <%= ((old && old.isListed === false) || (!old && product.isListed === false)) ? 'checked' : '' %> class="mr-2">
-            <label for="unlisted">Unlisted</label>
-          </div>
-        </div>
+            <div class="form-group">
+              <label class="form-label">Offer (%)</label>
+              <input type="number" min="0" max="100" name="offer" value="<%= product.offer || 0 %>" class="form-input"/>
+            </div>
 
-        <!-- Image Upload Section -->
-        <div>
-          <label class="block text-gray-600 font-medium mb-1">Product Images <span class="text-red-500">*</span></label>
-          <p class="text-sm text-gray-500 mb-3">
-            Current images: <span id="image-count">0</span> | 
-          
-          </p>
-          
-          <input type="file" id="file-input" name="images" accept="image/*" style="display: none;" multiple>
+            <div class="form-group">
+              <label class="form-label">Type</label>
+              <select name="type" class="form-select">
+                <option value="">-- Select Type --</option>
+                <option value="Wireless" <%= (product.type && product.type === 'Wireless') ? 'selected' : '' %>>Wireless</option>
+                <option value="Wired" <%= (product.type && product.type === 'Wired') ? 'selected' : '' %>>Wired</option>
+                <option value="Bluetooth" <%= (product.type && product.type === 'Bluetooth') ? 'selected' : '' %>>Bluetooth</option>
+                <option value="Gaming" <%= (product.type && product.type === 'Gaming') ? 'selected' : '' %>>Gaming</option>
+                <option value="Studio" <%= (product.type && product.type === 'Studio') ? 'selected' : '' %>>Studio</option>
+              </select>
+            </div>
 
-          <!-- Hidden inputs for tracking images -->
-          <input type="hidden" name="existingImages" id="existing-images" value="<%= JSON.stringify(product.images) %>">
-          <input type="hidden" name="deletedImages" id="deleted-images" value="[]">
-          <input type="hidden" name="newImages" id="new-images" value="[]">
+            <div class="form-group">
+              <label class="form-label">Battery Health (%)</label>
+              <input type="text" name="batteryHealth" value="<%= product.batteryHealth || '' %>" class="form-input" placeholder="Enter battery health (any value)"/>
+            </div>
 
-          <button type="button" onclick="document.getElementById('file-input').click()" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 mb-4">
-            <i class="fas fa-plus mr-2"></i> Add New Images (Cloudinary)
-          </button>
-          
-          <!-- Cropper Modal -->
-          <div id="cropper-modal" class="fixed inset-0 bg-black bg-opacity-75 z-50 hidden">
-            <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-4/5 max-w-2xl bg-white p-4 rounded-lg">
-              <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-semibold">Crop Image (will be uploaded to Cloudinary)</h3>
-                <button type="button" onclick="closeCropper()" class="text-gray-500 hover:text-gray-700">
-                  <i class="fas fa-times"></i>
+            <div class="form-group">
+              <label class="form-label">Status</label>
+              <select name="isListed" class="form-select">
+                <option value="true" <%= product.isListed ? 'selected' : '' %>>Listed</option>
+                <option value="false" <%= !product.isListed ? 'selected' : '' %>>Unlisted</option>
+              </select>
+            </div>
+            
+            <!-- Variants Section -->
+            <div class="form-group">
+              <label class="form-label">Product Variants <span class="required">*</span></label>
+              <div class="variants-container">
+                <div id="variants-area">
+                  <% product.variants.forEach((variant, i) => { %>
+                    <div class="variant-card">
+                      <div class="variant-header">
+                        <h4 class="variant-title">Variant <%= i + 1 %> - <%= variant.color %></h4>
+                      </div>
+                      
+                      <div class="variant-fields">
+                        <div>
+                          <label class="form-label">Color</label>
+                          <input type="text" name="variants[<%= i %>][color]" required class="form-input" value="<%= variant.color %>">
+                          <input type="hidden" name="variants[<%= i %>][_id]" value="<%= variant._id %>">
+                        </div>
+                        <div>
+                          <label class="form-label">Price</label>
+                          <input type="number" name="variants[<%= i %>][price]" required min="0" step="0.01" class="form-input" value="<%= variant.regularPrice %>">
+                        </div>
+                        <div>
+                          <label class="form-label">Stock</label>
+                          <input type="number" name="variants[<%= i %>][stock]" min="0" class="form-input" value="<%= variant.stock %>">
+                        </div>
+                      </div>
+
+                      <div>
+                        <label class="form-label">Current Images</label>
+                        <div class="image-previews" id="existing-preview-<%= i %>">
+                          <% if (variant.images && variant.images.length > 0) { %>
+                            <% variant.images.forEach((img, imgIndex) => { %>
+                              <div class="image-preview-item" data-variant-id="<%= variant._id %>" data-image-index="<%= imgIndex %>">
+                                <img src="<%= typeof img === 'string' ? img : img.url %>" alt="Variant image" style="width: 100%; height: 100px; object-fit: cover;">
+                                <button type="button" onclick="removeExistingImage(this, '<%= variant._id %>', '<%= imgIndex %>')" class="remove-image-btn" title="Remove Image">×</button>
+                              </div>
+                            <% }) %>
+                          <% } else { %>
+                            <p style="color: #666; font-style: italic;">No images uploaded for this variant</p>
+                          <% } %>
+                        </div>
+                        
+                        <div class="image-upload-area">
+                          <input type="file" id="file-input-<%= i %>" accept="image/*" style="display: none;" onchange="openCroppie(this, <%= i %>)">
+                          <button type="button" onclick="document.getElementById('file-input-<%= i %>').click()" class="upload-btn">
+                            <i class="fas fa-upload"></i> Add Image (Crop & Resize)
+                          </button>
+                        </div>
+                        <div class="image-previews" id="new-preview-<%= i %>"></div>
+                        <input type="file" name="variants[<%= i %>][newImages]" multiple style="display: none;" id="final-images-<%= i %>">
+                      </div>
+                    </div>
+                  <% }) %>
+                </div>
+                <button type="button" id="add-variant-btn" class="add-variant-btn">
+                  <i class="fas fa-plus"></i> Add New Variant
                 </button>
               </div>
-              <div class="h-96">
-                <img id="image-to-crop" class="max-h-full max-w-full">
-              </div>
-              <div class="mt-4 flex justify-end gap-2">
-                <button type="button" onclick="closeCropper()" class="px-4 py-2 bg-gray-300 rounded">Cancel</button>
-                <button type="button" onclick="saveCroppedImage()" class="px-4 py-2 bg-blue-600 text-white rounded">Save to Cloudinary</button>
-              </div>
             </div>
-          </div>
-          
-          <!-- Preview Container -->
-          <div id="image-previews" class="grid grid-cols-3 gap-4 mt-4">
-            <!-- Images will be loaded dynamically via JavaScript -->
-          </div>
-          
-          <!-- Hidden data container for JS -->
-          <div id="image-data" data-images='<%= JSON.stringify(product.images) %>' style="display: none;"></div>
+            
+            <div class="form-actions">
+              <a href="/admin/products" class="back-btn">
+                <i class="fas fa-arrow-left"></i> Back to Products
+              </a>
+              <button type="submit" class="save-btn">
+                <i class="fas fa-save"></i> Update Product
+              </button>
+            </div>
+          </form>
         </div>
+      </div>
+    </div>
+  </div>
 
-        <!-- Variants Section -->
-        <div>
-          <label class="block text-gray-600 font-medium mb-2">Variants (Color, Price, Stock)</label>
-          <div id="variants-area">
-            <% product.variants.forEach((variant, i) => { %>
-              <div class="flex gap-2 mb-2 variant-row">
-                <input type="text" name="variants[<%= i %>][color]" placeholder="Color" required
-                  value="<%= variant.color %>"
-                  class="w-1/4 px-2 py-1 border rounded focus:ring-2 focus:ring-blue-500">
-                <input type="number" min="0" step="0.01" name="variants[<%= i %>][price]" placeholder="Price" required
-                  value="<%= variant.regularPrice %>"
-                  class="w-1/4 px-2 py-1 border rounded focus:ring-2 focus:ring-blue-500">
-                <input type="number" min="0" name="variants[<%= i %>][stock]" placeholder="Stock"
-                  value="<%= variant.stock %>"
-                  class="w-1/4 px-2 py-1 border rounded focus:ring-2 focus:ring-blue-500">
-                <input type="hidden" name="variants[<%= i %>][_id]" value="<%= variant._id %>">
-                <button type="button" onclick="removeVariantRow(this)" class="bg-red-500 text-white px-2 rounded hover:bg-red-700 font-bold">-</button>
-              </div>
-            <% }) %>
-          </div>
-          <button type="button" id="add-variant-btn" class="mt-1 px-4 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">+ Add Variant</button>
+  <!-- Croppie Modal -->
+  <div id="cropper-modal" class="cropper-modal hidden">
+    <div class="cropper-content">
+      <div class="cropper-header">
+        <h3>Crop & Resize Image</h3>
+        <button type="button" id="close-cropper-btn" class="close-cropper">&times;</button>
+      </div>
+      <div class="cropper-body">
+        <div class="cropper-image-container">
+          <div id="croppie-container" style="width: 100%; height: 400px;"></div>
         </div>
-
-        <div class="flex justify-between items-center mt-8">
-          <a href="/admin/products" class="px-5 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded font-semibold">Back</a>
-          <button type="submit" id="submit-btn" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded font-semibold">
-            <i class="fas fa-save mr-2"></i>Save Changes
+        <div class="cropper-preview-container">
+          <h4 style="margin-bottom: 10px; font-weight: 600;">Actions</h4>
+          <div style="margin-bottom: 15px;">
+            <button type="button" id="rotate-left" class="rotate-btn">
+              <i class="fas fa-undo"></i> Rotate Left
+            </button>
+            <button type="button" id="rotate-right" class="rotate-btn">
+              <i class="fas fa-redo"></i> Rotate Right
+            </button>
+          </div>
+          <button type="button" id="save-cropped-btn" class="save-cropped-btn">
+            <i class="fas fa-check"></i> Save Cropped Image
           </button>
         </div>
-      </form>
+      </div>
     </div>
-  </main>
+  </div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <style>
+    .cropper-modal { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8); z-index: 1000; display: flex; align-items: center; justify-content: center; }
+    .cropper-modal.hidden { display: none; }
+    .cropper-content { background: white; border-radius: 12px; padding: 24px; max-width: 90vw; max-height: 90vh; width: 800px; }
+    .cropper-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .cropper-header h3 { font-size: 18px; font-weight: 600; color: #2c3e50; }
+    .close-cropper { background: none; border: none; font-size: 24px; cursor: pointer; color: #6c757d; }
+    .cropper-body { display: flex; gap: 20px; }
+    .cropper-image-container { flex: 2; }
+    .cropper-preview-container { flex: 1; }
+    .rotate-btn { background: #6c757d; color: white; padding: 6px 10px; border-radius: 4px; font-size: 12px; border: none; cursor: pointer; margin-right: 8px; }
+    .save-cropped-btn { width: 100%; background: #667eea; color: white; padding: 10px; border-radius: 8px; font-weight: 600; cursor: pointer; border: none; }
+  </style>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/croppie/2.6.5/croppie.min.js"></script>
   <script>
-    // Get the product ID from the form action URL
-    const productId = '<%= product._id %>';
+    let variantCount = <%= product.variants.length %>;
+    let croppieInstance = null;
+    let currentVariantIndex = 0;
+    const variantImages = {};
+    const deletedImages = []; // Track deleted images
     
-    // Global variables
-    let cropper;
-    let currentFile;
-    const existingImages = JSON.parse(document.getElementById('image-data').dataset.images || '[]');
-    const deletedImages = [];
-    const newImages = [];
-
-    // Helper functions for image type detection
-    function isCloudinaryImage(img) {
-      if (typeof img === 'string') {
-        return img.includes('cloudinary.com') || img.includes('res.cloudinary.com');
-      }
-      return img && img.publicId; // Object with publicId = Cloudinary
-    }
-
-    function getImageUrl(img) {
-      return typeof img === 'string' ? img : img.url;
-    }
-
-    function getImageId(img) {
-      if (typeof img === 'string') {
-        return img; // Legacy: use URL as ID
-      }
-      return img.publicId || img.url; // Cloudinary: prefer publicId, fallback to url
-    }
-
-    function getImageType(img) {
-      return isCloudinaryImage(img) ? 'cloudinary' : 'local';
-    }
-
-    // Initialize on DOM load
-    document.addEventListener('DOMContentLoaded', () => {
-      // Load existing images
-      existingImages.forEach(img => {
-        addImageToPreview(img, false);
-      });
-      updateImageCount();
-
-      // File input handler
-      document.getElementById('file-input').addEventListener('change', function(e) {
-        if (e.target.files.length > 0) {
-          currentFile = e.target.files[0];
-          openCropper(currentFile);
-        }
-      });
+    console.log('Initial variant count:', variantCount);
+    console.log('Product data:', {
+      name: '<%= product.productName %>',
+      type: '<%= product.type || "Not set" %>',
+      batteryHealth: '<%= product.batteryHealth || "Not set" %>'
     });
 
-    // Image preview management
-    function addImageToPreview(imgData, isNew = false) {
-      const imageUrl = getImageUrl(imgData);
-      const imageId = getImageId(imgData);
-      const imageType = getImageType(imgData);
-      
-      const previewDiv = document.createElement('div');
-      previewDiv.className = 'relative';
-      previewDiv.dataset.image = imageId;
-      previewDiv.dataset.type = imageType;
-      if (isNew) previewDiv.classList.add('new-image');
-      
-      const badgeColor = imageType === 'cloudinary' ? 'bg-blue-600' : 'bg-green-600';
-      const badgeText = imageType === 'cloudinary' ? 'Cloud' : 'Local';
-      
-      previewDiv.innerHTML = `
-        <img src="${imageUrl}" class="w-full h-32 object-cover rounded border" 
-             onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSI+PHBhdGggZD0iTTEyIDJMMTMuMDkgOC4yNkwyMCA5TDEzLjA5IDE1Ljc0TDEyIDIyTDEwLjkxIDE1Ljc0TDQgOUwxMC45MSA4LjI2TDEyIDJaIiBmaWxsPSIjY2NjIi8+PC9zdmc+'; this.alt='Image not found';">
-        <button type="button" onclick="removeImage(this)" 
-                class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600">
-          &times;
-        </button>
-        <div class="image-type-badge ${badgeColor}">${badgeText}</div>
-      `;
-      
-      document.getElementById('image-previews').appendChild(previewDiv);
-      
-      if (isNew) {
-        newImages.push(imgData);
-        updateNewImagesInput();
+    function openCroppie(input, variantIndex) {
+      if (input.files && input.files[0]) {
+        currentVariantIndex = variantIndex;
+        const file = input.files[0];
+        
+        if (!file.type.startsWith('image/')) {
+          Swal.fire('Error', 'Please select a valid image file', 'error');
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          showCroppieModal(e.target.result);
+        };
+        reader.readAsDataURL(file);
       }
-      
-      updateHiddenInputs();
-      updateImageCount();
     }
 
-    function updateImageCount() {
-      const count = document.getElementById('image-previews').children.length;
-      document.getElementById('image-count').textContent = count;
-    }
-
-    function updateHiddenInputs() {
-      // Update existing images (exclude deleted ones)
-      const remaining = existingImages.filter(img => {
-        const imgId = getImageId(img);
-        return !deletedImages.includes(imgId);
-      });
-      document.getElementById('existing-images').value = JSON.stringify(remaining);
-      document.getElementById('deleted-images').value = JSON.stringify(deletedImages);
-    }
-
-    function updateNewImagesInput() {
-      document.getElementById('new-images').value = JSON.stringify(newImages);
-    }
-
-    // Image cropper functions
-    function openCropper(file) {
+    function showCroppieModal(imageSrc) {
       const modal = document.getElementById('cropper-modal');
-      const image = document.getElementById('image-to-crop');
+      modal.classList.remove('hidden');
       
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        image.src = e.target.result;
-        modal.classList.remove('hidden');
+      setTimeout(() => {
+        if (croppieInstance) {
+          croppieInstance.destroy();
+        }
+
+        const container = document.getElementById('croppie-container');
+        container.innerHTML = '';
         
-        if (cropper) cropper.destroy();
-        
-        cropper = new Cropper(image, {
-          aspectRatio: 1,
-          viewMode: 1,
-          autoCropArea: 0.8,
-          responsive: true,
+        croppieInstance = new Croppie(container, {
+          viewport: { width: 300, height: 300, type: 'square' },
+          boundary: { width: 400, height: 400 },
+          showZoomer: true,
+          enableOrientation: true,
+          enableResize: false,
+          enableExif: true,
+          quality: 0.9,
+          format: 'jpeg'
         });
-      };
-      reader.readAsDataURL(file);
+
+        croppieInstance.bind({ url: imageSrc });
+      }, 300);
     }
 
-    function closeCropper() {
+    function hideCroppieModal() {
       document.getElementById('cropper-modal').classList.add('hidden');
-      if (cropper) {
-        cropper.destroy();
-        cropper = null;
+      if (croppieInstance) {
+        croppieInstance.destroy();
+        croppieInstance = null;
       }
-      document.getElementById('file-input').value = '';
     }
 
-    async function saveCroppedImage() {
-      const canvas = cropper.getCroppedCanvas({
-        width: 800,
-        height: 800,
-        fillColor: '#fff'
+    function saveCroppedImage() {
+      if (!croppieInstance) return;
+
+      croppieInstance.result({
+        type: 'blob',
+        size: { width: 800, height: 800 },
+        format: 'jpeg',
+        quality: 0.9
+      }).then(function(blob) {
+        if (!variantImages[currentVariantIndex]) {
+          variantImages[currentVariantIndex] = [];
+        }
+        
+        // Add only one image
+        variantImages[currentVariantIndex].push(blob);
+        updateVariantImages(currentVariantIndex);
+        updateHiddenInput(currentVariantIndex);
+        
+        // Reset file input to prevent duplicate uploads
+        const fileInput = document.getElementById(`file-input-${currentVariantIndex}`) || 
+                          document.getElementById(`new-file-input-${currentVariantIndex}`);
+        if (fileInput) {
+          fileInput.value = '';
+        }
+        
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'success',
+          title: `Image added to variant ${currentVariantIndex + 1}`,
+          showConfirmButton: false,
+          timer: 2000
+        });
+        
+        hideCroppieModal();
+      }).catch(function(error) {
+        console.error('Error saving cropped image:', error);
+        Swal.fire('Error', 'Failed to save cropped image', 'error');
       });
-
-      canvas.toBlob(async (blob) => {
-        const loadingId = 'loading-' + Date.now();
-        document.getElementById('image-previews').insertAdjacentHTML('beforeend', `
-          <div id="${loadingId}" class="relative bg-gray-200 rounded flex items-center justify-center" style="height: 8rem;">
-            <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500"></div>
-            <div class="image-type-badge bg-blue-600">Uploading...</div>
-          </div>
-        `);
-
-        try {
-          const formData = new FormData();
-          formData.append('image', blob, 'cropped-' + Date.now() + '.jpg');
-          
-          const response = await axios.post(`/admin/products/${productId}/edit-image`, formData, {
-            headers: { 'Content-Type': 'multipart/form-data' }
-          });
-
-          document.getElementById(loadingId).remove();
-          
-          // Create Cloudinary image object
-          const cloudinaryImg = {
-            url: response.data.url,
-            publicId: response.data.publicId
-          };
-          
-          addImageToPreview(cloudinaryImg, true);
-          closeCropper();
-        } catch (error) {
-          console.error('Upload failed:', error);
-          document.getElementById(loadingId).remove();
-          alert('Failed to upload image. Please try again.');
-        }
-      }, 'image/jpeg', 0.8);
     }
 
-    function removeImage(button) {
-      const container = button.parentElement;
-      const imageId = container.dataset.image;
-      const imageType = container.dataset.type;
+    function updateVariantImages(variantIndex) {
+      const previewContainer = document.getElementById(`new-preview-${variantIndex}`) || document.getElementById(`variant-preview-${variantIndex}`);
+      if (!previewContainer) return;
       
-      if (container.classList.contains('new-image')) {
-        // Remove from new images array
-        const index = newImages.findIndex(img => getImageId(img) === imageId);
-        if (index > -1) {
-          newImages.splice(index, 1);
-          updateNewImagesInput();
-        }
-        
-        
-        if (imageType === 'cloudinary') {
-          axios.delete(`/admin/delete-temp-image`, { data: { publicId: imageId } })
-            .catch(err => console.warn('Cleanup failed:', err));
-        }
-      } else {
-        // Mark existing image for deletion
-        if (!deletedImages.includes(imageId)) {
-          deletedImages.push(imageId);
-        }
+      // Clear existing previews first
+      previewContainer.innerHTML = '';
+      
+      if (variantImages[variantIndex]) {
+        variantImages[variantIndex].forEach((blob, index) => {
+          const imageUrl = URL.createObjectURL(blob);
+          const imageHtml = `
+            <div class="image-preview-item">
+              <img src="${imageUrl}" alt="New image ${index + 1}" style="width: 100%; height: 100px; object-fit: cover;">
+              <button type="button" onclick="removeNewVariantImage(${variantIndex}, ${index})" class="remove-image-btn" title="Remove Image">×</button>
+            </div>
+          `;
+          previewContainer.insertAdjacentHTML('beforeend', imageHtml);
+        });
+      }
+    }
+
+    function updateHiddenInput(variantIndex) {
+      const dataTransfer = new DataTransfer();
+      if (variantImages[variantIndex]) {
+        variantImages[variantIndex].forEach((blob, i) => {
+          const file = new File([blob], `variant-${variantIndex}-image-${i + 1}.jpg`, { 
+            type: 'image/jpeg',
+            lastModified: Date.now()
+          });
+          dataTransfer.items.add(file);
+        });
       }
       
-      container.remove();
-      updateHiddenInputs();
-      updateImageCount();
+      const hiddenInput = document.getElementById(`final-images-${variantIndex}`) || document.getElementById(`new-final-images-${variantIndex}`);
+      if (hiddenInput) {
+        hiddenInput.files = dataTransfer.files;
+      }
     }
 
-    // Variant management
-    document.getElementById('add-variant-btn').addEventListener('click', function() {
-      const area = document.getElementById('variants-area');
-      const index = area.querySelectorAll('.variant-row').length;
+    function removeVariantImage(variantIndex, imageIndex) {
+      if (variantImages[variantIndex]) {
+        variantImages[variantIndex].splice(imageIndex, 1);
+        updateVariantImages(variantIndex);
+        updateHiddenInput(variantIndex);
+      }
+    }
+
+    function removeNewVariantImage(variantIndex, imageIndex) {
+      console.log('Removing new variant image:', variantIndex, imageIndex);
       
-      const row = document.createElement('div');
-      row.className = 'flex gap-2 mb-2 variant-row';
-      row.innerHTML = `
-        <input type="text" name="variants[${index}][color]" placeholder="Color" required class="w-1/4 px-2 py-1 border rounded">
-        <input type="number" name="variants[${index}][price]" step="0.01" placeholder="Price" required class="w-1/4 px-2 py-1 border rounded">
-        <input type="number" name="variants[${index}][stock]" placeholder="Stock" class="w-1/4 px-2 py-1 border rounded">
-        <input type="hidden" name="variants[${index}][_id]" value="">
-        <button type="button" onclick="removeVariantRow(this)" class="bg-red-500 text-white px-2 rounded hover:bg-red-700 font-bold">-</button>
+      if (variantImages[variantIndex]) {
+        // Remove the blob from memory
+        const blob = variantImages[variantIndex][imageIndex];
+        if (blob) {
+          URL.revokeObjectURL(URL.createObjectURL(blob));
+        }
+        
+        variantImages[variantIndex].splice(imageIndex, 1);
+        updateVariantImages(variantIndex);
+        updateHiddenInput(variantIndex);
+        
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'info',
+          title: 'Image removed',
+          showConfirmButton: false,
+          timer: 1500
+        });
+      }
+    }
+
+    function removeExistingImage(button, variantId, imageIndex) {
+      console.log('Removing image:', variantId, imageIndex);
+      
+      if (confirm('Are you sure you want to remove this image?')) {
+        // Add to deleted images list
+        deletedImages.push({
+          variantId: variantId,
+          imageIndex: parseInt(imageIndex)
+        });
+        
+        console.log('Deleted images list:', deletedImages);
+        
+        // Add visual feedback instead of removing from DOM
+        const imageItem = button.closest('.image-preview-item');
+        imageItem.style.opacity = '0.5';
+        imageItem.style.filter = 'grayscale(100%)';
+        button.style.display = 'none';
+        
+        // Add deleted overlay
+        const overlay = document.createElement('div');
+        overlay.innerHTML = 'DELETED';
+        overlay.style.cssText = 'position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(220, 53, 69, 0.9); color: white; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; pointer-events: none;';
+        imageItem.appendChild(overlay);
+        
+        // Show success message
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'success',
+          title: 'Image marked for deletion',
+          showConfirmButton: false,
+          timer: 2000
+        });
+      }
+    }
+
+    function undoDeleteImage(variantId, imageIndex) {
+      // Remove from deleted images list
+      const deleteIndex = deletedImages.findIndex(item => 
+        item.variantId === variantId && item.imageIndex === imageIndex
+      );
+      
+      if (deleteIndex > -1) {
+        deletedImages.splice(deleteIndex, 1);
+        
+        // Remove visual feedback
+        const imageItem = document.querySelector(`[data-variant-id="${variantId}"][data-image-index="${imageIndex}"]`);
+        if (imageItem) {
+          imageItem.classList.remove('deleted');
+          imageItem.querySelector('.remove-image-btn').style.display = 'block';
+        }
+        
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'info',
+          title: 'Image deletion cancelled',
+          showConfirmButton: false,
+          timer: 2000
+        });
+      }
+    }
+
+    // Event listeners
+    document.getElementById('close-cropper-btn').addEventListener('click', hideCroppieModal);
+    document.getElementById('save-cropped-btn').addEventListener('click', saveCroppedImage);
+    document.getElementById('rotate-left').addEventListener('click', () => croppieInstance && croppieInstance.rotate(-90));
+    document.getElementById('rotate-right').addEventListener('click', () => croppieInstance && croppieInstance.rotate(90));
+
+    function addNewVariant() {
+      const variantHtml = `
+        <div class="variant-card">
+          <div class="variant-header">
+            <h4 class="variant-title">New Variant ${variantCount + 1}</h4>
+            <button type="button" onclick="removeVariant(this)" class="remove-variant-btn">
+              <i class="fas fa-times"></i> Remove
+            </button>
+          </div>
+          
+          <div class="variant-fields">
+            <div>
+              <label class="form-label">Color</label>
+              <input type="text" name="variants[${variantCount}][color]" required class="form-input" placeholder="e.g., Red, Blue">
+            </div>
+            <div>
+              <label class="form-label">Price</label>
+              <input type="number" name="variants[${variantCount}][price]" required min="0" step="0.01" class="form-input" placeholder="0.00">
+            </div>
+            <div>
+              <label class="form-label">Stock</label>
+              <input type="number" name="variants[${variantCount}][stock]" min="0" class="form-input" placeholder="0">
+            </div>
+          </div>
+
+          <div>
+            <label class="form-label">Variant Images (Min 2 required)</label>
+            <div class="image-upload-area">
+              <input type="file" id="new-file-input-${variantCount}" accept="image/*" style="display: none;" onchange="openCroppie(this, ${variantCount})">
+              <button type="button" onclick="document.getElementById('new-file-input-${variantCount}').click()" class="upload-btn">
+                <i class="fas fa-upload"></i> Add Image (Crop & Resize)
+              </button>
+            </div>
+            <div class="image-previews" id="variant-preview-${variantCount}"></div>
+            <input type="file" name="variants[${variantCount}][images]" multiple style="display: none;" id="new-final-images-${variantCount}">
+          </div>
+        </div>
       `;
       
-      area.appendChild(row);
-    });
+      document.getElementById('variants-area').insertAdjacentHTML('beforeend', variantHtml);
+      variantCount++;
+    }
 
-    // FIXED: Track variant deletion
-    function removeVariantRow(btn) {
-      const row = btn.closest('.variant-row');
-      const variantId = row.querySelector('[name*="_id"]')?.value;
+    function removeVariant(btn) {
+      if (confirm('Are you sure you want to remove this variant?')) {
+        btn.closest('.variant-card').remove();
+      }
+    }
+
+    function handleVariantImages(input, variantIndex) {
+      const previewContainer = document.getElementById(`variant-preview-${variantIndex}`);
+      previewContainer.innerHTML = '';
       
-      // If this is an existing variant, track it for deletion
-      if (variantId) {
-        deletedVariants.push(variantId);
-        document.getElementById('deleted-variants').value = JSON.stringify(deletedVariants);
+      if (input.files.length < 2) {
+        alert('Please select at least 2 images for this variant');
+        return;
       }
       
-      row.remove();
+      Array.from(input.files).forEach((file, index) => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const imageHtml = `
+            <div class="image-preview-item">
+              <img src="${e.target.result}" alt="Variant image ${index + 1}">
+              <button type="button" onclick="removeVariantImage(this)" class="remove-image-btn">×</button>
+            </div>
+          `;
+          previewContainer.insertAdjacentHTML('beforeend', imageHtml);
+        };
+        reader.readAsDataURL(file);
+      });
     }
+
+    function removeVariantImage(btn) {
+      btn.closest('.image-preview-item').remove();
+    }
+
+    function handleNewImages(input, variantIndex) {
+      const previewContainer = document.getElementById(`new-preview-${variantIndex}`);
+      previewContainer.innerHTML = '';
+      
+      Array.from(input.files).forEach((file, index) => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const imageHtml = `
+            <div class="image-preview-item">
+              <img src="${e.target.result}" alt="New image ${index + 1}">
+              <button type="button" onclick="removeNewImage(this)" class="remove-image-btn">×</button>
+            </div>
+          `;
+          previewContainer.insertAdjacentHTML('beforeend', imageHtml);
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function removeNewImage(btn) {
+      btn.closest('.image-preview-item').remove();
+    }
+
+    // Add variant button event listener
+    document.getElementById('add-variant-btn').addEventListener('click', addNewVariant);
 
     // Form submission
-    document.getElementById('edit-product-form').addEventListener('submit', async function(e) {
+    document.getElementById('editProductForm').addEventListener('submit', async function(e) {
       e.preventDefault();
-      const form = e.target;
-      const submitBtn = document.getElementById('submit-btn');
-      const originalBtnText = submitBtn.innerHTML;
       
-      // Validate at least one image
-      if (document.getElementById('image-previews').children.length === 0) {
-        alert('Please add at least one product image');
-        return;
-      }
+      const formData = new FormData(this);
       
-      // Update all hidden inputs before submission
-      updateHiddenInputs();
-      updateNewImagesInput();
-      
-      // Prepare FormData
-      const formData = new FormData(form);
-      
-      const variants = [];
-      let variantError = null;
-      document.querySelectorAll('.variant-row').forEach((row, idx) => {
-        const color = row.querySelector('[name*="color"]').value.trim();
-        const price = parseFloat(row.querySelector('[name*="price"]').value);
-        const stockVal = row.querySelector('[name*="stock"]').value;
-        const stock = stockVal !== '' ? parseInt(stockVal, 10) : 0;
-        const variantId = row.querySelector('[name*="_id"]')?.value || null;
-
-        if (!color) {
-          variantError = `Variant ${idx + 1}: Color is required.`;
-        } else if (isNaN(price) || price < 0) {
-          variantError = `Variant ${idx + 1}: Price must be a positive number.`;
-        } else if (isNaN(stock) || stock < 0) {
-          variantError = `Variant ${idx + 1}: Stock must be zero or a positive number.`;
-        }
-
-        variants.push({ _id: variantId, color, price, stock });
-      });
-
-      if (variantError) {
-        alert(variantError);
-        return;
-      }
-
-      if (variants.length === 0) {
-        alert('Please add at least one variant.');
-        return;
-      }
-      // Update button state
-      submitBtn.disabled = true;
-      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Saving...';
+      // Add deleted images data
+      console.log('Submitting with deleted images:', deletedImages);
+      formData.append('deletedImages', JSON.stringify(deletedImages));
       
       try {
-        const response = await axios.post(form.action, formData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
+        const response = await fetch(this.action, {
+          method: 'POST',
+          body: formData
         });
         
-        if (response.data.success) {
+        const result = await response.json();
+        
+        if (result.success) {
+          alert('Product updated successfully!');
           window.location.href = '/admin/products';
         } else {
-          alert(response.data.message || 'Failed to update product');
+          alert('Error: ' + result.message);
         }
       } catch (error) {
-        console.error('Submission error:', error);
-        alert('An error occurred. Please try again.');
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = originalBtnText;
+        console.error('Error:', error);
+        alert('An error occurred while updating the product');
       }
     });
   </script>

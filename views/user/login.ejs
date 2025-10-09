@@ -103,6 +103,10 @@
             transition: color 0.3s ease;
         }
 
+        .logo-left:hover {
+            color: #666;
+        }
+
         .logo-left::before {
             content: "♪";
             margin-right: 8px;
@@ -110,9 +114,7 @@
             color: #333;
         }
 
-        .logo-left:hover {
-            color: #666;
-        }
+
 
         .image-container {
             width: 350px;
@@ -202,6 +204,8 @@
             transform: translateY(-1px);
         }
 
+
+
         /* Error and Success Messages */
         .error-message {
             background: #fee;
@@ -236,6 +240,74 @@
             transform: translateY(-10px);
             animation: slideInError 0.4s ease-out forwards;
         }
+
+        .blocked-user-message {
+            background: #fff5f5;
+            border: 2px solid #fed7d7;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+            width: 100%;
+            max-width: 320px;
+            opacity: 0;
+            transform: translateY(-10px);
+            animation: slideInError 0.4s ease-out forwards;
+            text-align: center;
+        }
+
+        /* .blocked-icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+            opacity: 0.8;
+        }
+
+        .blocked-content h4 {
+            color: #c53030;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .blocked-content p {
+            color: #742a2a;
+            font-size: 14px;
+            line-height: 1.4;
+            margin-bottom: 15px;
+        }
+
+        .blocked-actions {
+            background: rgba(197, 48, 48, 0.05);
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 15px;
+        }
+
+        .blocked-actions p {
+            color: #742a2a;
+            font-size: 13px;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .support-link {
+            color: #c53030;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .try-different-account {
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 8px 16px;
+            margin-top: 12px;
+            color: #4a5568;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            width: 100%;
+        } */
 
         @keyframes slideInError {
             from {
@@ -337,6 +409,8 @@
             color: #333;
             background: rgba(0, 0, 0, 0.05);
         }
+
+
 
         .form-options {
             display: flex;
@@ -550,17 +624,37 @@
 
             <!-- Error and Success Messages -->
             <% if (typeof error !== 'undefined' && error) { %>
-                <div class="error-message">
-                    <% if (error.includes('Invalid') || error.includes('invalid')) { %>
-                        Invalid email or password. Please try again.
-                    <% } else if (error.includes('blocked') || error.includes('Blocked')) { %>
-                        Your account has been blocked. Please contact support.
-                    <% } else if (error.includes('not found') || error.includes('Not found')) { %>
-                        Account not found. Please check your credentials.
-                    <% } else { %>
-                        <%= error %>
-                    <% } %>
-                </div>
+                <% if (typeof isBlocked !== 'undefined' && isBlocked) { %>
+                    <!-- Special blocked user message -->
+                    <div class="blocked-user-message">
+                        <div class="blocked-icon">🚫</div>
+                        <div class="blocked-content">
+                            <h4>Account Blocked</h4>
+                            <p>Your account has been temporarily blocked by the administrator.</p>
+                            <div class="blocked-actions">
+                                <p>Need help? Contact our support team:</p>
+                                <a href="mailto:<%= typeof supportEmail !== 'undefined' ? supportEmail : 'support@melodia.com' %>" class="support-link">
+                                    <%= typeof supportEmail !== 'undefined' ? supportEmail : 'support@melodia.com' %>
+                                </a>
+                                <button type="button" class="try-different-account" onclick="clearFormAndTryAgain()">
+                                    Try Different Account
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                <% } else { %>
+                    <div class="error-message">
+                        <% if (error.includes('Invalid') || error.includes('invalid')) { %>
+                            Invalid email or password. Please try again.
+                        <% } else if (error.includes('blocked') || error.includes('Blocked')) { %>
+                            Your account has been blocked. Please contact support.
+                        <% } else if (error.includes('not found') || error.includes('Not found')) { %>
+                            Account not found. Please check your credentials.
+                        <% } else { %>
+                            <%= error %>
+                        <% } %>
+                    </div>
+                <% } %>
             <% } %>
 
             <% if (typeof success !== 'undefined' && success) { %>
@@ -571,21 +665,43 @@
 
             <!-- Handle URL query errors -->
             <% if (typeof query !== 'undefined' && query.error) { %>
-                <div class="error-message">
-                    <% if (query.error === 'oauth_failed') { %>
-                        Google authentication failed. Please try again.
-                    <% } else if (query.error === 'auth_failed') { %>
-                        Authentication failed. Please try again.
-                    <% } else if (query.error === 'account_blocked') { %>
-                        Your account has been blocked. Contact administrator.
-                    <% } else if (query.error === 'session_error') { %>
-                        Session error occurred. Please try logging in again.
-                    <% } else if (query.error === 'invalid_credentials') { %>
-                        Invalid email or password. Please try again.
-                    <% } else { %>
-                        An error occurred during authentication.
-                    <% } %>
-                </div>
+                <% if (query.error === 'account_blocked') { %>
+                    <!-- Special blocked user message for URL parameter -->
+                    <div class="blocked-user-message">
+                        <div class="blocked-icon"></div>
+                        <div class="blocked-content">
+                            <h4>Account Blocked</h4>
+                            <% if (query.email) { %>
+                                <!-- <p>The account <strong><%= query.email %></strong> has been blocked by the administrator.</p> -->
+                            <!-- <% } else { %> -->
+                                <p>Your account has been blocked by the administrator.</p>
+                            <% } %>
+                            <!-- <div class="blocked-actions">
+                                <p>Need help? Contact our support team:</p>
+                                <a href="mailto:support@melodia.com" class="support-link">
+                                    support@melodia.com
+                                </a>
+                                <button type="button" class="try-different-account" onclick="clearFormAndTryAgain()">
+                                    Try Different Account
+                                </button>
+                            </div> -->
+                        </div>
+                    </div>
+                <% } else { %>
+                    <div class="error-message">
+                        <% if (query.error === 'oauth_failed') { %>
+                            Google authentication failed. Please try again.
+                        <% } else if (query.error === 'auth_failed') { %>
+                            Authentication failed. Please try again.
+                        <% } else if (query.error === 'session_error') { %>
+                            Session error occurred. Please try logging in again.
+                        <% } else if (query.error === 'invalid_credentials') { %>
+                            Invalid email or password. Please try again.
+                        <% } else { %>
+                            An error occurred during authentication.
+                        <% } %>
+                    </div>
+                <% } %>
             <% } %>
 
             <form action="/login" method="POST" class="login-form" id="loginForm">
@@ -725,6 +841,31 @@
             }
         });
 
+        // Clear form and hide blocked message
+        function clearFormAndTryAgain() {
+            // Clear form fields
+            document.getElementById('email').value = '';
+            document.getElementById('password').value = '';
+            
+            // Remove error states
+            document.querySelectorAll('.form-input').forEach(input => {
+                input.classList.remove('field-error', 'success', 'shake');
+            });
+            
+            // Remove field error messages
+            document.querySelectorAll('.field-error-message').forEach(msg => msg.remove());
+            
+            // Hide blocked message
+            // const blockedMessage = document.querySelector('.blocked-user-message');
+            // if (blockedMessage) {
+            //     blockedMessage.style.animation = 'slideOutError 0.4s ease-out forwards';
+            //     setTimeout(() => blockedMessage.remove(), 400);
+            // }
+            
+            // Focus on email field
+            document.getElementById('email').focus();
+        }
+
         // Auto-hide success/error messages after 5 seconds
         document.addEventListener('DOMContentLoaded', function() {
             const messages = document.querySelectorAll('.error-message, .success-message');
@@ -734,6 +875,10 @@
                     setTimeout(() => message.remove(), 400);
                 }, 5000);
             });
+            
+            // Don't auto-hide blocked user messages as they're more important
+            // const blockedMessages = document.querySelectorAll('.blocked-user-message');
+            // Blocked messages stay visible until user manually dismisses them
         });
     </script>
 </body>

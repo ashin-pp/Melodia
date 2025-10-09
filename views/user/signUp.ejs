@@ -606,7 +606,7 @@
                             class="form-input" 
                             placeholder="Last name"
                             value="<%= typeof oldInput !== 'undefined' && oldInput.lastName ? oldInput.lastName : ''%>"
-                            required
+                           
                             pattern="[A-Za-z\s]+"
                             title="Last name should only contain letters"
                         >
@@ -862,16 +862,16 @@
             }
         });
 
-        document.getElementById('lastName').addEventListener('input', function() {
-            const validation = ValidationUtils.validateName(this.value);
-            if (!validation.valid && this.value.trim().length > 0) {
-                showError('lastName', validation.message);
-            } else if (validation.valid) {
-                showSuccess('lastName');
-            } else {
-                clearFieldState('lastName');
-            }
-        });
+        // document.getElementById('lastName').addEventListener('input', function() {
+        //     const validation = ValidationUtils.validateName(this.value);
+        //     if (!validation.valid && this.value.trim().length > 0) {
+        //         showError('lastName', validation.message);
+        //     } else if (validation.valid) {
+        //         showSuccess('lastName');
+        //     } else {
+        //         clearFieldState('lastName');
+        //     }
+        // });
 
         document.getElementById('email').addEventListener('input', function() {
             const validation = ValidationUtils.validateEmail(this.value);
@@ -1042,14 +1042,14 @@
             }
             
             // Last name validation - FIXED THE LOGICAL ERROR HERE
-            const lastNameValidation = ValidationUtils.validateName(lastName);
-            if (!lastNameValidation.valid) {
-                showError('lastName', lastNameValidation.message);
-                errors.push('Last Name: ' + lastNameValidation.message);
-                hasErrors = true;
-            } else {
-                showSuccess('lastName');
-            }
+            // const lastNameValidation = ValidationUtils.validateName(lastName);
+            // if (!lastNameValidation.valid) {
+            //     showError('lastName', lastNameValidation.message);
+            //     errors.push('Last Name: ' + lastNameValidation.message);
+            //     hasErrors = true;
+            // } else {
+            //     showSuccess('lastName');
+            // }
             
             // Email validation
             const emailValidation = ValidationUtils.validateEmail(email);

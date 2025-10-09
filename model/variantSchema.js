@@ -12,7 +12,7 @@ const variantSchema = new mongoose.Schema({
   },
   images: {
     type: [mongoose.Schema.Types.Mixed], 
-    required: true
+    default: []
   },
   regularPrice: { 
     type: Number, 
@@ -21,10 +21,7 @@ const variantSchema = new mongoose.Schema({
   },
   salePrice: { 
     type: Number,  
-    min: 0,
-    default: function() {
-      return this.regularPrice; // Default to regular price
-    }
+    min: 0
   },
   stock: { 
     type: Number, 
@@ -32,6 +29,41 @@ const variantSchema = new mongoose.Schema({
     min: 0 
   }
 }, { timestamps: true });
+
+// Calculate sale price before saving
+variantSchema.pre('save', async function(next) {
+  try {
+    // Get the product to check for offers
+    const Product = mongoose.model('Product');
+    const product = await Product.findById(this.productId).populate('categoryId');
+    
+    if (product) {
+      // Get the best offer (product offer or category offer)
+      const productOffer = product.offer || 0;
+      const categoryOffer = product.categoryId?.offer || 0;
+      const bestOffer = Math.max(productOffer, categoryOffer);
+      
+      // Calculate sale price with discount
+      if (bestOffer > 0) {
+        this.salePrice = parseFloat(
+          (this.regularPrice * (1 - (bestOffer / 100))).toFixed(2)
+        );
+      } else {
+        this.salePrice = this.regularPrice;
+      }
+      
+      console.log(`Variant ${this.color}: Regular ₹${this.regularPrice}, Sale ₹${this.salePrice} (${bestOffer}% off)`);
+    } else {
+      this.salePrice = this.regularPrice;
+    }
+    
+    next();
+  } catch (error) {
+    console.error('Error calculating sale price:', error);
+    this.salePrice = this.regularPrice;
+    next();
+  }
+});
 
 // Add compound index for efficient querying
 variantSchema.index({ productId: 1, color: 1 }, { unique: true });

@@ -21,9 +21,16 @@ exports.loadHomePage = (req, res) => {
       return res.redirect('/user/login');
     }
 
+    // Set cache control headers to prevent back button issues
+    res.set({
+      'Cache-Control': 'no-store, no-cache, must-revalidate, private',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    });
+
     res.render('user/home', {
       user: req.session.user,
-      isAuthenticated: true, // Pass this to the template
+      isAuthenticated: true,
       welcomeMessage: req.session.justLoggedIn ? 'Welcome back!' : null
     });
     
@@ -52,14 +59,55 @@ exports.loadLandingPage=(req,res)=>{
 // Render login page
 exports.getLogin = (req, res) => {
   console.log('Rendering login page');
-  const justRegistered=req.session.justRegistered?req.session.justRegistered:false;
-  console.log(justRegistered)
+  const justRegistered = req.session.justRegistered ? req.session.justRegistered : false;
+  console.log(justRegistered);
   delete req.session.justRegistered;
+  
+  // Handle different error scenarios from URL parameters
+  let errorMessage = null;
+  let successMessage = null;
+  
+  if (req.query.error) {
+    switch (req.query.error) {
+      case 'account_blocked':
+        errorMessage = 'Your account has been blocked by the administrator. Please contact support for assistance.';
+        break;
+      case 'auth_failed':
+        errorMessage = 'Authentication failed. Please try again.';
+        break;
+      case 'session_error':
+        errorMessage = 'Session error occurred. Please try logging in again.';
+        break;
+      case 'server_error':
+        errorMessage = 'Server error occurred. Please try again later.';
+        break;
+      case 'oauth_failed':
+        errorMessage = 'Google authentication failed. Please try again or use email/password.';
+        break;
+      default:
+        errorMessage = 'An error occurred. Please try again.';
+    }
+  }
+  
+  if (req.query.success) {
+    switch (req.query.success) {
+      case 'password_reset':
+        successMessage = 'Password reset successfully. Please login with your new password.';
+        break;
+      case 'account_created':
+        successMessage = 'Account created successfully. Please login.';
+        break;
+    }
+  }
+  
   res.render('user/login', {
-    message:null,
+    message: null,
     isError: false,
     oldInput: {},
     justRegistered,
+    error: errorMessage,
+    success: successMessage,
+    query: req.query
   });
 };
 
@@ -91,12 +139,15 @@ exports.postLogin = async (req, res) => {
     }
 
     if (user.isBlocked) {
+      console.log(`Blocked user attempted login: ${email}`);
       return res.render('user/login', {
-        error: 'Your account has been blocked. Contact administrator.',
+        error: 'Your account has been blocked by the administrator. Please contact support for assistance.',
         success: null,
         email: email,
         query: req.query,
         justRegistered: false,
+        isBlocked: true, // Add flag to show special blocked user message
+        supportEmail: process.env.SUPPORT_EMAIL || 'support@melodia.com'
       });
     }
 
@@ -112,7 +163,7 @@ exports.postLogin = async (req, res) => {
       });
     }
 
-    // FIXED: Simple session setup without regeneration issues
+    
     req.session.user = {
       id: user._id,
       name: user.name,
@@ -402,7 +453,7 @@ exports.verifyOtp = async (req, res) => {
 
     console.log('Creating user with data:', { ...userData, password: '[HIDDEN]' });
 
-    // Check if user already exists (additional safety check)
+    // Check if user already exists
     const existingUser = await User.findOne({
       $or: [{ email: userData.email }, { phone: userData.phone }]
     });
@@ -458,36 +509,9 @@ exports.verifyOtp = async (req, res) => {
     });
 
   } catch (err) {
-    console.error('=== ERROR in verifyOtp ===');
-    console.error('Error details:', err);
-    console.error('Error stack:', err.stack);
+    console.error("ERROR in verifyOtp");
     
-    // Handle specific MongoDB errors
-    if (err.code === 11000) {
-      const field = Object.keys(err.keyPattern)[0];
-      const message = `${field === 'email' ? 'Email' : 'Phone number'} already exists.`;
-      console.log('Duplicate key error:', message);
-      
-      return res.render('user/otp-verification', {
-        title: 'Verify OTP',
-        email: req.body.email || '',
-        message,
-        isError: true,
-      });
-    }
-
-    // Handle validation errors
-    if (err.name === 'ValidationError') {
-      console.log('Validation error:', err.message);
-      const validationErrors = Object.values(err.errors).map(e => e.message);
-      
-      return res.render('user/otp-verification', {
-        title: 'Verify OTP',
-        email: req.body.email || '',
-        message: `Validation failed: ${validationErrors.join(', ')}`,
-        isError: true,
-      });
-    }
+  
 
     // Generic server error
     res.render('user/otp-verification', {
@@ -577,8 +601,6 @@ exports.resendOtp = async (req, res) => {
   }
 };
 
-// Handle Google/ SSO callback - UPDATED FOR NAME FIELD
-// Handle Google SSO callback - UPDATED
 exports.googleCallback = async (req, res) => {
   try {
     console.log('Google callback handler called');
@@ -592,8 +614,8 @@ exports.googleCallback = async (req, res) => {
     const user = req.user;
 
     if (user.isBlocked) {
-      console.log('User is blocked:', user.email);
-      return res.redirect('/user/login?error=account_blocked');
+      console.log('Blocked user attempted Google OAuth login:', user.email);
+      return res.redirect('/user/login?error=account_blocked&email=' + encodeURIComponent(user.email));
     }
 
     // Set session data
@@ -608,7 +630,7 @@ exports.googleCallback = async (req, res) => {
    
     req.session.justLoggedIn = true;
     
-    // Save session and redirect
+    // Save session and redirect with proper cache control
     req.session.save((err) => {
       if (err) {
         console.error('Session save error in googleCallback:', err);
@@ -616,9 +638,22 @@ exports.googleCallback = async (req, res) => {
       }
       
       console.log('Google OAuth successful, redirecting to home');
-      res.redirect('/user/home');
-     
-  
+      
+      // Set cache control headers to prevent back button issues
+      res.set({
+        'Cache-Control': 'no-store, no-cache, must-revalidate, private',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      });
+      
+      // Use a client-side redirect with history replacement to prevent back button
+      res.send(`
+        <script>
+          // Replace current history entry to prevent back button issues
+          window.history.replaceState(null, null, '/user/home');
+          window.location.href = '/user/home';
+        </script>
+      `);
     });
 
   } catch (err) {
@@ -792,15 +827,9 @@ exports.getResetPassword = (req, res) => {
     const { token } = req.params;
     
     console.log('=== RESET PASSWORD DEBUG ===');
-    console.log('URL Token:', token);
-    console.log('Session exists:', !!req.session);
-    console.log('Reset token in session:', req.session.resetToken);
-    console.log('Current time:', Date.now());
     
     if (req.session.resetToken) {
       console.log('Session token:', req.session.resetToken.token);
-      console.log('Session expires:', req.session.resetToken.expires);
-      console.log('Time until expiry:', req.session.resetToken.expires - Date.now());
     }
 
     // VALIDATION LOGIC (This was missing!)
@@ -920,7 +949,7 @@ exports.postResetPassword = async (req, res) => {
 
       console.log('Session saved, redirecting to login...');
       // FIXED: Only redirect, don't render and redirect
-      res.redirect('/user/login');
+      res.redirect('/user/login?success=password_reset');
     });
 
   } catch (err) {
