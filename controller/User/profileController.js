@@ -5,19 +5,19 @@ const User = require('../../model/userSchema')
 exports.getProfile = async (req,res)=>{
     if(!req.session){
         console.log("session not found")
-        res.redirect('/user/login')
+        res.redirect('/login')
     }
    const userId = req.session.user.id 
    if(!userId){
     console.log("the user id not found in the session ")
-    return res.redirect('/user/login')
+    return res.redirect('/login')
    }
 
    const user = await User.findById(userId)
    if(!user){
     console.log("user not found ")
     delete req.session.user;
-    res.redirect('/user/login')
+    res.redirect('/login')
    }
     res.render('user/profile')
 
@@ -27,7 +27,7 @@ exports.getProfile = async (req,res)=>{
   try {
     // Check if user is logged in
     if (!req.session.user) {
-      return res.redirect('/user/login');
+      return res.redirect('/login');
     }
 
   
@@ -46,7 +46,7 @@ exports.getProfile = async (req,res)=>{
         return res.render('error/500', { title: 'Server Error' });
       }
       
-      res.redirect('/user/login');
+      res.redirect('/login');
     });
 
   } catch (err) {

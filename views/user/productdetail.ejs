@@ -233,7 +233,7 @@
             <nav>
                 <ul class="nav-menu">
                     <li><a href="/">Home</a></li>
-                    <li><a href="/user/product/list">Shop</a></li>
+                    <li><a href="/product/list">Shop</a></li>
                     <li><a href="#contact">Contact</a></li>
                     <li><a href="#about">About</a></li>
                 </ul>
@@ -253,10 +253,10 @@
         <div class="breadcrumb-container">
             <a href="/">Home</a>
             <i class="fa-solid fa-chevron-right" style="font-size: 10px;"></i>
-            <a href="/user/product/list">Shop</a>
+            <a href="/product/list">Shop</a>
             <% if (product && product.categoryId) { %>
                 <i class="fa-solid fa-chevron-right" style="font-size: 10px;"></i>
-                <a href="/user/product/list"><%= product.categoryId.name %></a>
+                <a href="/product/list"><%= product.categoryId.name %></a>
             <% } %>
             <i class="fa-solid fa-chevron-right" style="font-size: 10px;"></i>
             <span class="current"><%= product.productName %></span>
@@ -415,7 +415,7 @@
                             price = firstVariant.salePrice || firstVariant.regularPrice || 0;
                         }
                     %>
-                    <a href="/user/products/<%= relatedProduct._id %>" class="related-card">
+                    <a href="/products/<%= relatedProduct._id %>" class="related-card">
                         <div class="related-image">
                             <img src="<%= firstImage %>" alt="<%= relatedProduct.productName %>" onerror="this.src='https://via.placeholder.com/400x400/333333/ffffff?text=No+Image'">
                         </div>
@@ -433,7 +433,7 @@
             <h2 class="related-title">Related Products</h2>
             <div class="no-related">
                 <p>No related products found in this category.</p>
-                <a href="/user/product/list" class="btn-primary" style="display: inline-block; margin-top: 20px;">Browse All Products</a>
+                <a href="/product/list" class="btn-primary" style="display: inline-block; margin-top: 20px;">Browse All Products</a>
             </div>
         </section>
     <% } %>
@@ -495,7 +495,7 @@
             <% if (user) { %>
                 <div class="add-review-section">
                     <h3>Write a Review</h3>
-                    <form class="review-form" action="/user/products/<%= product._id %>/review" method="POST">
+                    <form class="review-form" action="/products/<%= product._id %>/review" method="POST">
                         <div class="form-group">
                             <label class="form-label">Rating</label>
                             <div class="star-rating">
@@ -520,7 +520,7 @@
                 </div>
             <% } else { %>
                 <div class="login-prompt">
-                    <p><a href="/user/login">Login</a> to write a review</p>
+                    <p><a href="/login">Login</a> to write a review</p>
                 </div>
             <% } %>
         </div>
@@ -547,7 +547,7 @@
                     <h3>Quick Links</h3>
                     <ul>
                         <li><a href="/">Home</a></li>
-                        <li><a href="/user/product/list">Shop</a></li>
+                        <li><a href="/product/list">Shop</a></li>
                         <li><a href="#about">About Us</a></li>
                         <li><a href="#contact">Contact</a></li>
                     </ul>

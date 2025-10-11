@@ -80,7 +80,7 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use('/user', userRoutes);
+// app.use('/user', userRoutes);
 app.use('/admin', adminRoutes);
 app.use('/', userRoutes);
 

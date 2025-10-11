@@ -271,7 +271,7 @@ exports.getProductDetails = async (req, res) => {
     console.log(product);
 
     if (!product || !product.categoryId || !product.isListed || !product.categoryId.isListed) {
-      return res.redirect('/user/product/list');
+      return res.redirect('/product/list');
     }
 
     // Get reviews with user info
@@ -296,7 +296,7 @@ exports.getProductDetails = async (req, res) => {
 
     // Ensure we have variants with images
     if (!product.variants || product.variants.length === 0) {
-      return res.redirect('/user/product/list');
+      return res.redirect('/products/list');
     }
 
     // Get the first variant as default
@@ -315,7 +315,7 @@ exports.getProductDetails = async (req, res) => {
 
   } catch (error) {
     console.error('Product details error:', error);
-    res.redirect('/user/product/list');
+    res.redirect('/product/list');
   }
 };
 

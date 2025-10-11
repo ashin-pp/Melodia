@@ -14,7 +14,7 @@ exports.protectUser = async (req, res, next) => {
 
     // Validate session
     if (!req.session || !req.session.user) {
-      return res.redirect('/user/login');
+      return res.redirect('/login');
     }
 
     // Expose user to views

@@ -15,7 +15,7 @@ exports.isAuthenticated = (req, res, next) => {
   
   if (!req.session?.user) {
        console.log('User is not authenticated, redirecting to login...');
-    return res.redirect('/user/login');
+    return res.redirect('/login');
   }
   
   console.log('User is authenticated, proceeding...');
@@ -38,7 +38,7 @@ exports.isNotAuthenticated = (req, res, next) => {
   
   if (req.session?.user) {
     console.log('User is already authenticated, redirecting to home...');
-    return res.redirect('/user/home');
+    return res.redirect('/home');
   }
   
   console.log('User is not authenticated, proceeding...');
@@ -59,7 +59,7 @@ exports.isAdmin = (req, res, next) => {
   
   if (!req.session?.user) {
     console.log('No user session, redirecting to login...');
-    return res.redirect('/user/login');
+    return res.redirect('/login');
   }
   
   if (req.session.user.role !== 'admin' && !req.session.user.isAdmin) {
@@ -119,7 +119,7 @@ exports.validateUserSession = (req, res, next) => {
       console.log('Session expired, destroying...');
       req.session.destroy((err) => {
         if (err) console.error('Session destroy error:', err);
-        return res.redirect('/user/login');
+        return res.redirect('/login');
       });
       return;
     }

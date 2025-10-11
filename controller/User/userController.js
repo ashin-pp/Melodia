@@ -18,7 +18,7 @@ exports.loadHomePage = (req, res) => {
   try {
     // Additional session validation
     if (!req.session?.user) {
-      return res.redirect('/user/login');
+      return res.redirect('/login');
     }
 
     // Set cache control headers to prevent back button issues
@@ -189,7 +189,7 @@ exports.postLogin = async (req, res) => {
       
       console.log('User logged in successfully:', user.email);
       console.log('Session saved, redirecting to home...');
-      res.redirect('/user/home');
+      res.redirect('/home');
     });
 
   } catch (err) {
@@ -608,14 +608,14 @@ exports.googleCallback = async (req, res) => {
     
     if (!req.user) {
       console.log('No user found after Google auth');
-      return res.redirect('/user/login?error=auth_failed');
+      return res.redirect('/login?error=auth_failed');
     }
 
     const user = req.user;
 
     if (user.isBlocked) {
       console.log('Blocked user attempted Google OAuth login:', user.email);
-      return res.redirect('/user/login?error=account_blocked&email=' + encodeURIComponent(user.email));
+      return res.redirect('/login?error=account_blocked&email=' + encodeURIComponent(user.email));
     }
 
     // Set session data
@@ -634,7 +634,7 @@ exports.googleCallback = async (req, res) => {
     req.session.save((err) => {
       if (err) {
         console.error('Session save error in googleCallback:', err);
-        return res.redirect('/user/login?error=session_error');
+        return res.redirect('/login?error=session_error');
       }
       
       console.log('Google OAuth successful, redirecting to home');
@@ -650,15 +650,15 @@ exports.googleCallback = async (req, res) => {
       res.send(`
         <script>
           // Replace current history entry to prevent back button issues
-          window.history.replaceState(null, null, '/user/home');
-          window.location.href = '/user/home';
+          window.history.replaceState(null, null, '/home');
+          window.location.href = '/home';
         </script>
       `);
     });
 
   } catch (err) {
     console.error('Error in googleCallback:', err);
-    res.redirect('/user/login?error=server_error');
+    res.redirect('/login?error=server_error');
   }
 };
 
