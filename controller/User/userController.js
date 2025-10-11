@@ -146,7 +146,7 @@ exports.postLogin = async (req, res) => {
         email: email,
         query: req.query,
         justRegistered: false,
-        isBlocked: true, // Add flag to show special blocked user message
+        isBlocked: true,
         supportEmail: process.env.SUPPORT_EMAIL || 'support@melodia.com'
       });
     }
@@ -189,7 +189,7 @@ exports.postLogin = async (req, res) => {
       
       console.log('User logged in successfully:', user.email);
       console.log('Session saved, redirecting to home...');
-      res.redirect('/user/home'); // FIXED: Use full path
+      res.redirect('/user/home');
     });
 
   } catch (err) {
@@ -216,7 +216,7 @@ exports.getSignup = (req, res) => {
   });
 };
 
-// Handle signup POST - UPDATED FOR NAME FIELD
+
 exports.postSignup = async (req, res) => {
     console.log('Email config check:', {
         email: process.env.NODEMAILER_EMAIL,

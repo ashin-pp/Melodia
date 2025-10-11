@@ -2,7 +2,6 @@ const User = require('../../model/userSchema');
 const bcrypt = require('bcryptjs');
 
 exports.getLogin = (req, res) => {
-  console.log('=== getLogin CONTROLLER ===');
 
   res.set({
     'Cache-Control': 'no-cache, no-store, must-revalidate, private',
@@ -74,7 +73,7 @@ exports.postLogin = async (req, res) => {
 };
 
 exports.getDashboard = async (req, res) => {
-  console.log('=== getDashboard CONTROLLER ===');
+  console.log("entering dashboard");
   try {
     res.set({
       'Cache-Control': 'no-cache, no-store, must-revalidate, private',
@@ -82,9 +81,9 @@ exports.getDashboard = async (req, res) => {
       'Expires': '0'
     });
 
-    const admin = req.session.admin || { name: "ADMIN" };
+    const admin=req.session.admin;
     console.log('Rendering dashboard for admin:', admin.email || 'Unknown');
-    res.render('admin/dashboard', { admin });
+    res.render('admin/dashboard');
   } catch (err) {
     console.error('Dashboard render error:', err);
     res.render('error/500', { title: 'Server Error' });

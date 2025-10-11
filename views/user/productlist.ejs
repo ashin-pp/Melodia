@@ -17,8 +17,11 @@
         .nav-links a:hover, .nav-links a.active { color: #ffffff; }
         .nav-actions { display: flex; align-items: center; gap: 18px; }
         .search-container { position: relative; }
-        .search-box { background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 18px; padding: 9px 16px 9px 40px; color: #ffffff; outline: none; width: 240px; font-size: 13px; }
-        .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: rgba(255, 255, 255, 0.5); font-size: 13px; }
+        .search-box { background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 18px; padding: 11px 40px 11px 40px; color: #ffffff; outline: none; width: 250px; font-size: 13px; }
+        .search-box:focus { border-color: rgba(255, 255, 255, 0.25); background: rgba(255, 255, 255, 0.08); }
+        .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: rgba(255, 255, 255, 0.5); font-size: 13px; cursor: pointer; }
+        .clear-search { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: rgba(255, 255, 255, 0.5); font-size: 13px; cursor: pointer; display: none; }
+        .clear-search:hover { color: rgba(255, 255, 255, 0.8); }
         .nav-icons { display: flex; align-items: center; gap: 16px; }
         .nav-icon { color: rgba(255, 255, 255, 0.75); font-size: 16px; cursor: pointer; }
         .nav-icon:hover { color: #ffffff; }
@@ -121,20 +124,20 @@
         <ul class="nav-links">
             <li><a href="/">Home</a></li>
             <li><a href="/user/product/list" class="active">Shop</a></li>
-            <!-- <li><a href="#categories">Categories</a></li> -->
             <li><a href="#about">About</a></li>
             <li><a href="#contact">Contact</a></li>
         </ul>
 
         <div class="nav-actions">
             <div class="search-container">
-                <i class="fas fa-search search-icon"></i>
-                <input type="text" class="search-box" placeholder="Search products..." value="<%= q || '' %>">
+                <i class="fas fa-search search-icon" onclick="performSearch()"></i>
+                <input type="text" class="search-box" placeholder="Search products..." value="<%= q || '' %>" id="navSearchInput">
+                <i class="fas fa-times clear-search" onclick="clearSearch()" id="clearSearchBtn"></i>
             </div>
             <div class="nav-icons">
                 <i class="fas fa-heart nav-icon"></i>
                 <i class="fas fa-shopping-cart nav-icon"></i>
-              <a href="/profile">  <i class="fas fa-user nav-icon"></i></a>
+                <a href="/profile"><i class="fas fa-user nav-icon"></i></a>
             </div>
         </div>
     </nav>
@@ -156,11 +159,6 @@
             
             <form method="GET" action="/user/product/list" id="filterForm">
                 <input type="hidden" name="brands" id="selectedBrands" value="<%= brands ? brands.join(',') : '' %>">
-                
-                <div class="filter-section">
-                    <h4 class="filter-title">Search</h4>
-                    <input type="text" name="q" class="filter-input" placeholder="Search products..." value="<%= q || '' %>">
-                </div>
 
                 <div class="filter-section">
                     <h4 class="filter-title">Category</h4>
@@ -224,6 +222,9 @@
             <div class="content-header">
                 <div class="results-info">
                     Showing <%= products.length %> of <%= totalProducts || 0 %> products
+                    <% if (q) { %>
+                        for "<%= q %>"
+                    <% } %>
                 </div>
             </div>
 
@@ -269,18 +270,6 @@
                                     <% } %>
                                 </div>
 
-                                <!-- Show available colors if variants exist -->
-                                <!-- <% if (product.variantDocs && product.variantDocs.length > 0) { %>
-                                    <div class="product-variants">
-                                        <div class="variant-colors">
-                                            <% product.variantDocs.forEach(variant => { %>
-                                                <% const colorClass = variant.color.toLowerCase().replace(/\s+/g, ''); %>
-                                                <div class="variant-color <%= colorClass %>" title="<%= variant.color %>"></div>
-                                            <% }) %>
-                                        </div>
-                                    </div>
-                                <% } %> -->
-
                                 <div class="product-actions">
                                     <a href="/user/products/<%= product._id %>" class="btn-primary">View Details</a>
                                 </div>
@@ -320,15 +309,56 @@
     </div>
 
     <script>
-        // Search functionality
-        document.querySelector('.search-box').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                const searchValue = this.value;
+        // Navbar search functionality
+        function performSearch() {
+            const searchInput = document.getElementById('navSearchInput');
+            const searchValue = searchInput.value.trim();
+            
+            if (searchValue) {
                 const url = new URL(window.location);
                 url.searchParams.set('q', searchValue);
                 url.searchParams.set('page', '1');
                 window.location.href = url.toString();
             }
+        }
+
+        // Clear search and all filters function
+        function clearSearch() {
+            const searchInput = document.getElementById('navSearchInput');
+            searchInput.value = '';
+            
+            // Clear all filters and redirect to clean URL
+            window.location.href = '/user/product/list';
+        }
+
+        // Show/hide clear button based on input content
+        function toggleClearButton() {
+            const searchInput = document.getElementById('navSearchInput');
+            const clearBtn = document.getElementById('clearSearchBtn');
+            
+            if (searchInput.value.trim().length > 0) {
+                clearBtn.style.display = 'block';
+            } else {
+                clearBtn.style.display = 'none';
+            }
+        }
+
+        // Enhanced navbar search with Enter key and click functionality
+        document.getElementById('navSearchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                performSearch();
+            }
+        });
+
+        // Monitor input changes to show/hide clear button
+        document.getElementById('navSearchInput').addEventListener('input', function() {
+            toggleClearButton();
+        });
+
+        // Search icon click functionality
+        document.querySelector('.search-icon').addEventListener('click', function() {
+            performSearch();
         });
 
         // Brand filter functionality
@@ -336,6 +366,9 @@
             const brandCheckboxes = document.querySelectorAll('input[name="brandFilter"]');
             const selectedBrandsInput = document.getElementById('selectedBrands');
             const filterForm = document.getElementById('filterForm');
+
+            // Initialize clear button visibility
+            toggleClearButton();
 
             // Update hidden input when checkboxes change
             function updateSelectedBrands() {
@@ -357,15 +390,11 @@
                 }
                 
                 updateActiveFiltersCount();
-                console.log('Selected brands:', selectedBrands);
             }
 
-            // Count and display active filters
+            // Count and display active filters (excluding search as it's now in navbar)
             function updateActiveFiltersCount() {
                 let activeCount = 0;
-                
-                // Count search
-                if (document.querySelector('input[name="q"]').value.trim()) activeCount++;
                 
                 // Count category
                 if (document.querySelector('select[name="category"]').value) activeCount++;
@@ -402,15 +431,13 @@
             updateSelectedBrands();
             
             // Add event listeners to other filter inputs for count updates
-            document.querySelector('input[name="q"]').addEventListener('input', updateActiveFiltersCount);
             document.querySelector('select[name="category"]').addEventListener('change', updateActiveFiltersCount);
             document.querySelector('input[name="priceMin"]').addEventListener('input', updateActiveFiltersCount);
             document.querySelector('input[name="priceMax"]').addEventListener('input', updateActiveFiltersCount);
 
-            // Clear filters functionality
+            // Clear filters functionality (sidebar button - keeps search)
             document.getElementById('clearFilters').addEventListener('click', function() {
-                // Clear all form inputs
-                document.querySelector('input[name="q"]').value = '';
+                // Clear all form inputs (except search which is now in navbar)
                 document.querySelector('select[name="category"]').value = '';
                 document.querySelector('input[name="priceMin"]').value = '';
                 document.querySelector('input[name="priceMax"]').value = '';
@@ -424,8 +451,11 @@
                 // Update hidden input and submit
                 updateSelectedBrands();
                 
-                // Redirect to clean URL
-                window.location.href = '/user/product/list';
+                // Keep search query in URL if it exists
+                const currentSearch = new URL(window.location).searchParams.get('q');
+                const baseUrl = '/user/product/list';
+                const finalUrl = currentSearch ? `${baseUrl}?q=${encodeURIComponent(currentSearch)}` : baseUrl;
+                window.location.href = finalUrl;
             });
         });
     </script>

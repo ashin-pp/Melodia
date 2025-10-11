@@ -19,17 +19,17 @@ exports.getProducts = async (req, res) => {
     const imageWarning = req.session.imageWarning ? req.session.imageWarning : null;
     delete req.session.imageWarning;
 
-   
+
     const { q, status, category, sort, page = 1 } = req.query;
-    const limit = 10; 
+    const limit = 10;
 
     console.log(' Query parameters received:', {
       q, status, category, sort, page
     });
 
-    
+
     const filter = {};
-    
+
 
     if (q && q.trim()) {
       filter.$or = [
@@ -38,7 +38,7 @@ exports.getProducts = async (req, res) => {
       ];
     }
 
-   
+
     if (status) {
       if (status === 'listed') {
         filter.isListed = true;
@@ -47,16 +47,16 @@ exports.getProducts = async (req, res) => {
       }
     }
 
-    
+
     if (category && category !== '') {
       filter.categoryId = category;
     }
 
     console.log(' Final filter object:', filter);
 
-    
+
     let sortObj = { createdAt: -1 }; // Default: newest first
-    
+
     switch (sort) {
       case 'oldest':
         sortObj = { createdAt: 1 };
@@ -73,18 +73,18 @@ exports.getProducts = async (req, res) => {
         break;
     }
 
-   
+
 
     // Calculate pagination
     const skip = (parseInt(page) - 1) * limit;
-    
+
     // Get total count for pagination
     const totalProducts = await Product.countDocuments(filter);
     const totalPages = Math.ceil(totalProducts / limit);
 
-    
 
-    
+
+
     const products = await Product.find(filter)
       .sort(sortObj)
       .skip(skip)
@@ -92,29 +92,29 @@ exports.getProducts = async (req, res) => {
       .populate('categoryId', 'name')
       .populate('variants');
 
-   
-    const categories = await Category.find({ isListed: true }).sort({ name: 1 });
-     const countCategories=await 
 
-    
-    res.render('admin/products', {
-      products,
-      categories, 
-      query: q || '',
-      status: status || '',
-      category: category || '',
-      sort: sort || 'newest',
-      currentPage: parseInt(page),
-      totalPages,
-      totalProducts, 
-      productJustEditted,
-      productJustAdded,
-      imageWarning
-    });
+    const categories = await Category.find({ isListed: true }).sort({ name: 1 });
+    const countCategories = await
+
+
+      res.render('admin/products', {
+        products,
+        categories,
+        query: q || '',
+        status: status || '',
+        category: category || '',
+        sort: sort || 'newest',
+        currentPage: parseInt(page),
+        totalPages,
+        totalProducts,
+        productJustEditted,
+        productJustAdded,
+        imageWarning
+      });
 
   } catch (error) {
     console.error('Error fetching products:', error);
-    res.status(500).render('error/500', { 
+    res.status(500).render('error/500', {
       title: 'Server Error',
       message: 'Failed to load products'
     });
@@ -125,46 +125,46 @@ exports.getProducts = async (req, res) => {
 exports.toggleProductStatus = async (req, res) => {
   try {
     const productId = req.params.id;
-    
+
     console.log(' Toggling status for product:', productId);
-    
+
     // Find current product
     const product = await Product.findById(productId);
     if (!product) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Product not found' 
+      return res.status(404).json({
+        success: false,
+        message: 'Product not found'
       });
     }
-    
+
     // Toggle the status
     const newStatus = !product.isListed;
-    
+
     console.log('Current status:', product.isListed, '→ New status:', newStatus);
-    
+
     // Update using updateOne for reliability
     const updateResult = await Product.updateOne(
       { _id: productId },
       { $set: { isListed: newStatus } }
     );
-    
+
     console.log('Toggle update result:', updateResult);
-    
+
     // Verify the update
     const updatedProduct = await Product.findById(productId);
     console.log('Verified new status:', updatedProduct.isListed);
-    
+
     res.json({
       success: true,
       newStatus: updatedProduct.isListed ? 'Listed' : 'Unlisted',
       message: `Product ${updatedProduct.isListed ? 'listed' : 'unlisted'} successfully`
     });
-    
+
   } catch (error) {
     console.error('Toggle error:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Error updating product status' 
+    res.status(500).json({
+      success: false,
+      message: 'Error updating product status'
     });
   }
 };
@@ -172,11 +172,11 @@ exports.toggleProductStatus = async (req, res) => {
 // Your existing functions remain the same...
 exports.getAddProduct = async (req, res) => {
   try {
-    const categories = await Category.find({ isListed: true }).sort({ name: 1 }); 
+    const categories = await Category.find({ isListed: true }).sort({ name: 1 });
     res.render('admin/addproduct', {
       categories,
       errors: [],
-      old: {} 
+      old: {}
     });
   } catch (error) {
     console.error('Error loading add product page:', error);
@@ -187,7 +187,7 @@ exports.getAddProduct = async (req, res) => {
 exports.postAddProduct = async (req, res) => {
   const { productName, description, brand, categoryId, offer, type, batteryHealth } = req.body;
   let { variants } = req.body;
-  
+
   console.log("===  PRODUCT DEBUG ===");
   console.log("Body:", req.body);
   console.log("Battery Health received:", batteryHealth, "Type:", typeof batteryHealth);
@@ -201,7 +201,7 @@ exports.postAddProduct = async (req, res) => {
     });
   }
   console.log("========================");
-  
+
   let errors = [];
 
   if (variants && !Array.isArray(variants)) {
@@ -216,12 +216,12 @@ exports.postAddProduct = async (req, res) => {
   if (!brand || !brand.trim()) errors.push('Brand is required.');
   if (!categoryId) errors.push('Category is required.');
   if (!description || !description.trim()) errors.push('Description is required.');
-  
+
   // Validate numeric fields
   if (offer && (isNaN(Number(offer)) || Number(offer) < 0 || Number(offer) > 100)) {
     errors.push('Offer must be a number between 0 and 100.');
   }
-  
+
 
 
   // Simplified validation - just check if we have variants
@@ -229,19 +229,19 @@ exports.postAddProduct = async (req, res) => {
     errors.push('At least one variant is required.');
   } else {
     console.log('Validating variants:', variants);
-    
+
     variants.forEach((v, i) => {
       console.log(`Validating variant ${i}:`, v);
-      
+
       if (!v.color || !v.color.trim()) {
-        errors.push(`Variant ${i+1}: Color is required.`);
+        errors.push(`Variant ${i + 1}: Color is required.`);
       }
       if (!v.price || isNaN(Number(v.price)) || Number(v.price) < 0) {
-        errors.push(`Variant ${i+1}: Price must be a positive number.`);
+        errors.push(`Variant ${i + 1}: Price must be a positive number.`);
       }
       // Make stock optional
       if (v.stock && (isNaN(Number(v.stock)) || Number(v.stock) < 0)) {
-        errors.push(`Variant ${i+1}: Stock must be a positive number.`);
+        errors.push(`Variant ${i + 1}: Stock must be a positive number.`);
       }
     });
   }
@@ -267,9 +267,9 @@ exports.postAddProduct = async (req, res) => {
         sanitizedBatteryHealth = batteryNum;
       }
     }
-    
+
     const sanitizedOffer = offer && !isNaN(Number(offer)) ? Number(offer) : 0;
-    
+
     console.log('Sanitized values:', {
       batteryHealth: sanitizedBatteryHealth,
       batteryHealthType: typeof sanitizedBatteryHealth,
@@ -300,21 +300,21 @@ exports.postAddProduct = async (req, res) => {
     if (type && type.trim()) {
       productData.type = type.trim();
     }
-    
+
     // Always add batteryHealth since we have a valid number
     productData.batteryHealth = sanitizedBatteryHealth;
 
     const product = new Product(productData);
-    
+
     await product.save();
     console.log('Product created successfully:', product._id);
 
     const createdVariants = [];
-    
+
     // Process variants with images
     for (let i = 0; i < variants.length; i++) {
       const v = variants[i];
-      
+
       try {
         console.log(`Creating variant ${i}:`, {
           color: v.color,
@@ -323,16 +323,16 @@ exports.postAddProduct = async (req, res) => {
         });
 
         // Handle variant images
-        const variantImages = req.files ? req.files.filter(file => 
+        const variantImages = req.files ? req.files.filter(file =>
           file.fieldname === `variants[${i}][images]`
         ) : [];
-        
+
         console.log(`Variant ${i} has ${variantImages.length} images`);
-        
+
         let imagePaths = [];
         if (variantImages.length > 0) {
           console.log(`Uploading ${variantImages.length} images for variant ${i}`);
-          
+
           const uploads = await Promise.all(
             variantImages.map(file =>
               uploadBufferToCloudinary(file.buffer, 'melodia/variants')
@@ -343,16 +343,16 @@ exports.postAddProduct = async (req, res) => {
             url: u.secure_url,
             publicId: u.public_id
           }));
-          
+
           console.log(`Successfully uploaded ${imagePaths.length} images for variant ${i}`);
         }
 
         // Calculate sale price based on offers
         const regularPrice = Number(v.price);
         const productOffer = sanitizedOffer;
-        
+
         // For now, we'll use product offer (category offer can be added later)
-        const salePrice = productOffer > 0 
+        const salePrice = productOffer > 0
           ? parseFloat((regularPrice * (1 - (productOffer / 100))).toFixed(2))
           : regularPrice;
 
@@ -364,14 +364,14 @@ exports.postAddProduct = async (req, res) => {
           stock: v.stock ? Number(v.stock) : 0,
           images: imagePaths,
         });
-        
+
         await variantDoc.save({ validateBeforeSave: false }); // Skip pre-save to avoid double calculation
-        
+
         console.log(`Created variant ${v.color}: Regular ₹${regularPrice}, Sale ₹${salePrice} (${productOffer}% off) with ${imagePaths.length} images`);
         createdVariants.push(variantDoc._id);
-        
+
         console.log(`Variant ${i} created successfully:`, variantDoc._id);
-        
+
       } catch (variantError) {
         console.error(`Error creating variant ${i}:`, variantError);
         console.error('Variant error details:', variantError.message);
@@ -380,26 +380,26 @@ exports.postAddProduct = async (req, res) => {
     }
 
     console.log("variants-->", createdVariants);
-    
+
     product.variants = createdVariants;
     await product.save();
 
     req.session.productAdded = true;
-    
+
     // Check if any variants have no images and set a warning
-    const variantsWithoutImages = createdVariants.length > 0 ? 
-      await Variant.find({ 
-        _id: { $in: createdVariants }, 
+    const variantsWithoutImages = createdVariants.length > 0 ?
+      await Variant.find({
+        _id: { $in: createdVariants },
         $or: [
           { images: { $exists: false } },
           { images: { $size: 0 } }
         ]
       }) : [];
-    
+
     if (variantsWithoutImages.length > 0) {
       req.session.imageWarning = `Product added successfully! Note: ${variantsWithoutImages.length} variant(s) have no images. Consider editing the product to add images.`;
     }
-    
+
     req.session.save((err) => {
       if (err) {
         console.log("server error while add product", err);
@@ -409,7 +409,7 @@ exports.postAddProduct = async (req, res) => {
     res.redirect('/admin/products');
   } catch (error) {
     console.error('Error adding product:', error);
-    
+
     // More specific error messages
     let errorMessage = 'Server error, please try again.';
     if (error.message.includes('variant')) {
@@ -419,7 +419,7 @@ exports.postAddProduct = async (req, res) => {
     } else if (error.message.includes('Cloudinary')) {
       errorMessage = 'Image upload failed. Please try again.';
     }
-    
+
     try {
       const categories = await Category.find({ isListed: true }).sort({ name: 1 });
       res.render('admin/addproduct', {
@@ -438,7 +438,7 @@ exports.getEditProduct = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id)
       .populate('categoryId', 'name')
-      .populate('variants'); 
+      .populate('variants');
 
     if (!product) {
       return res.status(404).render('error/404', { title: 'Product Not Found' });
@@ -446,7 +446,7 @@ exports.getEditProduct = async (req, res) => {
 
     const categories = await Category.find({ isListed: true }).sort({ name: 1 });
     console.log(product.categoryId);
-    
+
     console.log('Product data for edit:', {
       id: product._id,
       name: product.productName,
@@ -454,7 +454,7 @@ exports.getEditProduct = async (req, res) => {
       type: product.type,
       batteryHealth: product.batteryHealth
     });
-    
+
     res.render('admin/editProduct', {
       product,
       categories,
@@ -496,13 +496,13 @@ exports.postEditProduct = async (req, res) => {
     } else {
       variants.forEach((v, i) => {
         if (!v.color || !v.color.trim()) {
-          errors.push(`Variant ${i+1}: Color is required.`);
+          errors.push(`Variant ${i + 1}: Color is required.`);
         }
         if (!v.price || isNaN(v.price) || v.price < 0) {
-          errors.push(`Variant ${i+1}: Price must be a positive number.`);
+          errors.push(`Variant ${i + 1}: Price must be a positive number.`);
         }
         if (v.stock && (isNaN(v.stock) || v.stock < 0)) {
-          errors.push(`Variant ${i+1}: Stock must be a positive number.`);
+          errors.push(`Variant ${i + 1}: Stock must be a positive number.`);
         }
       });
     }
@@ -566,11 +566,11 @@ exports.postEditProduct = async (req, res) => {
           if (variant && variant.images && variant.images.length > deleteInfo.imageIndex) {
             console.log(`Removing image ${deleteInfo.imageIndex} from variant ${deleteInfo.variantId}`);
             console.log('Before removal:', variant.images.length, 'images');
-            
+
             // Remove the image from the array
             variant.images.splice(deleteInfo.imageIndex, 1);
             await variant.save();
-            
+
             console.log('After removal:', variant.images.length, 'images');
           }
         } catch (error) {
@@ -580,11 +580,11 @@ exports.postEditProduct = async (req, res) => {
     }
 
     const finalVariantIds = [];
-    
+
     // Process each variant
     for (let i = 0; i < variants.length; i++) {
       const v = variants[i];
-      
+
       if (v._id) {
         // Update existing variant
         const updateVariantData = {
@@ -594,7 +594,7 @@ exports.postEditProduct = async (req, res) => {
         };
 
         // Check for new images for this variant
-        const variantNewImages = req.files ? req.files.filter(file => 
+        const variantNewImages = req.files ? req.files.filter(file =>
           file.fieldname === `variants[${i}][newImages]`
         ) : [];
 
@@ -620,10 +620,10 @@ exports.postEditProduct = async (req, res) => {
         finalVariantIds.push(v._id);
       } else {
         // Create new variant
-        const variantImages = req.files ? req.files.filter(file => 
+        const variantImages = req.files ? req.files.filter(file =>
           file.fieldname === `variants[${i}][images]`
         ) : [];
-        
+
         let imagePaths = [];
         if (variantImages.length > 0) {
           const uploads = await Promise.all(
@@ -645,7 +645,7 @@ exports.postEditProduct = async (req, res) => {
           stock: v.stock ? Number(v.stock) : 0,
           images: imagePaths,
         });
-        
+
         await newVariant.save();
         finalVariantIds.push(newVariant._id);
       }

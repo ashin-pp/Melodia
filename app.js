@@ -8,24 +8,13 @@ const app = express();
 const userRoutes = require('./routes/userRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const { getImageUrl } = require('./helper/imageHandler');
-const {validateUserSection}=require('./middleware/auth')
+const connectDB=require('./config/mongo')
 dotenv.config();
 
 require('./config/passport');
 const passport = require('passport');
 
-mongoose.connect('mongodb://localhost:27017/melodia', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-  .then(() => {
-    console.log('Connected to MongoDB successfully');
-  })
-  .catch((error) => {
-    console.error(' MongoDB connection error:', error.message);
-    process.exit(1);
-
-  });
+connectDB();
 
 // Express middleware setup
 app.use(express.json());
@@ -91,9 +80,9 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use('/user', userRoutes);  // Mount with /user prefix
+app.use('/user', userRoutes);
 app.use('/admin', adminRoutes);
-app.use('/', userRoutes);      // Also mount at root for landing page
+app.use('/', userRoutes);
 
 
 
@@ -104,8 +93,11 @@ app.use((req, res) => {
   res.status(404).render('error/404', { title: '404 Not Found' });
 });
 app.use((err, req, res, next) => {
-  console.error('Global error handler:', err.stack);
+  console.error('Global error handler:', err);
   res.status(500).render('error/500', { title: 'Server Error' });
 });
 
-app.listen(3000, () => console.log(`Server running on port: http://localhost:3000`));
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+  console.log(`Server is running on port http://localhost:${port}`);
+});
