@@ -18,7 +18,7 @@ exports.getShop = async (req, res) => {
     const page = parseInt(req.query.page) > 0 ? parseInt(req.query.page) : 1;
     const limit = 6;
     const skip = (page - 1) * limit;
-    
+
     const brands = typeof req.query.brands === 'string' && req.query.brands.trim().length > 0
       ? req.query.brands.split(',').map(b => b.trim()).filter(Boolean)
       : [];
@@ -166,24 +166,24 @@ exports.getShop = async (req, res) => {
     const totalPages = Math.ceil(totalProducts / limit);
 
     // Get categories with product count for filter dropdown
-    const categories=await Category.aggregate([
-      {$match:{isListed:true}},
+    const categories = await Category.aggregate([
+      { $match: { isListed: true } },
       {
-        $lookup:{
-          from:'products',
-          localField:'_id',
-          foreignField:'categoryId',
-          as:'products'
+        $lookup: {
+          from: 'products',
+          localField: '_id',
+          foreignField: 'categoryId',
+          as: 'products'
         }
       },
       {
-        $addFields:{
-          productCount:{$size:'$products'}
+        $addFields: {
+          productCount: { $size: '$products' }
         }
       },
-      
+
     ]);
-     
+
     // Build pagination URLs
     const baseUrl = req.originalUrl.split('?')[0];
     const currentQuery = { ...req.query };
@@ -264,6 +264,12 @@ exports.getProductDetails = async (req, res) => {
   try {
     const productId = req.params.id;
 
+    // Check if productId is a valid MongoDB ObjectId
+    if (!mongoose.Types.ObjectId.isValid(productId)) {
+      console.log("Invalid product ID format:", productId);
+      return res.status(404).render('error/404', { title: '404 Not Found' });
+    }
+
     const product = await Product.findById(productId)
       .populate({ path: 'categoryId', select: 'name isListed' })
       .populate('variants');
@@ -271,7 +277,8 @@ exports.getProductDetails = async (req, res) => {
     console.log(product);
 
     if (!product || !product.categoryId || !product.isListed || !product.categoryId.isListed) {
-      return res.redirect('/product/list');
+      console.log("Product not found or not available:", productId);
+      return res.status(404).render('error/404', { title: '404 Not Found' });
     }
 
     // Get reviews with user info
@@ -296,7 +303,8 @@ exports.getProductDetails = async (req, res) => {
 
     // Ensure we have variants with images
     if (!product.variants || product.variants.length === 0) {
-      return res.redirect('/products/list');
+      console.log("Product has no variants:", productId);
+      return res.status(404).render('error/404', { title: '404 Not Found' });
     }
 
     // Get the first variant as default
@@ -315,7 +323,7 @@ exports.getProductDetails = async (req, res) => {
 
   } catch (error) {
     console.error('Product details error:', error);
-    res.redirect('/product/list');
+    res.status(500).render('error/500', { title: 'Server Error' });
   }
 };
 
@@ -323,6 +331,15 @@ exports.getVariantDetails = async (req, res) => {
   try {
     const variantId = req.params.variantId;
     console.log("Fetching variant details for:", variantId);
+
+    // Check if variantId is a valid MongoDB ObjectId
+    if (!mongoose.Types.ObjectId.isValid(variantId)) {
+      console.log("Invalid variant ID format:", variantId);
+      return res.status(404).json({
+        success: false,
+        error: 'Variant not found'
+      });
+    }
 
     const variant = await Variant.findById(variantId)
       .populate({
@@ -336,6 +353,7 @@ exports.getVariantDetails = async (req, res) => {
       .lean();
 
     if (!variant) {
+      console.log("Variant not found:", variantId);
       return res.status(404).json({
         success: false,
         error: 'Variant not found'

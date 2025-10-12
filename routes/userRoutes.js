@@ -52,9 +52,6 @@ router.get('/home', protectUser, userCtrl.loadHomePage);
 router.get('/profile', protectUser, profileCtrl.getProfile);
 router.get('/logout', protectUser, profileCtrl.logout);
 
-//product routes (public access for testing)
-// router.get('/product/list', productCtrl.getShop);
-// router.get('/products/:id', productCtrl.getProductDetails);
 
 //product routes (protected)
 router.get('/product/list',protectUser,productCtrl.getShop);

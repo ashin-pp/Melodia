@@ -3,9 +3,10 @@ const User = require('../../model/userSchema')
 
 
 exports.getProfile = async (req,res)=>{
+  try {
     if(!req.session){
         console.log("session not found")
-        res.redirect('/login')
+        return res.redirect('/login')
     }
    const userId = req.session.user.id 
    if(!userId){
@@ -17,11 +18,17 @@ exports.getProfile = async (req,res)=>{
    if(!user){
     console.log("user not found ")
     delete req.session.user;
-    res.redirect('/login')
+    return res.redirect('/login')
    }
-    res.render('user/profile')
-
-  };
+   
+   console.log("Rendering profile for user:", user.name || user.email)
+   res.render('user/profile', { user })
+   
+  } catch (error) {
+    console.error("Error in getProfile:", error)
+    res.status(500).render('error/500', { title: 'Server Error' })
+  }
+};
 
   exports.logout = (req, res) => {
   try {

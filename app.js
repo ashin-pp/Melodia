@@ -3,12 +3,12 @@ const path = require('path');
 const dotenv = require('dotenv');
 const session = require('express-session');
 const flash = require('connect-flash');
-const mongoose = require('mongoose');
+const MongoStore = require('connect-mongo');
 const app = express();
 const userRoutes = require('./routes/userRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const { getImageUrl } = require('./helper/imageHandler');
-const connectDB=require('./config/mongo')
+const connectDB = require('./config/mongo')
 dotenv.config();
 
 require('./config/passport');
@@ -26,13 +26,14 @@ app.locals.getImageUrl = getImageUrl;
 app.disable('etag');
 app.set('etag', false);
 
-// Cache-control for dynamic pages only
+// Cache-control to prevent back button issues
 app.use((req, res, next) => {
   // Only apply no-cache to HTML pages, not static assets
   if (!req.path.match(/\.(css|js|png|jpg|jpeg|gif|ico|svg)$/)) {
     res.set({
-      'Cache-Control': 'no-cache, must-revalidate',
-      'Pragma': 'no-cache'
+      'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
     });
   }
   next();
@@ -40,13 +41,19 @@ app.use((req, res, next) => {
 
 
 app.use(session({
-  secret: 'your-secret-key-here',
+  secret: process.env.SESSION_SECRET || 'your-secret-key-here',
   resave: false,
   saveUninitialized: false,
+  store: MongoStore.create({
+    mongoUrl: process.env.MONGODB_URI || 'mongodb://localhost:27017/melodia',
+    touchAfter: 24 * 3600,
+    ttl: 7 * 24 * 60 * 60
+  }),
   cookie: {
     secure: false,
-    maxAge: 24 * 60 * 60 * 1000,  // 1 day
+    maxAge: 7 * 24 * 60 * 60 * 1000,
     httpOnly: true,
+    sameSite: 'lax'
   }
 }));
 
@@ -70,10 +77,11 @@ app.use((req, res, next) => {
 app.set('view engine', 'ejs');
 app.set('views', 'views');
 
+// Prevent admin users from accessing user routes
 app.use((req, res, next) => {
   if (req.session && req.session.admin) {
-    // Only redirect if trying to access user routes, not static assets or other paths
-    if (req.originalUrl.startsWith('/user') || req.originalUrl === '/') {
+    // If admin is trying to access user routes, redirect to admin dashboard
+    if (req.originalUrl.startsWith('/user') || req.originalUrl === '/' || req.originalUrl === '/login'||req.originalUrl==='/signUp') {
       return res.redirect('/admin/dashboard');
     }
   }

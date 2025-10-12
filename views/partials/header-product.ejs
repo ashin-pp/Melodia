@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= typeof title !== 'undefined' ? title : 'Melodia - Premium Audio' %></title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.14.5/dist/sweetalert2.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 50%, #0f0f0f 100%);
+            color: #ffffff;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 60px;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .navbar.scrolled {
+            padding: 15px 60px;
+            background: rgba(0, 0, 0, 0.98);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            font-size: 26px;
+            font-weight: 700;
+            color: #ffffff;
+            text-decoration: none;
+            font-family: 'Prata', serif;
+            letter-spacing: 1px;
+        }
+
+        .logo img {
+            width: 38px;
+            height: 38px;
+            margin-right: 12px;
+            border-radius: 6px;
+        }
+
+
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 40px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+            padding: 8px 0;
+        }
+
+        .nav-links a:hover {
+            color: #ffffff;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .search-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-box {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 25px;
+            padding: 12px 45px 12px 20px;
+            color: #ffffff;
+            outline: none;
+            width: 250px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .search-box:focus {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 107, 107, 0.5);
+            box-shadow: 0 0 20px rgba(255, 107, 107, 0.2);
+        }
+
+        .search-box::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 15px;
+            color: rgba(255, 255, 255, 0.6);
+            cursor: pointer;
+            font-size: 14px;
+            transition: color 0.3s ease;
+        }
+
+        .search-icon:hover {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .clear-search {
+            position: absolute;
+            right: 15px;
+            color: rgba(255, 255, 255, 0.6);
+            cursor: pointer;
+            font-size: 14px;
+            display: none;
+            transition: color 0.3s ease;
+        }
+
+        .clear-search:hover {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .icon-buttons {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .icon-btn {
+            position: relative;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 18px;
+        }
+
+        .icon-btn:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 107, 107, 0.5);
+            color: #ffffff;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 107, 107, 0.2);
+        }
+
+        .icon-btn.cart-btn::after {
+            content: "🛒";
+        }
+
+        .icon-btn.wishlist-btn::after {
+            content: "❤️";
+        }
+
+        .icon-btn.profile-btn::after {
+            content: "👤";
+        }
+
+        .icon-btn .badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .icon-btn::before {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: -35px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+
+        .icon-btn:hover::before {
+            opacity: 1;
+            visibility: visible;
+            bottom: -40px;
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 15px 30px;
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .nav-links {
+                gap: 25px;
+            }
+
+            .search-box {
+                width: 200px;
+            }
+
+            .icon-buttons {
+                gap: 10px;
+            }
+
+            .icon-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 16px;
+            }
+        }
+    </style>
+    <% if (typeof additionalCSS !== 'undefined') { %>
+        <%- additionalCSS %>
+    <% } %>
+</head>
+<body>
+    <nav class="navbar" id="navbar">
+        <a href="/" class="logo">
+            <img src="/image/user/home/20250929_014220.png" alt="Melodia Logo" onerror="this.style.display='none';">
+            Melodia
+        </a>
+        <ul class="nav-links">
+            <li><a href="/">Home</a></li>
+            <li><a href="/product/list">Products</a></li>
+            <li><a href="/about">About</a></li>
+            <li><a href="/contact">Contact</a></li>
+        </ul>
+        <div class="nav-actions">
+            <div class="search-container">
+                <input type="text" class="search-box" placeholder="Search premium audio..." id="navSearchInput">
+                <i class="fas fa-search search-icon" onclick="performSearch()" id="searchIcon"></i>
+                <i class="fas fa-times clear-search" onclick="clearSearch()" id="clearSearchBtn"></i>
+            </div>
+            <div class="icon-buttons">
+                <button class="icon-btn cart-btn" data-tooltip="Cart" onclick="window.location.href='/cart'">
+                    <% if (typeof cartCount !== 'undefined' && cartCount > 0) { %>
+                        <span class="badge"><%= cartCount %></span>
+                    <% } %>
+                </button>
+                <button class="icon-btn wishlist-btn" data-tooltip="Wishlist" onclick="window.location.href='/wishlist'"></button>
+                <button class="icon-btn profile-btn" data-tooltip="Profile" onclick="window.location.href='/profile'"></button>
+            </div>
+        </div>
+    </nav>
+
+    <script>
+        // Navbar scroll effect
+        window.addEventListener('scroll', () => {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 100) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // Search functionality
+        function performSearch() {
+            const searchInput = document.getElementById('navSearchInput');
+            const query = searchInput.value.trim();
+            if (query) {
+                window.location.href = `/product/list?q=${encodeURIComponent(query)}`;
+            }
+        }
+
+        function clearSearch() {
+            const searchInput = document.getElementById('navSearchInput');
+            const clearBtn = document.getElementById('clearSearchBtn');
+            const searchIcon = document.getElementById('searchIcon');
+            
+            searchInput.value = '';
+            clearBtn.style.display = 'none';
+            searchIcon.style.display = 'block';
+            
+            // If on product list page, reload without search query
+            if (window.location.pathname === '/product/list') {
+                window.location.href = '/product/list';
+            }
+        }
+
+        // Show/hide clear button based on input
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('navSearchInput');
+            const clearBtn = document.getElementById('clearSearchBtn');
+            const searchIcon = document.getElementById('searchIcon');
+
+            if (searchInput) {
+                // Check if there's initial value (for product list page with search query)
+                const urlParams = new URLSearchParams(window.location.search);
+                const searchQuery = urlParams.get('q');
+                if (searchQuery) {
+                    searchInput.value = searchQuery;
+                    clearBtn.style.display = 'block';
+                    searchIcon.style.display = 'none';
+                }
+
+                searchInput.addEventListener('input', function() {
+                    if (this.value.trim()) {
+                        clearBtn.style.display = 'block';
+                        searchIcon.style.display = 'none';
+                    } else {
+                        clearBtn.style.display = 'none';
+                        searchIcon.style.display = 'block';
+                    }
+                });
+
+                searchInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        performSearch();
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

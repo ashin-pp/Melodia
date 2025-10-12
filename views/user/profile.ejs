@@ -1,15 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Account - Melodia</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <!-- SweetAlert2 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.14.5/dist/sweetalert2.min.css" rel="stylesheet">
+<%- include('../partials/header-common', { title: 'My Account - Melodia' }) %>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-        
+
         * {
             margin: 0;
             padding: 0;
@@ -18,13 +11,19 @@
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 50%, #0f0f0f 100%);
-            color: #ffffff;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 50%, #f8f9fa 100%);
+            color: #333333;
             overflow-x: hidden;
             scroll-behavior: smooth;
+            margin-top: 100px;
         }
 
-        /* Modern Navigation - Exact from Home Page */
+        /* Ensure footer displays properly on light background */
+        .footer {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%) !important;
+            color: #ffffff !important;
+        }
+
         .navbar {
             display: flex;
             justify-content: space-between;
@@ -54,14 +53,7 @@
             text-decoration: none;
         }
 
-        .logo img {
-            width: 32px;
-            height: 32px;
-            margin-right: 12px;
-            border-radius: 6px;
-        }
-
-        .logo::before {
+        /* .logo::before {
             content: "♪";
             margin-right: 12px;
             font-size: 32px;
@@ -69,7 +61,7 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-        }
+        } */
 
         .nav-links {
             display: flex;
@@ -92,29 +84,10 @@
             color: #ffffff;
         }
 
-        .nav-links a::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 0;
-            height: 2px;
-            background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
-            transition: width 0.3s ease;
-        }
-
-        .nav-links a:hover::after {
-            width: 100%;
-        }
-
         .nav-actions {
             display: flex;
             align-items: center;
             gap: 20px;
-        }
-
-        .search-container {
-            position: relative;
         }
 
         .search-box {
@@ -129,17 +102,6 @@
             transition: all 0.3s ease;
         }
 
-        .search-box:focus {
-            background: rgba(255, 255, 255, 0.12);
-            border-color: rgba(255, 107, 107, 0.5);
-            box-shadow: 0 0 20px rgba(255, 107, 107, 0.2);
-        }
-
-        .search-box::placeholder {
-            color: rgba(255, 255, 255, 0.5);
-        }
-
-        /* Icon Buttons Container */
         .icon-buttons {
             display: flex;
             align-items: center;
@@ -182,63 +144,16 @@
             content: "👤";
         }
 
-        /* Badge for cart items */
-        .icon-btn .badge {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
-            color: white;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 11px;
-            font-weight: 600;
-        }
-
-        /* Tooltip */
-        .icon-btn::before {
-            content: attr(data-tooltip);
-            position: absolute;
-            bottom: -35px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.9);
-            color: white;
-            padding: 6px 10px;
-            border-radius: 6px;
-            font-size: 12px;
-            white-space: nowrap;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-            pointer-events: none;
-        }
-
-        .icon-btn:hover::before {
-            opacity: 1;
-            visibility: visible;
-            bottom: -40px;
-        }
-
-        /* Profile Page Specific Styles */
         .profile-container {
-            margin-top: 100px; /* Account for fixed navbar */
+            margin-top: 100px;
             min-height: calc(100vh - 100px);
             background: #ffffff;
             color: #333333;
         }
 
-        /* Account Section */
         .account-section {
-            /* background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%); */
             color: rgb(130, 130, 130);
-            /* padding: 60px 0 40px; */
             text-align: center;
-            /* border-bottom: 3px solid #ff6b6b; */
         }
 
         .account-title {
@@ -252,18 +167,16 @@
             background-clip: text;
         }
 
-        /* Main Content Container */
         .main-container {
             background-color: white;
             min-height: calc(100vh - 200px);
             display: flex;
         }
 
-        /* Sidebar Styles */
         .sidebar {
             width: 280px;
             background-color: #f8f9fa;
-            padding: 30px 0; 
+            padding: 30px 0;
             border-right: 1px solid #e9ecef;
         }
 
@@ -332,7 +245,6 @@
             font-size: 16px;
         }
 
-        /* Logout Button */
         .logout-btn {
             display: block;
             background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
@@ -358,7 +270,6 @@
             text-decoration: none;
         }
 
-        /* Profile Form Styles */
         .profile-content {
             flex: 1;
             padding: 50px;
@@ -369,7 +280,7 @@
             max-width: 800px;
             background-color: rgb(226, 226, 226);
             border-radius: 15px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
             padding: 40px;
             border: 1px solid rgba(255, 107, 107, 0.1);
         }
@@ -377,64 +288,9 @@
         .profile-form-title {
             font-size: 1.8rem;
             color: #1a1a1a;
-            margin-bottom: 30px;                
+            margin-bottom: 30px;
             text-align: left;
             font-weight: 700;
-        }
-
-        .form-group {
-            margin-bottom: 25px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: #333;
-            font-weight: 600;
-            font-size: 14px;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 15px 20px;
-            border: 2px solid #e9ecef;
-            border-radius: 10px;
-            font-size: 16px;
-            background-color: #f8f9fa;
-            transition: all 0.3s ease;
-            color: #333;
-        }
-
-        .form-group input:focus {
-            outline: none;
-            border-color: #ff6b6b;
-            background-color: white;
-            box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.1);
-            transform: translateY(-1px);
-        }
-
-        .form-buttons {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 40px;
-            gap: 20px;
-        }
-
-        .btn-cancel {
-            background-color: transparent;
-            color: #666;
-            border: 2px solid #e9ecef;
-            padding: 15px 35px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            font-size: 14px;
-        }
-
-        .btn-cancel:hover {
-            border-color: #999;
-            background-color: #f8f9fa;
         }
 
         .btn-save {
@@ -447,126 +303,56 @@
             font-weight: 600;
             transition: all 0.3s ease;
             font-size: 14px;
+            text-decoration: none;
+            display: inline-block;
         }
 
         .btn-save:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3);
+            color: white;
+            text-decoration: none;
         }
 
-        /* Footer Styles */
-        .footer {
-            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
-            color: #ffffff;
-            padding: 80px 60px 40px;
-        }
-
-        .footer-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: 2fr repeat(3, 1fr);
-            gap: 60px;
-            margin-bottom: 40px;
-        }
-
-        .footer-brand {
+        .profile-details {
             display: flex;
             flex-direction: column;
+            gap: 25px;
         }
 
-        .footer-logo {
-            font-size: 28px;
-            font-weight: 700;
-            margin-bottom: 20px;
-            color: #ffffff;
-        }
-
-        .footer-logo::before {
-            content: "♪";
-            margin-right: 8px;
-            background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .footer-description {
-            color: rgba(255, 255, 255, 0.6);
-            line-height: 1.6;
-            margin-bottom: 30px;
-        }
-
-        .social-icons {
+        .detail-group {
             display: flex;
-            gap: 16px;
+            flex-direction: column;
+            gap: 8px;
         }
 
-        .social-icon {
-            width: 48px;
-            height: 48px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
+        .detail-group label {
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .detail-value {
+            background-color: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 15px 20px;
+            font-size: 16px;
+            color: #333;
+            min-height: 50px;
             display: flex;
             align-items: center;
-            justify-content: center;
-            color: #ffffff;
-            text-decoration: none;
-            transition: all 0.3s ease;
-            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
-        .social-icon:hover {
-            background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3);
-        }
-
-        .footer-section h3 {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 24px;
-            color: #ffffff;
-        }
-
-        .footer-section ul {
-            list-style: none;
-        }
-
-        .footer-section li {
-            margin-bottom: 12px;
-        }
-
-        .footer-section a {
-            color: rgba(255, 255, 255, 0.6);
-            text-decoration: none;
-            transition: color 0.3s ease;
-        }
-
-        .footer-section a:hover {
-            color: #ff6b6b;
-        }
-
-        .footer-bottom {
-            text-align: center;
-            padding-top: 40px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 14px;
-        }
-
-        /* Responsive Design */
         @media (max-width: 1024px) {
             .main-container {
                 flex-direction: column;
             }
-            
+
             .sidebar {
                 width: 100%;
-            }
-            
-            .footer-content {
-                grid-template-columns: repeat(2, 1fr);
             }
         }
 
@@ -602,361 +388,172 @@
             .profile-form-container {
                 padding: 30px 20px;
             }
-
-            .form-buttons {
-                flex-direction: column;
-            }
-
-            .footer {
-                padding: 60px 30px 30px;
-            }
-
-            .footer-content {
-                grid-template-columns: 1fr;
-                gap: 40px;
-            }
         }
     </style>
-</head>
-<body>
-    <!-- Navigation - Exact from Home Page -->
-    <nav class="navbar" id="navbar">
-        <div class="logo">
-            <img src="/" alt="Melodia Logo" onerror="this.style.display='none';">
-            Melodia
-        </div>
-        <ul class="nav-links">
-            <li><a href="/">Home</a></li>
-            <li><a href="/product/list">Products</a></li>
-            <li><a href="/about">About</a></li>
-            <li><a href="/contact">Contact</a></li>
-        </ul>
-        <div class="nav-actions">
-            <div class="search-container">
-                <input type="text" class="search-box" placeholder="Search premium audio...">
-            </div>
-            <div class="icon-buttons">
-                <button class="icon-btn cart-btn" data-tooltip="Cart">
-                    <!-- <span class="badge">3</span> -->
-                </button>
-                <button class="icon-btn wishlist-btn" data-tooltip="Wishlist"></button>
-                <button class="icon-btn profile-btn" data-tooltip="Profile"></button>
-            </div>
-        </div>
-    </nav>
+    </head>
 
-    <!-- Profile Container -->
-    <div class="profile-container">
-        <!-- Account Section -->
-        <section class="account-section">
-            <div class="container">
-                <h1 class="account-title">My Account</h1>
-            </div>
-        </section> 
+    <body>
 
-        <!-- Main Content -->
-        <div class="main-container">
-            <!-- Sidebar -->
-            <aside class="sidebar">
-                <div class="user-profile">
-                    <div class="user-avatar">
-                        <% if (user && user.profilePicture) { %>
-                            <img src="<%= user.profilePicture %>" alt="Profile" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
-                        <% } else { %>
-                            <i class="fas fa-user"></i>
-                        <% } %>
+
+        <div class="profile-container">
+            <section class="account-section">
+                <div class="container">
+                    <h1 class="account-title">My Account</h1>
+                </div>
+            </section>
+
+            <div class="main-container">
+                <aside class="sidebar">
+                    <div class="user-profile">
+                        <div class="user-avatar">
+                            <% if (user && user.profilePicture) { %>
+                                <img src="<%= user.profilePicture %>" alt="Profile"
+                                    style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                                <% } else { %>
+                                    <i class="fas fa-user"></i>
+                                    <% } %>
+                        </div>
+                        <div class="user-name">
+                            <%= user && user.name ? user.name : 'User' %>
+                        </div>
                     </div>
-                    <div class="user-name">
-                        <% if (user && user.firstName) { %>
-                            <%= user.firstName %>
-                            <% if (user.lastName) { %>
-                                <%= user.lastName %>
-                            <% } %>
-                        <% } else if (user && user.name) { %>
-                            <%= user.name %>
-                        <% } else if (user && user.username) { %>
-                            <%= user.username %>
-                        <% } else { %>
-                            User
-                        <% } %>
+
+                    <ul class="sidebar-menu">
+                        <li class="active">
+                            <a href="/profile">
+                                <i class="fas fa-tachometer-alt"></i>
+                                Account Overview
+                            </a>
+                        </li>
+                        <!-- <li>
+                            <a href="/profile/edit">
+                                <i class="fas fa-edit"></i>
+                                Edit Profile
+                            </a>
+                        </li> -->
+
+                        <li>
+                            <a href="/orders">
+                                <i class="fas fa-shopping-bag"></i>
+                                My Orders
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/addresses">
+                                <i class="fas fa-map-marker-alt"></i>
+                                Manage Addresses
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/wallet">
+                                <i class="fas fa-wallet"></i>
+                                Wallet
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/password">
+                                <i class="fas fa-lock"></i>
+                                Password
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/wishlist">
+                                <i class="fas fa-heart"></i>
+                                Wishlist
+                            </a>
+                        </li>
+                    </ul>
+
+                    <a href="#" class="logout-btn" onclick="confirmLogout()">
+                        Logout
+                    </a>
+                </aside>
+
+                <main class="profile-content">
+                    <div class="profile-form-container">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                            <h2 class="profile-form-title">My Profile</h2>
+                            <a href="/profile/edit" class="btn-save">
+                                <i class="fas fa-edit" style="margin-right: 8px;"></i>Edit Profile
+                            </a>
+                        </div>
+
+                        <div class="profile-details">
+                            <div class="detail-group">
+                                <label>Full Name</label>
+                                <div class="detail-value">
+                                    <%= user && user.name ? user.name : 'Not provided' %>
+                                </div>
+                            </div>
+
+                            <div class="detail-group">
+                                <label>Email</label>
+                                <div class="detail-value">
+                                    <%= user && user.email ? user.email : 'Not provided' %>
+                                </div>
+                            </div>
+
+                            <div class="detail-group">
+                                <label>Phone Number</label>
+                                <div class="detail-value">
+                                    <%= user && user.phone ? user.phone : 'Not provided' %>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </div>
-                
-                <ul class="sidebar-menu">
-                    <li class="active">
-                        <a href="/profile">
-                            <i class="fas fa-tachometer-alt"></i>
-                            Account Overview
-                        </a>
-                    </li>
-                    <li>
-                        <a href="/orders">
-                            <i class="fas fa-shopping-bag"></i>
-                            My Orders
-                        </a>
-                    </li>
-                    <li>
-                        <a href="/addresses">
-                            <i class="fas fa-map-marker-alt"></i>
-                            Manage Addresses
-                        </a>
-                    </li>
-                    <li>
-                        <a href="/wallet">
-                            <i class="fas fa-wallet"></i>
-                            Wallet
-                        </a>
-                    </li>
-                    <li>
-                        <a href="/password">
-                            <i class="fas fa-lock"></i>
-                            Password
-                        </a>
-                    </li>
-                    <li>
-                        <a href="/wishlist">
-                            <i class="fas fa-heart"></i>
-                            Wishlist
-                        </a>
-                    </li>
-                </ul>
-                
-                <!-- Logout Button with SweetAlert -->
-                <a href="#" class="logout-btn" onclick="confirmLogout()">
-                    Logout
-                </a>
-            </aside>
-
-            <!-- Profile Form Content -->
-            <main class="profile-content">
-                <div class="profile-form-container">
-                    <h2 class="profile-form-title">Edit Your Profile</h2>
-                    
-                    <form action="/profile/update" method="POST" id="profileForm">
-                        <div class="form-group">
-                            <label for="firstName">First Name</label>
-                            <input type="text" 
-                                   id="firstName" 
-                                   name="firstName" 
-                                   value="<%= user && user.firstName ? user.firstName : '' %>" 
-                                   required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="lastName">Last Name</label>
-                            <input type="text" 
-                                   id="lastName" 
-                                   name="lastName" 
-                                   value="<%= user && user.lastName ? user.lastName : '' %>" 
-                                   required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="email">Email</label>
-                            <input type="email" 
-                                   id="email" 
-                                   name="email" 
-                                   value="<%= user && user.email ? user.email : '' %>" 
-                                   required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="phone">Phone Number</label>
-                            <input type="tel" 
-                                   id="phone" 
-                                   name="phone" 
-                                   value="<%= user && user.phone ? user.phone : '' %>">
-                        </div>
-                        
-                        <div class="form-buttons">
-                            <button type="button" class="btn-cancel" onclick="cancelEdit()">Cancel</button>
-                            <button type="submit" class="btn-save">Save Changes</button>
-                        </div>
-                    </form>
-                </div>
-            </main>
-        </div>
-    </div>
-
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="footer-content">
-            <div class="footer-brand">
-                <div class="footer-logo">Melodia</div>
-                <p class="footer-description">
-                    Premium audio experiences crafted for those who demand excellence. Discover the perfect sound for every moment.
-                </p>
-                <div class="social-icons">
-                    <a href="#" class="social-icon">📘</a>
-                    <a href="#" class="social-icon">🐦</a>
-                    <a href="#" class="social-icon">📷</a>
-                    <a href="#" class="social-icon">▶️</a>
-                </div>
-            </div>
-            <div class="footer-section">
-                <h3>Products</h3>
-                <ul>
-                    <li><a href="#">Headphones</a></li>
-                    <li><a href="#">Earbuds</a></li>
-                    <li><a href="#">Speakers</a></li>
-                    <li><a href="#">Accessories</a></li>
-                    <li><a href="#">Professional Series</a></li>
-                </ul>
-            </div>
-            <div class="footer-section">
-                <h3>Support</h3>
-                <ul>
-                    <li><a href="#">Customer Service</a></li>
-                    <li><a href="#">Technical Support</a></li>
-                    <li><a href="#">Warranty & Repairs</a></li>
-                    <li><a href="#">User Manuals</a></li>
-                    <li><a href="#">Returns & Exchanges</a></li>
-                </ul>
-            </div>
-            <div class="footer-section">
-                <h3>Company</h3>
-                <ul>
-                    <li><a href="#">About Us</a></li>
-                    <li><a href="#">Careers</a></li>
-                    <li><a href="#">Press & Media</a></li>
-                    <li><a href="#">Investor Relations</a></li>
-                    <li><a href="#">Privacy Policy</a></li>
-                </ul>
+                </main>
             </div>
         </div>
-        <div class="footer-bottom">
-            <p>&copy; 2024 Melodia. All rights reserved. Designed with ♪ for audio enthusiasts worldwide.</p>
-        </div>
-    </footer>
 
-    <!-- SweetAlert2 JS -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.14.5/dist/sweetalert2.all.min.js"></script>
-    <script>
-        // Navbar scroll effect - same as home page
-        window.addEventListener('scroll', () => {
-            const navbar = document.getElementById('navbar');
-            if (window.scrollY > 100) {
-                navbar.classList.add('scrolled');
-            } else {
-                navbar.classList.remove('scrolled');
-            }
-        });
+        <%- include('../partials/footer') %>
 
-        // Smooth scrolling for navigation links - same as home page
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
+
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.14.5/dist/sweetalert2.all.min.js"></script>
+            <script>
+                window.addEventListener('scroll', () => {
+                    const navbar = document.getElementById('navbar');
+                    if (window.scrollY > 100) {
+                        navbar.classList.add('scrolled');
+                    } else {
+                        navbar.classList.remove('scrolled');
+                    }
+                });
+
+                document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                    anchor.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        const target = document.querySelector(this.getAttribute('href'));
+                        if (target) {
+                            target.scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'start'
+                            });
+                        }
+                    });
+                });
+
+                document.querySelector('.profile-btn').addEventListener('click', function () {
+                    window.location.href = '/profile';
+                });
+
+                function confirmLogout() {
+                    Swal.fire({
+                        title: 'Logout',
+                        text: 'Are you sure you want to logout?',
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#ff6b6b',
+                        cancelButtonColor: '#6c757d',
+                        confirmButtonText: 'Yes, logout',
+                        cancelButtonText: 'Cancel'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = '/logout';
+                        }
                     });
                 }
-            });
-        });
+            </script>
+    </body>
 
-        // Icon button functionality - same as home page
-        document.querySelector('.profile-btn').addEventListener('click', function() {
-            window.location.href = '/profile';
-        });
-
-        // Cancel Edit with SweetAlert
-        function cancelEdit() {
-            Swal.fire({
-                title: 'Are you sure?',
-                text: 'All unsaved changes will be lost.',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#ff6b6b',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: 'Yes, cancel',
-                cancelButtonText: 'Continue editing'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    window.location.reload();
-                }
-            });
-        }
-
-        // Logout Confirmation with SweetAlert
-        function confirmLogout() {
-            Swal.fire({
-                title: 'Logout',
-                text: 'Are you sure you want to logout?',
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#ff6b6b',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: 'Yes, logout',
-                cancelButtonText: 'Cancel'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    window.location.href = '/logout';
-                }
-            });
-        }
-
-        // Form validation with SweetAlert
-        document.getElementById('profileForm').addEventListener('submit', function(e) {
-            const firstName = document.getElementById('firstName').value.trim();
-            const lastName = document.getElementById('lastName').value.trim();
-            const email = document.getElementById('email').value.trim();
-
-            if (!firstName || !lastName || !email) {
-                e.preventDefault();
-                Swal.fire({
-                    title: 'Validation Error',
-                    text: 'Please fill in all required fields.',
-                    icon: 'error',
-                    confirmButtonColor: '#ff6b6b'
-                });
-                return false;
-            }
-
-            // Email validation
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(email)) {
-                e.preventDefault();
-                Swal.fire({
-                    title: 'Invalid Email',
-                    text: 'Please enter a valid email address.',
-                    icon: 'error',
-                    confirmButtonColor: '#ff6b6b'
-                });
-                return false;
-            }
-        });
-
-        // Handle success/error messages with SweetAlert
-        <% if (locals.message) { %>
-            Swal.fire({
-                title: 'Message',
-                text: '<%= message %>',
-                icon: 'info',
-                confirmButtonColor: '#ff6b6b'
-            });
-        <% } %>
-
-        // Handle error messages
-        <% if (locals.error) { %>
-            Swal.fire({
-                title: 'Error',
-                text: '<%= error %>',
-                icon: 'error',
-                confirmButtonColor: '#ff6b6b'
-            });
-        <% } %>
-
-        // Handle success messages
-        <% if (locals.success) { %>
-            Swal.fire({
-                title: 'Success',
-                text: '<%= success %>',
-                icon: 'success',
-                confirmButtonColor: '#28a745'
-            });
-        <% } %>
-    </script>
-</body>
-</html>
+    </html>

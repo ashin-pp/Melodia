@@ -1,5 +1,6 @@
 const Category = require('../../model/categorySchema');
 const Product = require('../../model/productSchema');
+const mongoose = require('mongoose');
 
 
 exports.getCategoryPage = async (req, res) => {
@@ -9,7 +10,6 @@ exports.getCategoryPage = async (req, res) => {
     const limit = 12;
     const skip = (page - 1) * limit;
 
-
     const {
       q = '',
       priceMin = '',
@@ -18,21 +18,20 @@ exports.getCategoryPage = async (req, res) => {
       brand = '',
     } = req.query;
 
+    // Check if category ID is a valid MongoDB ObjectId
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      console.log("Invalid category ID format:", id);
+      return res.status(404).render('error/404', { title: '404 Not Found' });
+    }
+
     const category = await Category.findById(id).lean();
     if (!category) {
-      console.log("category not found")
-      return res.status(404).render('error/404', {
-        title: 'category not found',
-        message: "the category you are looking for does not exist.",
-      }
-      );
+      console.log("category not found:", id);
+      return res.status(404).render('error/404', { title: '404 Not Found' });
     }
     if (!category.isListed) {
-      console.log("category is unlisted")
-      return res.status(404).render('error/404', {
-        title: "category not available",
-        message: "the category you are looking for is unavailable"
-      })
+      console.log("category is unlisted:", id);
+      return res.status(404).render('error/404', { title: '404 Not Found' });
     }
 
 
