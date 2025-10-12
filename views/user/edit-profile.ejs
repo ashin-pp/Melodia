@@ -1,0 +1,616 @@
+<%- include('../partials/header-common', { title: 'Edit Profile - Melodia' }) %>
+
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 50%, #f8f9fa 100%);
+        color: #333333;
+        overflow-x: hidden;
+        scroll-behavior: smooth;
+        margin-top: 100px;
+    }
+
+    .profile-container {
+        margin-top: 100px;
+        min-height: calc(100vh - 100px);
+        background: #ffffff;
+        color: #333333;
+    }
+
+    .account-section {
+        color: rgb(130, 130, 130);
+        text-align: center;
+    }
+
+    .account-title {
+        font-size: 2.5rem;
+        font-weight: 600;
+        margin-bottom: 10px;
+        padding-top: 30px;
+        background: linear-gradient(135deg, #050505 0%, #e0e0e0 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .main-container {
+        background-color: white;
+        min-height: calc(100vh - 200px);
+        display: flex;
+    }
+
+    .sidebar {
+        width: 280px;
+        background-color: #f8f9fa;
+        padding: 30px 0;
+        border-right: 1px solid #e9ecef;
+    }
+
+    .user-profile {
+        text-align: center;
+        margin-bottom: 30px;
+        padding: 0 20px;
+    }
+
+    .user-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+        margin: 0 auto 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        color: white;
+        box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3);
+    }
+
+    .user-name {
+        background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+        color: white;
+        padding: 10px 20px;
+        border-radius: 25px;
+        font-weight: 600;
+        display: inline-block;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .sidebar-menu {
+        list-style: none;
+        padding: 0;
+    }
+
+    .sidebar-menu li {
+        margin: 0;
+    }
+
+    .sidebar-menu li a {
+        display: flex;
+        align-items: center;
+        padding: 15px 25px;
+        color: #666;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        font-weight: 500;
+        border-left: 3px solid transparent;
+    }
+
+    .sidebar-menu li a:hover,
+    .sidebar-menu li.active a {
+        background-color: rgba(255, 107, 107, 0.1);
+        color: #ff6b6b;
+        border-left-color: #ff6b6b;
+    }
+
+    .sidebar-menu li a i {
+        margin-right: 12px;
+        width: 20px;
+        font-size: 16px;
+    }
+
+    .logout-btn {
+        display: block;
+        background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+        color: white !important;
+        text-decoration: none;
+        text-align: center;
+        padding: 12px 30px;
+        border-radius: 25px;
+        margin: 30px 25px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        border: none;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 14px;
+    }
+
+    .logout-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4);
+        color: white !important;
+        text-decoration: none;
+    }
+
+    .profile-content {
+        flex: 1;
+        padding: 50px;
+        background: #ffffff;
+    }
+
+    .edit-form-container {
+        max-width: 600px;
+        width: 100%;
+        background-color: rgb(226, 226, 226);
+        border-radius: 15px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        padding: 40px;
+        border: 1px solid rgba(255, 107, 107, 0.1);
+    }
+
+    .form-title {
+        font-size: 1.8rem;
+        color: #1a1a1a;
+        margin-bottom: 30px;
+        text-align: center;
+        font-weight: 700;
+    }
+
+    .form-group {
+        margin-bottom: 25px;
+    }
+
+    .form-group label {
+        display: block;
+        color: #333;
+        font-weight: 600;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+    }
+
+    .form-group input {
+        width: 100%;
+        background-color: #f8f9fa;
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        padding: 15px 20px;
+        font-size: 16px;
+        color: #333;
+        transition: all 0.3s ease;
+    }
+
+    .form-group input:focus {
+        outline: none;
+        border-color: #ff6b6b;
+        background-color: #ffffff;
+    }
+
+    .btn-container {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        margin-top: 30px;
+    }
+
+    .btn-save {
+        background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+        color: white;
+        border: none;
+        padding: 15px 35px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        font-size: 14px;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-save:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3);
+        color: white;
+        text-decoration: none;
+    }
+
+    .btn-cancel {
+        background: #6c757d;
+        color: white;
+        border: none;
+        padding: 15px 35px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        font-size: 14px;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-cancel:hover {
+        background: #5a6268;
+        transform: translateY(-2px);
+        color: white;
+        text-decoration: none;
+    }
+
+    .alert {
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 10px;
+        font-weight: 500;
+    }
+
+    .alert-success {
+        background-color: #d4edda;
+        border: 1px solid #c3e6cb;
+        color: #155724;
+    }
+
+    .alert-error {
+        background-color: #f8d7da;
+        border: 1px solid #f5c6cb;
+        color: #721c24;
+    }
+</style>
+
+<body>
+    <div class="profile-container">
+        <section class="account-section">
+            <div class="container">
+                <h1 class="account-title">Edit Profile</h1>
+            </div>
+        </section>
+
+        <div class="main-container">
+            <aside class="sidebar">
+                <div class="user-profile">
+                    <div class="user-avatar">
+                        <% if (user && user.profilePicture) { %>
+                            <img src="<%= user.profilePicture %>" alt="Profile"
+                                style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                            <% } else { %>
+                                <i class="fas fa-user"></i>
+                                <% } %>
+                    </div>
+                    <div class="user-name">
+                        <%= user && user.name ? user.name : 'User' %>
+                    </div>
+                </div>
+
+                <ul class="sidebar-menu">
+                    <li>
+                        <a href="/profile">
+                            <i class="fas fa-tachometer-alt"></i>
+                            Account Overview
+                        </a>
+                    </li>
+                    <!-- <li class="active">
+                        <a href="/profile/edit">
+                            <i class="fas fa-edit"></i>
+                            Edit Profile
+                        </a>
+                    </li> -->
+                    <!-- <li>
+                        <a href="/profile/change-email">
+                            <i class="fas fa-envelope"></i>
+                            Change Email
+                        </a>
+                    </li> -->
+                    <li>
+                        <a href="/orders">
+                            <i class="fas fa-shopping-bag"></i>
+                            My Orders
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/addresses">
+                            <i class="fas fa-map-marker-alt"></i>
+                            Manage Addresses
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/wallet">
+                            <i class="fas fa-wallet"></i>
+                            Wallet
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/password">
+                            <i class="fas fa-lock"></i>
+                            Password
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/wishlist">
+                            <i class="fas fa-heart"></i>
+                            Wishlist
+                        </a>
+                    </li>
+                </ul>
+
+                <a href="#" class="logout-btn" onclick="confirmLogout()">
+                    Logout
+                </a>
+            </aside>
+
+            <main class="profile-content">
+                <div class="edit-form-container">
+                <h2 class="form-title">Update Your Information</h2>
+
+                <% if (typeof success !== 'undefined' && success) { %>
+                    <div class="alert alert-success">
+                        <%= success %>
+                    </div>
+                <% } %>
+
+                <% if (typeof error !== 'undefined' && error) { %>
+                    <div class="alert alert-error">
+                        <%= error %>
+                    </div>
+                <% } %>
+
+                <!-- Profile Information Form -->
+                <form action="/profile/edit" method="POST">
+                    <div class="form-group">
+                        <label for="name">Full Name</label>
+                        <input type="text" id="name" name="name" value="<%= user && user.name ? user.name : '' %>" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone">Phone Number</label>
+                        <input type="tel" id="phone" name="phone" value="<%= user && user.phone ? user.phone : '' %>">
+                    </div>
+
+                    <div class="btn-container">
+                        <button type="submit" class="btn-save">
+                            <i class="fas fa-save" style="margin-right: 8px;"></i>Save Changes
+                        </button>
+                        <a href="/profile" class="btn-cancel">
+                            <i class="fas fa-times" style="margin-right: 8px;"></i>Cancel
+                        </a>
+                    </div>
+                </form>
+
+                <!-- Email Information Section -->
+                <div class="email-info-section" style="margin-top: 40px; padding-top: 30px; border-top: 2px solid #e9ecef;">
+                    <h3 style="color: #1a1a1a; margin-bottom: 20px; font-weight: 700;">Email Address</h3>
+                    
+                    <div class="form-group">
+                        <label>Current Email</label>
+                        <div class="detail-value" style="background-color: #f8f9fa; border: 2px solid #e9ecef; border-radius: 10px; padding: 15px 20px; font-size: 16px; color: #333; min-height: 50px; display: flex; align-items: center; justify-content: space-between;">
+                            <span><%= user && user.email ? user.email : 'Not set' %></span>
+                            <button type="button" class="btn-save" onclick="showChangeEmailPopup()" style="padding: 8px 16px; font-size: 12px;">
+                                <i class="fas fa-edit" style="margin-right: 5px;"></i>Change Email
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <%- include('../partials/footer') %>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.14.5/dist/sweetalert2.all.min.js"></script>
+    <script>
+        // Show success/error messages from URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const success = urlParams.get('success');
+        const error = urlParams.get('error');
+
+        if (success) {
+            Swal.fire({
+                title: 'Success!',
+                text: success,
+                icon: 'success',
+                confirmButtonColor: '#ff6b6b'
+            });
+        }
+
+        if (error) {
+            Swal.fire({
+                title: 'Error!',
+                text: error,
+                icon: 'error',
+                confirmButtonColor: '#ff6b6b'
+            });
+        }
+
+        function confirmLogout() {
+            Swal.fire({
+                title: 'Logout',
+                text: 'Are you sure you want to logout?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#ff6b6b',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, logout',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = '/logout';
+                }
+            });
+        }
+
+        function showChangeEmailPopup() {
+            Swal.fire({
+                title: 'Change Email Address',
+                html: `
+                    <div style="text-align: left;">
+                        <p style="margin-bottom: 15px; color: #666;">Enter your new email address below:</p>
+                        <input type="email" id="newEmailInput" class="swal2-input" placeholder="Enter new email address" style="margin-bottom: 10px;">
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Send OTP',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#ff6b6b',
+                cancelButtonColor: '#6c757d',
+                preConfirm: () => {
+                    const newEmail = document.getElementById('newEmailInput').value;
+                    
+                    if (!newEmail) {
+                        Swal.showValidationMessage('Please enter an email address');
+                        return false;
+                    }
+
+                    // Email format validation
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailRegex.test(newEmail)) {
+                        Swal.showValidationMessage('Please enter a valid email address');
+                        return false;
+                    }
+
+                    return newEmail;
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    sendEmailOTP(result.value);
+                }
+            });
+        }
+
+        function sendEmailOTP(newEmail) {
+            // Show loading
+            Swal.fire({
+                title: 'Sending OTP...',
+                text: 'Please wait while we send the verification code',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            // Submit form data
+            fetch('/profile/send-email-otp', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    newEmail: newEmail
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                Swal.close();
+                if (data.success) {
+                    // Show OTP input dialog
+                    showOTPDialog(newEmail);
+                } else {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: data.message || 'Failed to send OTP',
+                        icon: 'error',
+                        confirmButtonColor: '#ff6b6b'
+                    });
+                }
+            })
+            .catch(error => {
+                Swal.close();
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'Network error occurred. Please try again.',
+                    icon: 'error',
+                    confirmButtonColor: '#ff6b6b'
+                });
+            });
+        }
+
+        function showOTPDialog(newEmail) {
+            Swal.fire({
+                title: 'Enter OTP',
+                html: `
+                    <p style="margin-bottom: 20px;">We've sent a verification code to <strong>${newEmail}</strong></p>
+                    <input type="text" id="otpInput" class="swal2-input" placeholder="Enter 6-digit OTP" maxlength="6" style="text-align: center; font-size: 18px; letter-spacing: 2px;">
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Verify OTP',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#ff6b6b',
+                cancelButtonColor: '#6c757d',
+                preConfirm: () => {
+                    const otp = document.getElementById('otpInput').value;
+                    if (!otp || otp.length !== 6) {
+                        Swal.showValidationMessage('Please enter a valid 6-digit OTP');
+                        return false;
+                    }
+                    return otp;
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    verifyEmailOTP(newEmail, result.value);
+                }
+            });
+        }
+
+        function verifyEmailOTP(newEmail, otp) {
+            Swal.fire({
+                title: 'Verifying OTP...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            fetch('/profile/verify-email-otp', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    newEmail: newEmail,
+                    otp: otp
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                Swal.close();
+                if (data.success) {
+                    Swal.fire({
+                        title: 'Success!',
+                        text: 'Email address updated successfully!',
+                        icon: 'success',
+                        confirmButtonColor: '#ff6b6b'
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: data.message || 'Failed to verify OTP',
+                        icon: 'error',
+                        confirmButtonColor: '#ff6b6b'
+                    });
+                }
+            })
+            .catch(error => {
+                Swal.close();
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'Network error occurred. Please try again.',
+                    icon: 'error',
+                    confirmButtonColor: '#ff6b6b'
+                });
+            });
+        }
+    </script>
+</body>
+</html>

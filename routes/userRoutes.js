@@ -50,6 +50,10 @@ router.get(
 //protected routes
 router.get('/home', protectUser, userCtrl.loadHomePage); 
 router.get('/profile', protectUser, profileCtrl.getProfile);
+router.get('/profile/edit',protectUser,profileCtrl.getEditProfile);
+router.post('/profile/edit',protectUser,profileCtrl.postEditProfile)
+router.post('/profile/send-email-otp',protectUser,profileCtrl.sendEmailOTP);  
+router.post('/profile/verify-email-otp',protectUser,profileCtrl.verifyEmailOTP);
 router.get('/logout', protectUser, profileCtrl.logout);
 
 
