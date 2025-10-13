@@ -4,12 +4,17 @@ const Review = require('../../model/reviewSchema');
 const Variant = require('../../model/variantSchema');
 const mongoose = require('mongoose');
 const productSchema = require('../../model/productSchema');
+const User=require('../../model/userSchema');
+
 
 
 
 exports.getShop = async (req, res) => {
   try {
     console.log(' getShop called - User:', req.session?.user?.fullName || 'Not logged in');
+
+    const userId=req.session.user.id;
+    const user= await User.findById(userId);
     const q = req.query.q ? req.query.q.trim() : '';
     const category = req.query.category || '';
     const priceMin = req.query.priceMin !== undefined && req.query.priceMin !== '' ? Number(req.query.priceMin) : undefined;
@@ -245,7 +250,7 @@ exports.getShop = async (req, res) => {
         ...responseData,
         allBrands,
         totalProducts,
-        user: req.session.user || null
+        user
       });
     }
 
@@ -263,7 +268,9 @@ exports.getShop = async (req, res) => {
 exports.getProductDetails = async (req, res) => {
   try {
     const productId = req.params.id;
-
+    const userId=req.session.user.id;
+    const user= await User.findById(userId);
+    
     // Check if productId is a valid MongoDB ObjectId
     if (!mongoose.Types.ObjectId.isValid(productId)) {
       console.log("Invalid product ID format:", productId);
@@ -316,9 +323,9 @@ exports.getProductDetails = async (req, res) => {
       stock: defaultVariant.stock,
       reviews,
       relatedProducts,
-      user: req.session.user || null,
       categories: [product.categoryId],
       errorMessage: req.query.error || null,
+      user
     });
 
   } catch (error) {

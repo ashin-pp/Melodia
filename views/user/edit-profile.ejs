@@ -1,616 +1,1023 @@
 <%- include('../partials/header-common', { title: 'Edit Profile - Melodia' }) %>
 
-<style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    <!-- Croppie CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/croppie/2.6.5/croppie.min.css">
 
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    }
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
-    body {
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 50%, #f8f9fa 100%);
-        color: #333333;
-        overflow-x: hidden;
-        scroll-behavior: smooth;
-        margin-top: 100px;
-    }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    .profile-container {
-        margin-top: 100px;
-        min-height: calc(100vh - 100px);
-        background: #ffffff;
-        color: #333333;
-    }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 50%, #f8f9fa 100%);
+            color: #333333;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+            margin-top: 100px;
+        }
 
-    .account-section {
-        color: rgb(130, 130, 130);
-        text-align: center;
-    }
+        .profile-container {
+            margin-top: 100px;
+            min-height: calc(100vh - 100px);
+            background: #ffffff;
+            color: #333333;
+        }
 
-    .account-title {
-        font-size: 2.5rem;
-        font-weight: 600;
-        margin-bottom: 10px;
-        padding-top: 30px;
-        background: linear-gradient(135deg, #050505 0%, #e0e0e0 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-    }
+        .account-section {
+            color: rgb(130, 130, 130);
+            text-align: center;
+        }
 
-    .main-container {
-        background-color: white;
-        min-height: calc(100vh - 200px);
-        display: flex;
-    }
+        .account-title {
+            font-size: 2.5rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            padding-top: 30px;
+            background: linear-gradient(135deg, #050505 0%, #e0e0e0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
 
-    .sidebar {
-        width: 280px;
-        background-color: #f8f9fa;
-        padding: 30px 0;
-        border-right: 1px solid #e9ecef;
-    }
+        .main-container {
+            background-color: white;
+            min-height: calc(100vh - 200px);
+            display: flex;
+        }
 
-    .user-profile {
-        text-align: center;
-        margin-bottom: 30px;
-        padding: 0 20px;
-    }
+        .sidebar {
+            width: 280px;
+            background-color: #f8f9fa;
+            padding: 30px 0;
+            border-right: 1px solid #e9ecef;
+        }
 
-    .user-avatar {
-        width: 80px;
-        height: 80px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
-        margin: 0 auto 15px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 2rem;
-        color: white;
-        box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3);
-    }
+        .user-profile {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 0 20px;
+        }
 
-    .user-name {
-        background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
-        color: white;
-        padding: 10px 20px;
-        border-radius: 25px;
-        font-weight: 600;
-        display: inline-block;
-        font-size: 14px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
+        .user-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3);
+        }
 
-    .sidebar-menu {
-        list-style: none;
-        padding: 0;
-    }
+        .user-name {
+            background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: 600;
+            display: inline-block;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
 
-    .sidebar-menu li {
-        margin: 0;
-    }
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+        }
 
-    .sidebar-menu li a {
-        display: flex;
-        align-items: center;
-        padding: 15px 25px;
-        color: #666;
-        text-decoration: none;
-        transition: all 0.3s ease;
-        font-weight: 500;
-        border-left: 3px solid transparent;
-    }
+        .sidebar-menu li {
+            margin: 0;
+        }
 
-    .sidebar-menu li a:hover,
-    .sidebar-menu li.active a {
-        background-color: rgba(255, 107, 107, 0.1);
-        color: #ff6b6b;
-        border-left-color: #ff6b6b;
-    }
+        .sidebar-menu li a {
+            display: flex;
+            align-items: center;
+            padding: 15px 25px;
+            color: #666;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            border-left: 3px solid transparent;
+        }
 
-    .sidebar-menu li a i {
-        margin-right: 12px;
-        width: 20px;
-        font-size: 16px;
-    }
+        .sidebar-menu li a:hover,
+        .sidebar-menu li.active a {
+            background-color: rgba(255, 107, 107, 0.1);
+            color: #ff6b6b;
+            border-left-color: #ff6b6b;
+        }
 
-    .logout-btn {
-        display: block;
-        background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
-        color: white !important;
-        text-decoration: none;
-        text-align: center;
-        padding: 12px 30px;
-        border-radius: 25px;
-        margin: 30px 25px;
-        font-weight: 600;
-        transition: all 0.3s ease;
-        cursor: pointer;
-        border: none;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        font-size: 14px;
-    }
+        .sidebar-menu li a i {
+            margin-right: 12px;
+            width: 20px;
+            font-size: 16px;
+        }
 
-    .logout-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4);
-        color: white !important;
-        text-decoration: none;
-    }
+        .logout-btn {
+            display: block;
+            background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+            color: white !important;
+            text-decoration: none;
+            text-align: center;
+            padding: 12px 30px;
+            border-radius: 25px;
+            margin: 30px 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 14px;
+        }
 
-    .profile-content {
-        flex: 1;
-        padding: 50px;
-        background: #ffffff;
-    }
+        .logout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4);
+            color: white !important;
+            text-decoration: none;
+        }
 
-    .edit-form-container {
-        max-width: 600px;
-        width: 100%;
-        background-color: rgb(226, 226, 226);
-        border-radius: 15px;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-        padding: 40px;
-        border: 1px solid rgba(255, 107, 107, 0.1);
-    }
+        .profile-content {
+            flex: 1;
+            padding: 50px;
+            background: #ffffff;
+        }
 
-    .form-title {
-        font-size: 1.8rem;
-        color: #1a1a1a;
-        margin-bottom: 30px;
-        text-align: center;
-        font-weight: 700;
-    }
+        .edit-form-container {
+            max-width: 600px;
+            width: 100%;
+            background-color: rgb(226, 226, 226);
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            border: 1px solid rgba(255, 107, 107, 0.1);
+        }
 
-    .form-group {
-        margin-bottom: 25px;
-    }
+        .form-title {
+            font-size: 1.8rem;
+            color: #1a1a1a;
+            margin-bottom: 30px;
+            text-align: center;
+            font-weight: 700;
+        }
 
-    .form-group label {
-        display: block;
-        color: #333;
-        font-weight: 600;
-        font-size: 14px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 8px;
-    }
+        .form-group {
+            margin-bottom: 25px;
+        }
 
-    .form-group input {
-        width: 100%;
-        background-color: #f8f9fa;
-        border: 2px solid #e9ecef;
-        border-radius: 10px;
-        padding: 15px 20px;
-        font-size: 16px;
-        color: #333;
-        transition: all 0.3s ease;
-    }
+        .form-group label {
+            display: block;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
 
-    .form-group input:focus {
-        outline: none;
-        border-color: #ff6b6b;
-        background-color: #ffffff;
-    }
+        .form-group input {
+            width: 100%;
+            background-color: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 15px 20px;
+            font-size: 16px;
+            color: #333;
+            transition: all 0.3s ease;
+        }
 
-    .btn-container {
-        display: flex;
-        gap: 15px;
-        justify-content: center;
-        margin-top: 30px;
-    }
+        .form-group input:focus {
+            outline: none;
+            border-color: #ff6b6b;
+            background-color: #ffffff;
+        }
 
-    .btn-save {
-        background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
-        color: white;
-        border: none;
-        padding: 15px 35px;
-        border-radius: 10px;
-        cursor: pointer;
-        font-weight: 600;
-        transition: all 0.3s ease;
-        font-size: 14px;
-        text-decoration: none;
-        display: inline-block;
-    }
+        .btn-container {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
 
-    .btn-save:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3);
-        color: white;
-        text-decoration: none;
-    }
+        .btn-save {
+            background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+            color: white;
+            border: none;
+            padding: 15px 35px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-block;
+        }
 
-    .btn-cancel {
-        background: #6c757d;
-        color: white;
-        border: none;
-        padding: 15px 35px;
-        border-radius: 10px;
-        cursor: pointer;
-        font-weight: 600;
-        transition: all 0.3s ease;
-        font-size: 14px;
-        text-decoration: none;
-        display: inline-block;
-    }
+        .btn-save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3);
+            color: white;
+            text-decoration: none;
+        }
 
-    .btn-cancel:hover {
-        background: #5a6268;
-        transform: translateY(-2px);
-        color: white;
-        text-decoration: none;
-    }
+        .btn-cancel {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 15px 35px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-block;
+        }
 
-    .alert {
-        padding: 15px;
-        margin-bottom: 20px;
-        border-radius: 10px;
-        font-weight: 500;
-    }
+        .btn-cancel:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+            color: white;
+            text-decoration: none;
+        }
 
-    .alert-success {
-        background-color: #d4edda;
-        border: 1px solid #c3e6cb;
-        color: #155724;
-    }
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            font-weight: 500;
+        }
 
-    .alert-error {
-        background-color: #f8d7da;
-        border: 1px solid #f5c6cb;
-        color: #721c24;
-    }
-</style>
+        .alert-success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
 
-<body>
-    <div class="profile-container">
-        <section class="account-section">
-            <div class="container">
-                <h1 class="account-title">Edit Profile</h1>
-            </div>
-        </section>
+        .alert-error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+    </style>
 
-        <div class="main-container">
-            <aside class="sidebar">
-                <div class="user-profile">
-                    <div class="user-avatar">
-                        <% if (user && user.profilePicture) { %>
-                            <img src="<%= user.profilePicture %>" alt="Profile"
-                                style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
-                            <% } else { %>
-                                <i class="fas fa-user"></i>
-                                <% } %>
-                    </div>
-                    <div class="user-name">
-                        <%= user && user.name ? user.name : 'User' %>
-                    </div>
+    <body>
+        <div class="profile-container">
+            <section class="account-section">
+                <div class="container">
+                    <h1 class="account-title">Edit Profile</h1>
                 </div>
+            </section>
 
-                <ul class="sidebar-menu">
-                    <li>
-                        <a href="/profile">
-                            <i class="fas fa-tachometer-alt"></i>
-                            Account Overview
-                        </a>
-                    </li>
-                    <!-- <li class="active">
+            <div class="main-container">
+                <aside class="sidebar">
+                    <div class="user-profile">
+                        <div class="user-avatar">
+                            <% if (user && user.avatar && user.avatar.url) { %>
+                                <img src="<%= user.avatar.url %>" alt="Profile" id="sidebarAvatar"
+                                    style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                                <% } else { %>
+                                    <div id="sidebarAvatarInitial"
+                                        style="width: 100%; height: 100%; background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem; font-weight: 600;">
+                                        <%= user && user.name ? user.name.charAt(0).toUpperCase() : 'U' %>
+                                    </div>
+                                    <% } %>
+                        </div>
+                        <div class="user-name">
+                            <%= user && user.name ? user.name : 'User' %>
+                        </div>
+                    </div>
+
+                    <ul class="sidebar-menu">
+                        <li>
+                            <a href="/profile">
+                                <i class="fas fa-tachometer-alt"></i>
+                                Account Overview
+                            </a>
+                        </li>
+                        <!-- <li class="active">
                         <a href="/profile/edit">
                             <i class="fas fa-edit"></i>
                             Edit Profile
                         </a>
                     </li> -->
-                    <!-- <li>
+                        <!-- <li>
                         <a href="/profile/change-email">
                             <i class="fas fa-envelope"></i>
                             Change Email
                         </a>
                     </li> -->
-                    <li>
-                        <a href="/orders">
-                            <i class="fas fa-shopping-bag"></i>
-                            My Orders
-                        </a>
-                    </li>
-                    <li>
-                        <a href="/addresses">
-                            <i class="fas fa-map-marker-alt"></i>
-                            Manage Addresses
-                        </a>
-                    </li>
-                    <li>
-                        <a href="/wallet">
-                            <i class="fas fa-wallet"></i>
-                            Wallet
-                        </a>
-                    </li>
-                    <li>
-                        <a href="/password">
-                            <i class="fas fa-lock"></i>
-                            Password
-                        </a>
-                    </li>
-                    <li>
-                        <a href="/wishlist">
-                            <i class="fas fa-heart"></i>
-                            Wishlist
-                        </a>
-                    </li>
-                </ul>
+                        <li>
+                            <a href="/orders">
+                                <i class="fas fa-shopping-bag"></i>
+                                My Orders
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/addresses">
+                                <i class="fas fa-map-marker-alt"></i>
+                                Manage Addresses
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/wallet">
+                                <i class="fas fa-wallet"></i>
+                                Wallet
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/password">
+                                <i class="fas fa-lock"></i>
+                                Password
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/wishlist">
+                                <i class="fas fa-heart"></i>
+                                Wishlist
+                            </a>
+                        </li>
+                    </ul>
 
-                <a href="#" class="logout-btn" onclick="confirmLogout()">
-                    Logout
-                </a>
-            </aside>
+                    <a href="#" class="logout-btn" onclick="confirmLogout()">
+                        Logout
+                    </a>
+                </aside>
 
-            <main class="profile-content">
-                <div class="edit-form-container">
-                <h2 class="form-title">Update Your Information</h2>
+                <main class="profile-content">
+                    <div class="edit-form-container">
+                        <h2 class="form-title">Update Your Information</h2>
 
-                <% if (typeof success !== 'undefined' && success) { %>
-                    <div class="alert alert-success">
-                        <%= success %>
+                        <% if (typeof success !=='undefined' && success) { %>
+                            <div class="alert alert-success">
+                                <%= success %>
+                            </div>
+                            <% } %>
+
+                                <% if (typeof error !=='undefined' && error) { %>
+                                    <div class="alert alert-error">
+                                        <%= error %>
+                                    </div>
+                                    <% } %>
+
+                                        <!-- Avatar Section -->
+                                        <div class="avatar-section"
+                                            style="margin-bottom: 40px; padding-bottom: 30px; border-bottom: 2px solid #e9ecef;">
+                                            <h3 style="color: #1a1a1a; margin-bottom: 20px; font-weight: 700;">Profile
+                                                Picture</h3>
+
+                                            <div class="current-avatar-display"
+                                                style="text-align: center; margin-bottom: 20px;">
+                                                <div class="avatar-preview" id="currentAvatarPreview"
+                                                    style="width: 120px; height: 120px; border-radius: 50%; margin: 0 auto; overflow: hidden; border: 3px solid #ddd; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                                                    <% if (user && user.avatar && user.avatar.url) { %>
+                                                        <img src="<%= user.avatar.url %>" alt="Current Avatar"
+                                                            id="currentAvatarImg"
+                                                            style="width: 100%; height: 100%; object-fit: cover;">
+                                                        <% } else { %>
+                                                            <div id="currentAvatarInitial"
+                                                                style="width: 100%; height: 100%; background: linear-gradient(135deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; color: white; font-size: 3rem; font-weight: 600;">
+                                                                <%= user && user.name ?
+                                                                    user.name.charAt(0).toUpperCase() : 'U' %>
+                                                            </div>
+                                                            <% } %>
+                                                </div>
+                                            </div>
+
+                                            <div class="avatar-actions" style="text-align: center;">
+                                                <button type="button" class="btn-save" onclick="showAvatarUpload()"
+                                                    style="margin-right: 10px;">
+                                                    <i class="fas fa-camera" style="margin-right: 8px;"></i>Change
+                                                    Picture
+                                                </button>
+                                                <% if (user && user.avatar && user.avatar.url) { %>
+                                                    <button type="button" class="btn-cancel" onclick="deleteAvatar()">
+                                                        <i class="fas fa-trash" style="margin-right: 8px;"></i>Remove
+                                                        Picture
+                                                    </button>
+                                                    <% } %>
+                                            </div>
+                                        </div>
+
+                                        <!-- Profile Information Form -->
+                                        <form action="/profile/edit" method="POST">
+                                            <div class="form-group">
+                                                <label for="name">Full Name</label>
+                                                <input type="text" id="name" name="name"
+                                                    value="<%= user && user.name ? user.name : '' %>" required>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label for="phone">Phone Number</label>
+                                                <input type="tel" id="phone" name="phone"
+                                                    value="<%= user && user.phone ? user.phone : '' %>">
+                                            </div>
+
+                                            <div class="btn-container">
+                                                <button type="submit" class="btn-save">
+                                                    <i class="fas fa-save" style="margin-right: 8px;"></i>Save Changes
+                                                </button>
+                                                <a href="/profile" class="btn-cancel">
+                                                    <i class="fas fa-times" style="margin-right: 8px;"></i>Cancel
+                                                </a>
+                                            </div>
+                                        </form>
+
+                                        <!-- Email Information Section -->
+                                        <div class="email-info-section"
+                                            style="margin-top: 40px; padding-top: 30px; border-top: 2px solid #e9ecef;">
+                                            <h3 style="color: #1a1a1a; margin-bottom: 20px; font-weight: 700;">Email
+                                                Address</h3>
+
+                                            <div class="form-group">
+                                                <label>Current Email</label>
+                                                <div class="detail-value"
+                                                    style="background-color: #f8f9fa; border: 2px solid #e9ecef; border-radius: 10px; padding: 15px 20px; font-size: 16px; color: #333; min-height: 50px; display: flex; align-items: center; justify-content: space-between;">
+                                                    <span>
+                                                        <%= user && user.email ? user.email : 'Not set' %>
+                                                    </span>
+                                                    <button type="button" class="btn-save"
+                                                        onclick="showChangeEmailPopup()"
+                                                        style="padding: 8px 16px; font-size: 12px;">
+                                                        <i class="fas fa-edit" style="margin-right: 5px;"></i>Change
+                                                        Email
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
                     </div>
-                <% } %>
+                </main>
+            </div>
+        </div>
 
-                <% if (typeof error !== 'undefined' && error) { %>
-                    <div class="alert alert-error">
-                        <%= error %>
-                    </div>
-                <% } %>
+        <%- include('../partials/footer') %>
 
-                <!-- Profile Information Form -->
-                <form action="/profile/edit" method="POST">
-                    <div class="form-group">
-                        <label for="name">Full Name</label>
-                        <input type="text" id="name" name="name" value="<%= user && user.name ? user.name : '' %>" required>
-                    </div>
+            <!-- Croppie JS -->
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/croppie/2.6.5/croppie.min.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.14.5/dist/sweetalert2.all.min.js"></script>
+            <script>
+                // Show success/error messages from URL parameters
+                const urlParams = new URLSearchParams(window.location.search);
+                const success = urlParams.get('success');
+                const error = urlParams.get('error');
 
-                    <div class="form-group">
-                        <label for="phone">Phone Number</label>
-                        <input type="tel" id="phone" name="phone" value="<%= user && user.phone ? user.phone : '' %>">
-                    </div>
+                if (success) {
+                    Swal.fire({
+                        title: 'Success!',
+                        text: success,
+                        icon: 'success',
+                        confirmButtonColor: '#ff6b6b'
+                    });
+                }
 
-                    <div class="btn-container">
-                        <button type="submit" class="btn-save">
-                            <i class="fas fa-save" style="margin-right: 8px;"></i>Save Changes
+                if (error) {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: error,
+                        icon: 'error',
+                        confirmButtonColor: '#ff6b6b'
+                    });
+                }
+
+                // Avatar upload functionality with Croppie
+                let croppieInstance = null;
+
+                function showAvatarUpload() {
+                    Swal.fire({
+                        title: 'Upload Profile Picture',
+                        html: `
+                    <div style="text-align: center;">
+                        <input type="file" id="avatarInput" accept="image/*" style="display: none;">
+                        <button onclick="document.getElementById('avatarInput').click()" class="swal2-confirm swal2-styled" style="margin-bottom: 20px;">
+                            <i class="fas fa-upload"></i> Select Image
                         </button>
-                        <a href="/profile" class="btn-cancel">
-                            <i class="fas fa-times" style="margin-right: 8px;"></i>Cancel
-                        </a>
-                    </div>
-                </form>
-
-                <!-- Email Information Section -->
-                <div class="email-info-section" style="margin-top: 40px; padding-top: 30px; border-top: 2px solid #e9ecef;">
-                    <h3 style="color: #1a1a1a; margin-bottom: 20px; font-weight: 700;">Email Address</h3>
-                    
-                    <div class="form-group">
-                        <label>Current Email</label>
-                        <div class="detail-value" style="background-color: #f8f9fa; border: 2px solid #e9ecef; border-radius: 10px; padding: 15px 20px; font-size: 16px; color: #333; min-height: 50px; display: flex; align-items: center; justify-content: space-between;">
-                            <span><%= user && user.email ? user.email : 'Not set' %></span>
-                            <button type="button" class="btn-save" onclick="showChangeEmailPopup()" style="padding: 8px 16px; font-size: 12px;">
-                                <i class="fas fa-edit" style="margin-right: 5px;"></i>Change Email
-                            </button>
+                        <div id="croppie-container" style="display: none; margin: 20px 0;">
+                            <div id="croppie-demo"></div>
                         </div>
                     </div>
-                </div>
-                </div>
-            </main>
-        </div>
-    </div>
+                `,
+                        showCancelButton: true,
+                        confirmButtonText: 'Upload',
+                        cancelButtonText: 'Cancel',
+                        confirmButtonColor: '#ff6b6b',
+                        cancelButtonColor: '#6c757d',
+                        allowOutsideClick: false,
+                        width: 600,
+                        didOpen: () => {
+                            const input = document.getElementById('avatarInput');
+                            const container = document.getElementById('croppie-container');
+                            const croppieDemo = document.getElementById('croppie-demo');
 
-    <%- include('../partials/footer') %>
+                            input.addEventListener('change', function (e) {
+                                const file = e.target.files[0];
+                                if (file) {
+                                    // Validate file type
+                                    if (!file.type.startsWith('image/')) {
+                                        Swal.showValidationMessage('Please select a valid image file');
+                                        return;
+                                    }
 
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.14.5/dist/sweetalert2.all.min.js"></script>
-    <script>
-        // Show success/error messages from URL parameters
-        const urlParams = new URLSearchParams(window.location.search);
-        const success = urlParams.get('success');
-        const error = urlParams.get('error');
+                                    // Validate file size (max 5MB)
+                                    if (file.size > 5 * 1024 * 1024) {
+                                        Swal.showValidationMessage('Image size should be less than 5MB');
+                                        return;
+                                    }
 
-        if (success) {
-            Swal.fire({
-                title: 'Success!',
-                text: success,
-                icon: 'success',
-                confirmButtonColor: '#ff6b6b'
-            });
-        }
+                                    const reader = new FileReader();
+                                    reader.onload = function (e) {
+                                        container.style.display = 'block';
 
-        if (error) {
-            Swal.fire({
-                title: 'Error!',
-                text: error,
-                icon: 'error',
-                confirmButtonColor: '#ff6b6b'
-            });
-        }
+                                        // Initialize Croppie
+                                        croppieInstance = new Croppie(croppieDemo, {
+                                            viewport: { width: 200, height: 200, type: 'circle' },
+                                            boundary: { width: 300, height: 300 },
+                                            showZoomer: true,
+                                            enableResize: false,
+                                            enableOrientation: true
+                                        });
 
-        function confirmLogout() {
-            Swal.fire({
-                title: 'Logout',
-                text: 'Are you sure you want to logout?',
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#ff6b6b',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: 'Yes, logout',
-                cancelButtonText: 'Cancel'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    window.location.href = '/logout';
+                                        croppieInstance.bind({
+                                            url: e.target.result
+                                        });
+                                    };
+                                    reader.readAsDataURL(file);
+                                }
+                            });
+                        },
+                        preConfirm: () => {
+                            if (!croppieInstance) {
+                                Swal.showValidationMessage('Please select and crop an image');
+                                return false;
+                            }
+
+                            return croppieInstance.result({
+                                type: 'blob',
+                                size: 'viewport',
+                                format: 'jpeg',
+                                quality: 0.8
+                            });
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            uploadCroppedAvatar(result.value);
+                        }
+                        // Clean up croppie instance
+                        if (croppieInstance) {
+                            croppieInstance.destroy();
+                            croppieInstance = null;
+                        }
+                    });
                 }
-            });
-        }
 
-        function showChangeEmailPopup() {
-            Swal.fire({
-                title: 'Change Email Address',
-                html: `
+                function uploadCroppedAvatar(blob) {
+                    const formData = new FormData();
+                    formData.append('avatar', blob, 'avatar.jpg');
+
+                    Swal.fire({
+                        title: 'Uploading...',
+                        text: 'Please wait while we upload your profile picture',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    fetch('/profile/upload-avatar', {
+                        method: 'POST',
+                        body: formData
+                    })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error(`HTTP error! status: ${response.status}`);
+                            }
+
+                            return response.text().then(text => {
+                                try {
+                                    return JSON.parse(text);
+                                } catch (e) {
+                                    console.error('Failed to parse JSON:', e);
+                                    throw new Error('Invalid JSON response');
+                                }
+                            });
+                        })
+                        .then(data => {
+                            Swal.close();
+
+                            if (data.success) {
+                                // Update the avatar preview immediately
+                                const avatarPreview = document.getElementById('currentAvatarPreview');
+                                const avatarImg = document.getElementById('currentAvatarImg');
+                                const avatarInitial = document.getElementById('currentAvatarInitial');
+
+                                // Update sidebar avatar
+                                const sidebarAvatar = document.getElementById('sidebarAvatar');
+                                const sidebarAvatarInitial = document.getElementById('sidebarAvatarInitial');
+
+                                if (data.avatar && data.avatar.url) {
+                                    // Update main avatar preview
+                                    if (avatarImg) {
+                                        avatarImg.src = data.avatar.url;
+                                    } else {
+                                        // Replace initial with image
+                                        avatarPreview.innerHTML = `<img src="${data.avatar.url}" alt="Current Avatar" id="currentAvatarImg" style="width: 100%; height: 100%; object-fit: cover;">`;
+                                    }
+
+                                    // Update sidebar avatar
+                                    if (sidebarAvatar) {
+                                        sidebarAvatar.src = data.avatar.url;
+                                    } else if (sidebarAvatarInitial) {
+                                        // Replace initial with image in sidebar
+                                        sidebarAvatarInitial.parentElement.innerHTML = `<img src="${data.avatar.url}" alt="Profile" id="sidebarAvatar" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+                                    }
+
+                                    // Update the action buttons to show delete option
+                                    const actionsDiv = document.querySelector('.avatar-actions');
+                                    if (actionsDiv && !actionsDiv.querySelector('.btn-cancel')) {
+                                        actionsDiv.innerHTML += `
+                                <button type="button" class="btn-cancel" onclick="deleteAvatar()" style="margin-left: 10px;">
+                                    <i class="fas fa-trash" style="margin-right: 8px;"></i>Remove Picture
+                                </button>
+                            `;
+                                    }
+                                }
+
+                                Swal.fire({
+                                    title: 'Success!',
+                                    text: 'Profile picture updated successfully!',
+                                    icon: 'success',
+                                    confirmButtonColor: '#ff6b6b'
+                                });
+                            } else {
+                                Swal.fire({
+                                    title: 'Error!',
+                                    text: data.message || 'Failed to upload profile picture',
+                                    icon: 'error',
+                                    confirmButtonColor: '#ff6b6b'
+                                });
+                            }
+                        })
+                        .catch(error => {
+                            Swal.close();
+                            console.error('Upload error details:', error);
+                            console.error('Error message:', error.message);
+                            console.error('Error stack:', error.stack);
+
+                            Swal.fire({
+                                title: 'Error!',
+                                text: `Network error: ${error.message}. Please check console for details.`,
+                                icon: 'error',
+                                confirmButtonColor: '#ff6b6b'
+                            });
+                        });
+                }
+
+                function deleteAvatar() {
+                    Swal.fire({
+                        title: 'Remove Profile Picture',
+                        text: 'Are you sure you want to remove your profile picture?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#f44336',
+                        cancelButtonColor: '#6c757d',
+                        confirmButtonText: 'Yes, remove it',
+                        cancelButtonText: 'Cancel'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            Swal.fire({
+                                title: 'Removing...',
+                                text: 'Please wait while we remove your profile picture',
+                                allowOutsideClick: false,
+                                didOpen: () => {
+                                    Swal.showLoading();
+                                }
+                            });
+
+                            fetch('/profile/delete-avatar', {
+                                method: 'DELETE'
+                            })
+                                .then(response => response.json())
+                                .then(data => {
+                                    Swal.close();
+                                    if (data.success) {
+                                        Swal.fire({
+                                            title: 'Removed!',
+                                            text: 'Profile picture has been removed.',
+                                            icon: 'success',
+                                            confirmButtonColor: '#ff6b6b'
+                                        }).then(() => {
+                                            window.location.reload();
+                                        });
+                                    } else {
+                                        Swal.fire({
+                                            title: 'Error!',
+                                            text: data.message || 'Failed to remove profile picture',
+                                            icon: 'error',
+                                            confirmButtonColor: '#ff6b6b'
+                                        });
+                                    }
+                                })
+                                .catch(error => {
+                                    Swal.close();
+                                    Swal.fire({
+                                        title: 'Error!',
+                                        text: 'Network error occurred. Please try again.',
+                                        icon: 'error',
+                                        confirmButtonColor: '#ff6b6b'
+                                    });
+                                });
+                        }
+                    });
+                }
+
+                function confirmLogout() {
+                    Swal.fire({
+                        title: 'Logout',
+                        text: 'Are you sure you want to logout?',
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#ff6b6b',
+                        cancelButtonColor: '#6c757d',
+                        confirmButtonText: 'Yes, logout',
+                        cancelButtonText: 'Cancel'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = '/logout';
+                        }
+                    });
+                }
+
+                function showChangeEmailPopup() {
+                    Swal.fire({
+                        title: 'Change Email Address',
+                        html: `
                     <div style="text-align: left;">
                         <p style="margin-bottom: 15px; color: #666;">Enter your new email address below:</p>
                         <input type="email" id="newEmailInput" class="swal2-input" placeholder="Enter new email address" style="margin-bottom: 10px;">
                     </div>
                 `,
-                showCancelButton: true,
-                confirmButtonText: 'Send OTP',
-                cancelButtonText: 'Cancel',
-                confirmButtonColor: '#ff6b6b',
-                cancelButtonColor: '#6c757d',
-                preConfirm: () => {
-                    const newEmail = document.getElementById('newEmailInput').value;
-                    
-                    if (!newEmail) {
-                        Swal.showValidationMessage('Please enter an email address');
-                        return false;
-                    }
+                        showCancelButton: true,
+                        confirmButtonText: 'Send OTP',
+                        cancelButtonText: 'Cancel',
+                        confirmButtonColor: '#ff6b6b',
+                        cancelButtonColor: '#6c757d',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            // Focus on email input
+                            document.getElementById('newEmailInput').focus();
+                        },
+                        preConfirm: () => {
+                            const newEmail = document.getElementById('newEmailInput').value;
 
-                    // Email format validation
-                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                    if (!emailRegex.test(newEmail)) {
-                        Swal.showValidationMessage('Please enter a valid email address');
-                        return false;
-                    }
+                            if (!newEmail) {
+                                Swal.showValidationMessage('Please enter an email address');
+                                return false;
+                            }
 
-                    return newEmail;
-                }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    sendEmailOTP(result.value);
-                }
-            });
-        }
+                            // Email format validation
+                            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                            if (!emailRegex.test(newEmail)) {
+                                Swal.showValidationMessage('Please enter a valid email address');
+                                return false;
+                            }
 
-        function sendEmailOTP(newEmail) {
-            // Show loading
-            Swal.fire({
-                title: 'Sending OTP...',
-                text: 'Please wait while we send the verification code',
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
-            });
-
-            // Submit form data
-            fetch('/profile/send-email-otp', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    newEmail: newEmail
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                Swal.close();
-                if (data.success) {
-                    // Show OTP input dialog
-                    showOTPDialog(newEmail);
-                } else {
-                    Swal.fire({
-                        title: 'Error!',
-                        text: data.message || 'Failed to send OTP',
-                        icon: 'error',
-                        confirmButtonColor: '#ff6b6b'
+                            return newEmail;
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            sendEmailOTP(result.value);
+                        }
                     });
                 }
-            })
-            .catch(error => {
-                Swal.close();
-                Swal.fire({
-                    title: 'Error!',
-                    text: 'Network error occurred. Please try again.',
-                    icon: 'error',
-                    confirmButtonColor: '#ff6b6b'
-                });
-            });
-        }
 
-        function showOTPDialog(newEmail) {
-            Swal.fire({
-                title: 'Enter OTP',
-                html: `
+                function sendEmailOTP(newEmail) {
+                    // Show loading
+                    Swal.fire({
+                        title: 'Sending OTP...',
+                        text: 'Please wait while we send the verification code',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    // Submit form data
+                    fetch('/profile/send-email-otp', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            newEmail: newEmail
+                        })
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            Swal.close();
+                            if (data.success) {
+                                // Show OTP input dialog
+                                showOTPDialog(newEmail);
+                            } else {
+                                Swal.fire({
+                                    title: 'Error!',
+                                    text: data.message || 'Failed to send OTP',
+                                    icon: 'error',
+                                    confirmButtonColor: '#ff6b6b'
+                                });
+                            }
+                        })
+                        .catch(error => {
+                            Swal.close();
+                            Swal.fire({
+                                title: 'Error!',
+                                text: 'Network error occurred. Please try again.',
+                                icon: 'error',
+                                confirmButtonColor: '#ff6b6b'
+                            });
+                        });
+                }
+
+                function showOTPDialog(newEmail) {
+                    Swal.fire({
+                        title: 'Enter OTP',
+                        html: `
                     <p style="margin-bottom: 20px;">We've sent a verification code to <strong>${newEmail}</strong></p>
                     <input type="text" id="otpInput" class="swal2-input" placeholder="Enter 6-digit OTP" maxlength="6" style="text-align: center; font-size: 18px; letter-spacing: 2px;">
+                    <div style="margin-top: 15px;">
+                        <button type="button" id="resendOtpBtn" class="swal2-confirm swal2-styled" style="background-color: #6c757d; margin-right: 10px;">Resend OTP</button>
+                        <span id="resendTimer" style="color: #666; font-size: 14px;"></span>
+                    </div>
                 `,
-                showCancelButton: true,
-                confirmButtonText: 'Verify OTP',
-                cancelButtonText: 'Cancel',
-                confirmButtonColor: '#ff6b6b',
-                cancelButtonColor: '#6c757d',
-                preConfirm: () => {
-                    const otp = document.getElementById('otpInput').value;
-                    if (!otp || otp.length !== 6) {
-                        Swal.showValidationMessage('Please enter a valid 6-digit OTP');
-                        return false;
-                    }
-                    return otp;
-                }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    verifyEmailOTP(newEmail, result.value);
-                }
-            });
-        }
-
-        function verifyEmailOTP(newEmail, otp) {
-            Swal.fire({
-                title: 'Verifying OTP...',
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
-            });
-
-            fetch('/profile/verify-email-otp', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    newEmail: newEmail,
-                    otp: otp
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                Swal.close();
-                if (data.success) {
-                    Swal.fire({
-                        title: 'Success!',
-                        text: 'Email address updated successfully!',
-                        icon: 'success',
-                        confirmButtonColor: '#ff6b6b'
-                    }).then(() => {
-                        window.location.reload();
-                    });
-                } else {
-                    Swal.fire({
-                        title: 'Error!',
-                        text: data.message || 'Failed to verify OTP',
-                        icon: 'error',
-                        confirmButtonColor: '#ff6b6b'
+                        showCancelButton: true,
+                        confirmButtonText: 'Verify OTP',
+                        cancelButtonText: 'Cancel',
+                        confirmButtonColor: '#ff6b6b',
+                        cancelButtonColor: '#6c757d',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        didOpen: () => {
+                            // Start countdown timer
+                            startResendTimer(newEmail);
+                            // Focus on OTP input
+                            document.getElementById('otpInput').focus();
+                        },
+                        preConfirm: () => {
+                            const otp = document.getElementById('otpInput').value;
+                            if (!otp || otp.length !== 6) {
+                                Swal.showValidationMessage('Please enter a valid 6-digit OTP');
+                                return false;
+                            }
+                            return otp;
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            verifyEmailOTP(newEmail, result.value);
+                        }
                     });
                 }
-            })
-            .catch(error => {
-                Swal.close();
-                Swal.fire({
-                    title: 'Error!',
-                    text: 'Network error occurred. Please try again.',
-                    icon: 'error',
-                    confirmButtonColor: '#ff6b6b'
-                });
-            });
-        }
-    </script>
-</body>
-</html>
+
+                function startResendTimer(newEmail) {
+                    let timeLeft = 60; // 60 seconds countdown
+                    const resendBtn = document.getElementById('resendOtpBtn');
+                    const timerSpan = document.getElementById('resendTimer');
+
+                    // Disable resend button initially
+                    resendBtn.disabled = true;
+                    resendBtn.style.opacity = '0.5';
+
+                    const countdown = setInterval(() => {
+                        timerSpan.textContent = `Resend available in ${timeLeft}s`;
+                        timeLeft--;
+
+                        if (timeLeft < 0) {
+                            clearInterval(countdown);
+                            resendBtn.disabled = false;
+                            resendBtn.style.opacity = '1';
+                            timerSpan.textContent = '';
+                        }
+                    }, 1000);
+
+                    // Add click handler for resend button
+                    resendBtn.addEventListener('click', () => {
+                        resendEmailOTP(newEmail);
+                        // Restart timer
+                        timeLeft = 60;
+                        resendBtn.disabled = true;
+                        resendBtn.style.opacity = '0.5';
+                    });
+                }
+
+                function resendEmailOTP(newEmail) {
+                    Swal.fire({
+                        title: 'Resending OTP...',
+                        text: 'Please wait while we send a new verification code',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    fetch('/profile/resend-email-otp', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            newEmail: newEmail
+                        })
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            Swal.close();
+                            if (data.success) {
+                                Swal.fire({
+                                    title: 'OTP Resent!',
+                                    text: 'A new verification code has been sent to your email',
+                                    icon: 'success',
+                                    confirmButtonColor: '#ff6b6b',
+                                    timer: 2000,
+                                    showConfirmButton: false
+                                });
+                            } else {
+                                Swal.fire({
+                                    title: 'Error!',
+                                    text: data.message || 'Failed to resend OTP',
+                                    icon: 'error',
+                                    confirmButtonColor: '#ff6b6b'
+                                });
+                            }
+                        })
+                        .catch(error => {
+                            Swal.close();
+                            Swal.fire({
+                                title: 'Error!',
+                                text: 'Network error occurred. Please try again.',
+                                icon: 'error',
+                                confirmButtonColor: '#ff6b6b'
+                            });
+                        });
+                }
+
+                function verifyEmailOTP(newEmail, otp) {
+                    Swal.fire({
+                        title: 'Verifying OTP...',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    fetch('/profile/verify-email-otp', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            newEmail: newEmail,
+                            otp: otp
+                        })
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            Swal.close();
+                            if (data.success) {
+                                Swal.fire({
+                                    title: 'Success!',
+                                    text: 'Email address updated successfully!',
+                                    icon: 'success',
+                                    confirmButtonColor: '#ff6b6b'
+                                }).then(() => {
+                                    window.location.reload();
+                                });
+                            } else {
+                                Swal.fire({
+                                    title: 'Error!',
+                                    text: data.message || 'Failed to verify OTP',
+                                    icon: 'error',
+                                    confirmButtonColor: '#ff6b6b'
+                                });
+                            }
+                        })
+                        .catch(error => {
+                            Swal.close();
+                            Swal.fire({
+                                title: 'Error!',
+                                text: 'Network error occurred. Please try again.',
+                                icon: 'error',
+                                confirmButtonColor: '#ff6b6b'
+                            });
+                        });
+                }
+            </script>
+    </body>
+
+    </html>

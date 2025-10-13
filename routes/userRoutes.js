@@ -1,12 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const passport=require('passport');
+const passport = require('passport');
 const userCtrl = require('../controller/User/userController');
-const {isNotAuthenticated}=require('../middleware/auth');
-const profileCtrl=require('../controller/User/profileController');
-const productCtrl=require('../controller/User/productController')
-const categoryCtrl=require('../controller/User/categoryController')
+const { isNotAuthenticated } = require('../middleware/auth');
+const profileCtrl = require('../controller/User/profileController');
+const productCtrl = require('../controller/User/productController')
+const categoryCtrl = require('../controller/User/categoryController')
 const { protectUser } = require('../middleware/userAuth');
+const { avatarUpload } = require('../config/multer');
 //landing page route
 router.get('/', (req, res) => {
   // If admin is logged in, always go to admin dashboard
@@ -21,16 +22,16 @@ router.get('/', (req, res) => {
 });
 
 //signup routes
-router.get('/signUp',isNotAuthenticated,userCtrl.getSignup);
-router.post('/signUp',isNotAuthenticated,userCtrl.postSignup);
+router.get('/signUp', isNotAuthenticated, userCtrl.getSignup);
+router.post('/signUp', isNotAuthenticated, userCtrl.postSignup);
 
 //login routes
-router.get('/login',isNotAuthenticated, userCtrl.getLogin);
-router.post('/login',isNotAuthenticated,userCtrl.postLogin);
+router.get('/login', isNotAuthenticated, userCtrl.getLogin);
+router.post('/login', isNotAuthenticated, userCtrl.postLogin);
 
 // otp routes
-router.post('/verify-otp',isNotAuthenticated,userCtrl.verifyOtp);
-router.post('/resend-otp',isNotAuthenticated,userCtrl.resendOtp);
+router.post('/verify-otp', isNotAuthenticated, userCtrl.verifyOtp);
+router.post('/resend-otp', isNotAuthenticated, userCtrl.resendOtp);
 
 
 
@@ -47,24 +48,29 @@ router.get(
   userCtrl.googleCallback
 );
 
-//protected routes
-router.get('/home', protectUser, userCtrl.loadHomePage); 
-router.get('/profile', protectUser, profileCtrl.getProfile);
-router.get('/profile/edit',protectUser,profileCtrl.getEditProfile);
-router.post('/profile/edit',protectUser,profileCtrl.postEditProfile)
-router.post('/profile/send-email-otp',protectUser,profileCtrl.sendEmailOTP);  
-router.post('/profile/verify-email-otp',protectUser,profileCtrl.verifyEmailOTP);
+// Protected routes
+
+router.get('/home', protectUser, userCtrl.loadHomePage);
 router.get('/logout', protectUser, profileCtrl.logout);
 
+// Profile routes
 
-//product routes (protected)
-router.get('/product/list',protectUser,productCtrl.getShop);
+router.get('/profile', protectUser, profileCtrl.getProfile);
+router.get('/profile/edit', protectUser, profileCtrl.getEditProfile);
+router.post('/profile/edit', protectUser, profileCtrl.postEditProfile);
+router.post('/profile/send-email-otp', protectUser, profileCtrl.sendEmailOTP);
+router.post('/profile/resend-email-otp', protectUser, profileCtrl.resendEmailOTP);
+router.post('/profile/verify-email-otp', protectUser, profileCtrl.verifyEmailOTP);
+router.post('/profile/upload-avatar', protectUser, avatarUpload, profileCtrl.uploadAvatar);
+router.delete('/profile/delete-avatar', protectUser, profileCtrl.deleteAvatar);
+
+
+// Product & Category routes
+router.get('/product/list', protectUser, productCtrl.getShop);
 router.get('/products/:id', protectUser, productCtrl.getProductDetails);
-router.get('/products/variants/:variantId',protectUser, productCtrl.getVariantDetails);
-  
-//category
-router.get('/categories/:id',protectUser,categoryCtrl.getCategoryPage);
-router.get('/categories',protectUser,categoryCtrl.getCategoriesPage)
+router.get('/products/variants/:variantId', protectUser, productCtrl.getVariantDetails);
+router.get('/categories/:id', protectUser, categoryCtrl.getCategoryPage);
+router.get('/categories', protectUser, categoryCtrl.getCategoriesPage);
 
 
 
@@ -74,4 +80,4 @@ router.post('/forgot-password', isNotAuthenticated, userCtrl.postForgotPassword)
 router.get('/reset-password/:token', isNotAuthenticated, userCtrl.getResetPassword);
 router.post('/reset-password/:token', isNotAuthenticated, userCtrl.postResetPassword);
 
-module.exports=router;
+module.exports = router;

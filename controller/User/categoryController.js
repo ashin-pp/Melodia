@@ -1,11 +1,14 @@
 const Category = require('../../model/categorySchema');
 const Product = require('../../model/productSchema');
 const mongoose = require('mongoose');
+const User=require('../../model/userSchema')
 
 
 exports.getCategoryPage = async (req, res) => {
   try {
     const { id } = req.params;
+    const userId = req.session.user.id;
+    const user = await User.findById(userId);
     const page = parseInt(req.params.page) || 1;
     const limit = 12;
     const skip = (page - 1) * limit;
@@ -142,7 +145,7 @@ exports.getCategoryPage = async (req, res) => {
     const hasPrevPage = page > 1;
 
     // Prepare user data
-    const user = req.session?.user || null;
+    // const user = req.session?.user || null;
     const isLoggedIn = !!user;
 
     // Handle AJAX requests (for filtering)
@@ -189,6 +192,8 @@ exports.getCategoryPage = async (req, res) => {
 exports.getCategoriesPage = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
+     const userId = req.session.user.id;
+    const user = await User.findById(userId);
     const limit = 8; // Show 8 categories per page
     const skip = (page - 1) * limit;
 
@@ -264,7 +269,7 @@ exports.getCategoriesPage = async (req, res) => {
     const hasPrevPage = page > 1;
 
     // Prepare user data
-    const user = req.session?.user || null;
+    // const user = req.session?.user || null;
     const isLoggedIn = !!user;
 
     // Handle AJAX requests

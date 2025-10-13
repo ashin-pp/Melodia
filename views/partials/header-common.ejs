@@ -1,14 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= typeof title !== 'undefined' ? title : 'Melodia - Premium Audio' %></title>
+    <title>
+        <%= typeof title !=='undefined' ? title : 'Melodia - Premium Audio' %>
+    </title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.14.5/dist/sweetalert2.min.css" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-        
+
         * {
             margin: 0;
             padding: 0;
@@ -198,8 +201,15 @@
             content: "❤️";
         }
 
-        .icon-btn.profile-btn::after {
-            content: "👤";
+        .icon-btn.profile-btn {
+            overflow: hidden;
+            position: relative;
+        }
+
+        .icon-btn.profile-btn>* {
+            pointer-events: none;
+            position: relative;
+            z-index: 1;
         }
 
         .icon-btn .badge {
@@ -234,6 +244,7 @@
             visibility: hidden;
             transition: all 0.3s ease;
             pointer-events: none;
+            z-index: 1001;
         }
 
         .icon-btn:hover::before {
@@ -268,10 +279,11 @@
             }
         }
     </style>
-    <% if (typeof additionalCSS !== 'undefined') { %>
+    <% if (typeof additionalCSS !=='undefined' ) { %>
         <%- additionalCSS %>
-    <% } %>
+            <% } %>
 </head>
+
 <body>
     <nav class="navbar" id="navbar">
         <a href="/" class="logo">
@@ -292,12 +304,29 @@
             </div> -->
             <div class="icon-buttons">
                 <button class="icon-btn cart-btn" data-tooltip="Cart" onclick="window.location.href='/cart'">
-                    <% if (typeof cartCount !== 'undefined' && cartCount > 0) { %>
-                        <span class="badge"><%= cartCount %></span>
-                    <% } %>
+                    <% if (typeof cartCount !=='undefined' && cartCount> 0) { %>
+                        <span class="badge">
+                            <%= cartCount %>
+                        </span>
+                        <% } %>
                 </button>
-                <button class="icon-btn wishlist-btn" data-tooltip="Wishlist" onclick="window.location.href='/wishlist'"></button>
-                <button class="icon-btn profile-btn" data-tooltip="Profile" onclick="window.location.href='/profile'"></button>
+                <button class="icon-btn wishlist-btn" data-tooltip="Wishlist"
+                    onclick="window.location.href='/wishlist'"></button>
+                <button class="icon-btn profile-btn" data-tooltip="Profile" onclick="window.location.href='/profile'">
+                    <% if (typeof user !=='undefined' && user && user.avatar && user.avatar.url) { %>
+                        <img src="<%= user.avatar.url %>" alt="Profile"
+                            style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                        <% } else { %>
+                            <% if (typeof user !=='undefined' && user && user.name) { %>
+                                <div
+                                    style="width: 100%; height: 100%; background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 16px; font-weight: 600;">
+                                    <%= user.name.charAt(0).toUpperCase() %>
+                                </div>
+                                <% } else { %>
+                                    <i class="fas fa-user"></i>
+                                    <% } %>
+                                        <% } %>
+                </button>
             </div>
         </div>
     </nav>
@@ -326,11 +355,11 @@
             const searchInput = document.getElementById('navSearchInput');
             const clearBtn = document.getElementById('clearSearchBtn');
             const searchIcon = document.getElementById('searchIcon');
-            
+
             searchInput.value = '';
             clearBtn.style.display = 'none';
             searchIcon.style.display = 'block';
-            
+
             // If on product list page, reload without search query
             if (window.location.pathname === '/product/list') {
                 window.location.href = '/product/list';
@@ -338,7 +367,7 @@
         }
 
         // Show/hide clear button based on input
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const searchInput = document.getElementById('navSearchInput');
             const clearBtn = document.getElementById('clearSearchBtn');
             const searchIcon = document.getElementById('searchIcon');
@@ -353,7 +382,7 @@
                     searchIcon.style.display = 'none';
                 }
 
-                searchInput.addEventListener('input', function() {
+                searchInput.addEventListener('input', function () {
                     if (this.value.trim()) {
                         clearBtn.style.display = 'block';
                         searchIcon.style.display = 'none';
@@ -363,7 +392,7 @@
                     }
                 });
 
-                searchInput.addEventListener('keypress', function(e) {
+                searchInput.addEventListener('keypress', function (e) {
                     if (e.key === 'Enter') {
                         performSearch();
                     }
@@ -372,4 +401,5 @@
         });
     </script>
 </body>
+
 </html>

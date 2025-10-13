@@ -14,12 +14,16 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-exports.loadHomePage = (req, res) => {
+exports.loadHomePage = async (req, res) => {
   try {
     // Additional session validation
     if (!req.session?.user) {
       return res.redirect('/login');
     }
+
+    const userId=req.session.user.id;
+    const user= await User.findById(userId);
+
 
     // Set cache control headers to prevent back button issues
     res.set({
@@ -29,9 +33,36 @@ exports.loadHomePage = (req, res) => {
     });
 
     res.render('user/home', {
-      user: req.session.user,
       isAuthenticated: true,
-      welcomeMessage: req.session.justLoggedIn ? 'Welcome back!' : null
+      user,
+      welcomeMessage: req.session.justLoggedIn ? 'Welcome back!' : null,
+      sessionSecurity: `
+        <script>
+          // Prevent back button to login page after successful login
+          (function() {
+            if (window.history && window.history.pushState) {
+              window.addEventListener('load', function() {
+                // Replace current state to prevent back navigation to login
+                window.history.replaceState(null, null, window.location.href);
+                
+                // Handle back button attempts
+                window.addEventListener('popstate', function(event) {
+                  // Push current state again to prevent going back
+                  window.history.pushState(null, null, window.location.href);
+                });
+              });
+            }
+            
+            // Prevent page caching
+            window.addEventListener('beforeunload', function() {
+              // Clear any cached data
+              if (window.performance && window.performance.navigation.type === 2) {
+                window.location.reload();
+              }
+            });
+          })();
+        </script>
+      `
     });
     
     // Clear welcome message flag
@@ -58,6 +89,7 @@ exports.loadLandingPage=(req,res)=>{
 
 // Render login page
 exports.getLogin = (req, res) => {
+
   console.log('Rendering login page');
   const justRegistered = req.session.justRegistered ? req.session.justRegistered : false;
   console.log(justRegistered);
@@ -189,7 +221,22 @@ exports.postLogin = async (req, res) => {
       
       console.log('User logged in successfully:', user.email);
       console.log('Session saved, redirecting to home...');
-      res.redirect('/home');
+      
+      // Set cache control headers to prevent back button issues
+      res.set({
+        'Cache-Control': 'no-store, no-cache, must-revalidate, private',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      });
+      
+      // Use client-side redirect with history replacement to prevent back button
+      res.send(`
+        <script>
+          // Replace current history entry to prevent back button issues
+          window.history.replaceState(null, null, '/home');
+          window.location.href = '/home';
+        </script>
+      `);
     });
 
   } catch (err) {
@@ -294,7 +341,7 @@ exports.postSignup = async (req, res) => {
         // Generate OTP
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-        // UPDATED: Store combined name in session
+        // Combine firstName and lastName into name field
         req.session.signupData = {
             name: `${firstName.trim()} ${lastName.trim()}`, // Combined name field
             email,
@@ -357,10 +404,6 @@ exports.postSignup = async (req, res) => {
 // Handle OTP verification - UPDATED FOR NAME FIELD
 exports.verifyOtp = async (req, res) => {
   try {
-    console.log('=== OTP VERIFICATION DEBUG ===');
-    console.log('Request body:', req.body);
-    console.log('Session OTP:', req.session.otp);
-    console.log('Session signup data:', req.session.signupData);
 
     let { email, otp } = req.body;
 
@@ -526,9 +569,6 @@ exports.verifyOtp = async (req, res) => {
 // Handle OTP resend - NO CHANGES NEEDED
 exports.resendOtp = async (req, res) => {
   try {
-    console.log('=== RESEND OTP DEBUG ===');
-    console.log('Request body:', req.body);
-    console.log('Session signup data exists:', !!req.session.signupData);
 
     const { email } = req.body;
 
@@ -825,8 +865,6 @@ exports.postForgotPassword = async (req, res) => {
 exports.getResetPassword = (req, res) => {
   try {
     const { token } = req.params;
-    
-    console.log('=== RESET PASSWORD DEBUG ===');
     
     if (req.session.resetToken) {
       console.log('Session token:', req.session.resetToken.token);
