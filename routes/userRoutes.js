@@ -33,6 +33,12 @@ router.post('/login', isNotAuthenticated, userCtrl.postLogin);
 router.post('/verify-otp', isNotAuthenticated, userCtrl.verifyOtp);
 router.post('/resend-otp', isNotAuthenticated, userCtrl.resendOtp);
 
+// Forgot/Reset Password Routes
+router.get('/forgot-password', isNotAuthenticated, userCtrl.getForgotPassword);
+router.post('/forgot-password', isNotAuthenticated, userCtrl.postForgotPassword);
+router.get('/reset-password/:token', isNotAuthenticated, userCtrl.getResetPassword);
+router.post('/reset-password/:token', isNotAuthenticated, userCtrl.postResetPassword);
+
 
 
 // Google OAuth routes
@@ -64,6 +70,17 @@ router.post('/profile/verify-email-otp', protectUser, profileCtrl.verifyEmailOTP
 router.post('/profile/upload-avatar', protectUser, avatarUpload, profileCtrl.uploadAvatar);
 router.delete('/profile/delete-avatar', protectUser, profileCtrl.deleteAvatar);
 
+//password routes
+
+router.get('/password',protectUser,profileCtrl.getChangePassword);
+router.post('/password/change',protectUser,profileCtrl.ChangePassword);
+
+//address routes
+
+router.get('/addresses',protectUser,profileCtrl.getAddresses);
+router.post('/addresses/add',protectUser,profileCtrl.addAddress);
+router.put('/addresses/:addressId',protectUser,profileCtrl.editAddress);
+router.delete('/addresses/:addressId',protectUser,profileCtrl.deleteAddress);
 
 // Product & Category routes
 router.get('/product/list', protectUser, productCtrl.getShop);
@@ -74,10 +91,5 @@ router.get('/categories', protectUser, categoryCtrl.getCategoriesPage);
 
 
 
-// Forgot/Reset Password Routes
-router.get('/forgot-password', isNotAuthenticated, userCtrl.getForgotPassword);
-router.post('/forgot-password', isNotAuthenticated, userCtrl.postForgotPassword);
-router.get('/reset-password/:token', isNotAuthenticated, userCtrl.getResetPassword);
-router.post('/reset-password/:token', isNotAuthenticated, userCtrl.postResetPassword);
 
 module.exports = router;
