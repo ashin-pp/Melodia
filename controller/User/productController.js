@@ -9,12 +9,16 @@ const User=require('../../model/userSchema');
 
 
 
+
 exports.getShop = async (req, res) => {
   try {
-    console.log(' getShop called - User:', req.session?.user?.fullName || 'Not logged in');
+    console.log(' getShop called - User:', req.session?.user?.name || 'Not logged in');
 
-    const userId=req.session.user.id;
-    const user= await User.findById(userId);
+    let user = null;
+    if (req.session && req.session.user && req.session.user.id) {
+      const userId = req.session.user.id;
+      user = await User.findById(userId);
+    }
     const q = req.query.q ? req.query.q.trim() : '';
     const category = req.query.category || '';
     const priceMin = req.query.priceMin !== undefined && req.query.priceMin !== '' ? Number(req.query.priceMin) : undefined;
@@ -224,6 +228,14 @@ exports.getShop = async (req, res) => {
     // Provide all distinct brands for filter UI (optional enhancement)
     const allBrands = await Product.distinct('brand', { isListed: true });
 
+    // Get cart count for header (if user is logged in)
+    let cartCount = 0;
+    if (user) {
+      const Cart = require('../../model/cartSchema');
+      const cart = await Cart.findOne({ userId: user._id });
+      cartCount = cart ? cart.getTotalItems() : 0;
+    }
+
     console.log(' Found products:', products.length);
     console.log(' Categories:', categories.length);
 
@@ -250,7 +262,8 @@ exports.getShop = async (req, res) => {
         ...responseData,
         allBrands,
         totalProducts,
-        user
+        user,
+        cartCount
       });
     }
 
@@ -268,8 +281,11 @@ exports.getShop = async (req, res) => {
 exports.getProductDetails = async (req, res) => {
   try {
     const productId = req.params.id;
-    const userId=req.session.user.id;
-    const user= await User.findById(userId);
+    let user = null;
+    if (req.session && req.session.user && req.session.user.id) {
+      const userId = req.session.user.id;
+      user = await User.findById(userId);
+    }
     
     // Check if productId is a valid MongoDB ObjectId
     if (!mongoose.Types.ObjectId.isValid(productId)) {

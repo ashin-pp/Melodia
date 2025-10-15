@@ -6,8 +6,10 @@ const { isNotAuthenticated } = require('../middleware/auth');
 const profileCtrl = require('../controller/User/profileController');
 const productCtrl = require('../controller/User/productController')
 const categoryCtrl = require('../controller/User/categoryController')
+const cartCtrl = require('../controller/User/cartController');
 const { protectUser } = require('../middleware/userAuth');
 const { avatarUpload } = require('../config/multer');
+
 //landing page route
 router.get('/', (req, res) => {
   // If admin is logged in, always go to admin dashboard
@@ -55,12 +57,10 @@ router.get(
 );
 
 // Protected routes
-
 router.get('/home', protectUser, userCtrl.loadHomePage);
 router.get('/logout', protectUser, profileCtrl.logout);
 
 // Profile routes
-
 router.get('/profile', protectUser, profileCtrl.getProfile);
 router.get('/profile/edit', protectUser, profileCtrl.getEditProfile);
 router.post('/profile/edit', protectUser, profileCtrl.postEditProfile);
@@ -71,23 +71,30 @@ router.post('/profile/upload-avatar', protectUser, avatarUpload, profileCtrl.upl
 router.delete('/profile/delete-avatar', protectUser, profileCtrl.deleteAvatar);
 
 //password routes
-
-router.get('/password',protectUser,profileCtrl.getChangePassword);
-router.post('/password/change',protectUser,profileCtrl.ChangePassword);
+router.get('/password', protectUser, profileCtrl.getChangePassword);
+router.post('/password/change', protectUser, profileCtrl.ChangePassword);
 
 //address routes
+router.get('/addresses', protectUser, profileCtrl.getAddresses);
+router.post('/addresses/add', protectUser, profileCtrl.addAddress);
+router.put('/addresses/:addressId', protectUser, profileCtrl.editAddress);
+router.delete('/addresses/:addressId', protectUser, profileCtrl.deleteAddress);
 
-router.get('/addresses',protectUser,profileCtrl.getAddresses);
-router.post('/addresses/add',protectUser,profileCtrl.addAddress);
-router.put('/addresses/:addressId',protectUser,profileCtrl.editAddress);
-router.delete('/addresses/:addressId',protectUser,profileCtrl.deleteAddress);
+// Product & Category routes (accessible to all users)
+router.get('/product/list', productCtrl.getShop);
+router.get('/products/:id', productCtrl.getProductDetails);
+router.get('/products/variants/:variantId', productCtrl.getVariantDetails);
+router.get('/categories/:id', categoryCtrl.getCategoryPage);
+router.get('/categories', categoryCtrl.getCategoriesPage);
 
-// Product & Category routes
-router.get('/product/list', protectUser, productCtrl.getShop);
-router.get('/products/:id', protectUser, productCtrl.getProductDetails);
-router.get('/products/variants/:variantId', protectUser, productCtrl.getVariantDetails);
-router.get('/categories/:id', protectUser, categoryCtrl.getCategoryPage);
-router.get('/categories', protectUser, categoryCtrl.getCategoriesPage);
+// Cart routes
+router.get('/cart', protectUser, cartCtrl.getCart);
+router.post('/cart/add', protectUser, cartCtrl.addToCart);
+router.put('/cart/update', protectUser, cartCtrl.updateCartQuantity);
+router.delete('/cart/remove', protectUser, cartCtrl.removeFromCart);
+router.delete('/cart/clear', protectUser, cartCtrl.clearCart);
+router.get('/cart/count', protectUser, cartCtrl.getCartCount);
+
 
 
 
