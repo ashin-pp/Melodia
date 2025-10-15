@@ -1,3 +1,5 @@
+
+
 const express = require('express');
 const router = express.Router();
 const passport = require('passport');
@@ -8,6 +10,8 @@ const productCtrl = require('../controller/User/productController')
 const categoryCtrl = require('../controller/User/categoryController')
 const cartCtrl = require('../controller/User/cartController');
 const wishlistCtrl = require('../controller/User/wishlistController');
+const addressCtrl = require('../controller/User/addressController');
+const checkoutCtrl = require('../controller/User/checkoutController');
 const { protectUser } = require('../middleware/userAuth');
 const { avatarUpload } = require('../config/multer');
 
@@ -75,13 +79,8 @@ router.delete('/profile/delete-avatar', protectUser, profileCtrl.deleteAvatar);
 router.get('/password', protectUser, profileCtrl.getChangePassword);
 router.post('/password/change', protectUser, profileCtrl.ChangePassword);
 
-//address routes
-router.get('/addresses', protectUser, profileCtrl.getAddresses);
-router.post('/addresses/add', protectUser, profileCtrl.addAddress);
-router.put('/addresses/:addressId', protectUser, profileCtrl.editAddress);
-router.delete('/addresses/:addressId', protectUser, profileCtrl.deleteAddress);
 
-// Product & Category routes 
+// Product & Category routes
 router.get('/product/list',protectUser, productCtrl.getShop);
 router.get('/products/:id',protectUser, productCtrl.getProductDetails);
 router.get('/products/variants/:variantId',protectUser, productCtrl.getVariantDetails);
@@ -102,6 +101,19 @@ router.post('/wishlist/add', protectUser, wishlistCtrl.addToWishlist);
 router.delete('/wishlist/remove', protectUser, wishlistCtrl.removeFromWishlist);
 router.post('/wishlist/move-to-cart', protectUser, wishlistCtrl.moveToCart);
 router.get('/wishlist/count', protectUser, wishlistCtrl.getWishlistCount);
+
+// Address routes
+router.get('/addresses', protectUser, addressCtrl.renderAddressesPage);
+router.get('/api/addresses', protectUser, addressCtrl.getAddresses);
+router.post('/addresses', protectUser, addressCtrl.addAddress);
+router.put('/addresses/:id', protectUser, addressCtrl.updateAddress);
+router.delete('/addresses/:id', protectUser, addressCtrl.deleteAddress);
+router.put('/addresses/:id/default', protectUser, addressCtrl.setDefaultAddress);
+
+// Checkout routes
+router.get('/checkout', protectUser, checkoutCtrl.getCheckout);
+router.post('/checkout/place-order', protectUser, checkoutCtrl.placeOrder);
+router.get('/order-success/:orderId', protectUser, checkoutCtrl.orderSuccess);
 
 
 

@@ -230,10 +230,18 @@ exports.getShop = async (req, res) => {
 
     // Get cart count for header (if user is logged in)
     let cartCount = 0;
+    let userWishlistItems = [];
     if (user) {
       const Cart = require('../../model/cartSchema');
       const cart = await Cart.findOne({ userId: user._id });
       cartCount = cart ? cart.getTotalItems() : 0;
+      
+      // Get user's wishlist items
+      const Wishlist = require('../../model/wishlistSchema');
+      const wishlist = await Wishlist.findOne({ userId: user._id });
+      if (wishlist) {
+        userWishlistItems = wishlist.items.map(item => item.variantId.toString());
+      }
     }
 
     console.log(' Found products:', products.length);
@@ -263,7 +271,8 @@ exports.getShop = async (req, res) => {
         allBrands,
         totalProducts,
         user,
-        cartCount
+        cartCount,
+        userWishlistItems
       });
     }
 
@@ -333,6 +342,16 @@ exports.getProductDetails = async (req, res) => {
     // Get the first variant as default
     const defaultVariant = product.variants[0];
 
+    // Check if default variant is in user's wishlist
+    let isInWishlist = false;
+    if (user && defaultVariant) {
+      const Wishlist = require('../../model/wishlistSchema');
+      const wishlist = await Wishlist.findOne({ userId: user._id });
+      if (wishlist) {
+        isInWishlist = wishlist.items.some(item => item.variantId.toString() === defaultVariant._id.toString());
+      }
+    }
+
     res.render('user/productdetail', {
       product,
       defaultVariant,
@@ -341,7 +360,8 @@ exports.getProductDetails = async (req, res) => {
       relatedProducts,
       categories: [product.categoryId],
       errorMessage: req.query.error || null,
-      user
+      user,
+      isInWishlist
     });
 
   } catch (error) {

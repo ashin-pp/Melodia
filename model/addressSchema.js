@@ -8,43 +8,81 @@ const addressSchema = new mongoose.Schema({
   },
   fullName: {
     type: String,
-    required: true
+    required: true,
+    trim: true
   },
-  email: {
+  phoneNumber: {
     type: String,
-    required: true
+    required: true,
+    trim: true
   },
-  phoneNo: {
-    type: Number,
-    required: true
-  },
-  state: {
+  addressLine1: {
     type: String,
-    required: true
+    required: true,
+    trim: true
+  },
+  addressLine2: {
+    type: String,
+    trim: true
   },
   city: {
     type: String,
-    required: true
+    required: true,
+    trim: true
   },
-  address: {
+  state: {
     type: String,
-    required: true
+    required: true,
+    trim: true
   },
-  pinCode: {
-    type: Number,
-    required: true
+  pincode: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  country: {
+    type: String,
+    required: true,
+    default: 'India',
+    trim: true
   },
   addressType: {
     type: String,
-    enum: ['HOME', 'WORK'],
-    default: 'HOME'
+    enum: ['Home', 'Work', 'Other'],
+    default: 'Home'
   },
-  landmark: {
-    type: String,
-    default: ''
+  isDefault: {
+    type: Boolean,
+    default: false
+  },
+  isActive: {
+    type: Boolean,
+    default: true
   }
-}, {
-  timestamps: true
+}, { 
+  timestamps: true 
 });
 
-module.exports = mongoose.model('Address', addressSchema);
+// Ensure only one default address per user
+addressSchema.pre('save', async function(next) {
+  if (this.isDefault) {
+    await this.constructor.updateMany(
+      { userId: this.userId, _id: { $ne: this._id } },
+      { isDefault: false }
+    );
+  }
+  next();
+});
+
+// Method to set as default address
+addressSchema.methods.setAsDefault = async function() {
+  await this.constructor.updateMany(
+    { userId: this.userId },
+    { isDefault: false }
+  );
+  this.isDefault = true;
+  return await this.save();
+};
+
+const Address = mongoose.model('Address', addressSchema);
+module.exports = Address;

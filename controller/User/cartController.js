@@ -72,6 +72,14 @@ const addToCart = async (req, res) => {
       });
     }
 
+    // Check if variant is out of stock
+    if (variant.stock === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'This product is currently out of stock'
+      });
+    }
+
     // Find or create cart
     let cart = await Cart.findOne({ userId });
     if (!cart) {

@@ -450,25 +450,24 @@
                                     </div>
                                     <div class="address-info">
                                         <h4><%= address.fullName %></h4>
-                                        <p><strong>Email:</strong> <%= address.email %></p>
-                                        <p><strong>Phone:</strong> <%= address.phoneNo %></p>
-                                        <p><%= address.address %></p>
-                                        <% if (address.landmark) { %>
-                                            <p><strong>Landmark:</strong> <%= address.landmark %></p>
+                                        <p><strong>Phone:</strong> <%= address.phoneNumber %></p>
+                                        <p><%= address.addressLine1 %></p>
+                                        <% if (address.addressLine2) { %>
+                                            <p><%= address.addressLine2 %></p>
                                         <% } %>
-                                        <p><%= address.city %>, <%= address.state %> - <%= address.pinCode %></p>
+                                        <p><%= address.city %>, <%= address.state %> - <%= address.pincode %></p>
+                                        <p><strong>Type:</strong> <%= address.addressType %></p>
                                     </div>
                                     <div class="address-actions">
                                         <button class="btn-edit" 
                                                 data-address-id="<%= address._id %>"
                                                 data-full-name="<%= address.fullName.replace(/"/g, '&quot;') %>"
-                                                data-email="<%= address.email.replace(/"/g, '&quot;') %>"
-                                                data-phone="<%= address.phoneNo %>"
-                                                data-address="<%= address.address.replace(/"/g, '&quot;') %>"
-                                                data-landmark="<%= (address.landmark || '').replace(/"/g, '&quot;') %>"
+                                                data-phone="<%= address.phoneNumber %>"
+                                                data-address-line1="<%= address.addressLine1.replace(/"/g, '&quot;') %>"
+                                                data-address-line2="<%= (address.addressLine2 || '').replace(/"/g, '&quot;') %>"
                                                 data-city="<%= address.city.replace(/"/g, '&quot;') %>"
                                                 data-state="<%= address.state.replace(/"/g, '&quot;') %>"
-                                                data-pincode="<%= address.pinCode %>"
+                                                data-pincode="<%= address.pincode %>"
                                                 data-address-type="<%= address.addressType %>"
                                                 onclick="editAddress(this)">
                                             <i class="fas fa-edit"></i> Edit
@@ -511,20 +510,16 @@
                                 <input type="text" id="fullName" name="fullName" required style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px;">
                             </div>
                             <div style="margin-bottom: 15px;">
-                                <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #374151;">Email *</label>
-                                <input type="email" id="email" name="email" required style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px;">
-                            </div>
-                            <div style="margin-bottom: 15px;">
                                 <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #374151;">Phone Number *</label>
-                                <input type="number" id="phoneNo" name="phoneNo" required style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px;">
+                                <input type="text" id="phoneNumber" name="phoneNumber" required style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px;">
                             </div>
                             <div style="margin-bottom: 15px;">
-                                <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #374151;">Address *</label>
-                                <textarea id="address" name="address" required style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; min-height: 80px; resize: vertical; font-size: 14px; font-family: inherit;"></textarea>
+                                <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #374151;">Address Line 1 *</label>
+                                <input type="text" id="addressLine1" name="addressLine1" required style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px;">
                             </div>
                             <div style="margin-bottom: 15px;">
-                                <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #374151;">Landmark</label>
-                                <input type="text" id="landmark" name="landmark" style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px;">
+                                <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #374151;">Address Line 2</label>
+                                <input type="text" id="addressLine2" name="addressLine2" style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px;">
                             </div>
                             <div style="display: flex; gap: 10px; margin-bottom: 15px;">
                                 <div style="flex: 1;">
@@ -537,14 +532,15 @@
                                 </div>
                             </div>
                             <div style="margin-bottom: 15px;">
-                                <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #374151;">Pin Code *</label>
-                                <input type="number" id="pinCode" name="pinCode" required style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px;">
+                                <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #374151;">Pincode *</label>
+                                <input type="text" id="pincode" name="pincode" required style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px;">
                             </div>
                             <div style="margin-bottom: 15px;">
                                 <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #374151;">Address Type *</label>
                                 <select id="addressType" name="addressType" required style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px;">
-                                    <option value="HOME">🏠 Home</option>
-                                    <option value="WORK">💼 Work</option>
+                                    <option value="Home">🏠 Home</option>
+                                    <option value="Work">💼 Work</option>
+                                    <option value="Other">📍 Other</option>
                                 </select>
                             </div>
                         </form>
@@ -561,7 +557,7 @@
                             const formData = new FormData(form);
                             const data = Object.fromEntries(formData);
                             
-                            if (!data.fullName || !data.email || !data.phoneNo || !data.address || !data.city || !data.state || !data.pinCode) {
+                            if (!data.fullName || !data.phoneNumber || !data.addressLine1 || !data.city || !data.state || !data.pincode) {
                                 Swal.showValidationMessage('Please fill all required fields');
                                 return false;
                             }
@@ -577,7 +573,7 @@
 
                 async function addAddress(addressData) {
                     try {
-                        const response = await fetch('/addresses/add', {
+                        const response = await fetch('/addresses', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -619,13 +615,12 @@
                     const addressData = {
                         _id: button.dataset.addressId,
                         fullName: button.dataset.fullName,
-                        email: button.dataset.email,
-                        phoneNo: button.dataset.phone,
-                        address: button.dataset.address,
-                        landmark: button.dataset.landmark,
+                        phoneNumber: button.dataset.phone,
+                        addressLine1: button.dataset.addressLine1,
+                        addressLine2: button.dataset.addressLine2,
                         city: button.dataset.city,
                         state: button.dataset.state,
-                        pinCode: button.dataset.pincode,
+                        pincode: button.dataset.pincode,
                         addressType: button.dataset.addressType
                     };
 
@@ -640,20 +635,16 @@
                             <input type="text" id="editFullName" name="fullName" value="${addressData.fullName || ''}" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
                         </div>
                         <div style="margin-bottom: 15px;">
-                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Email *</label>
-                            <input type="email" id="editEmail" name="email" value="${addressData.email || ''}" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
-                        </div>
-                        <div style="margin-bottom: 15px;">
                             <label style="display: block; margin-bottom: 5px; font-weight: 600;">Phone Number *</label>
-                            <input type="number" id="editPhoneNo" name="phoneNo" value="${addressData.phoneNo || ''}" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                            <input type="text" id="editPhoneNumber" name="phoneNumber" value="${addressData.phoneNumber || ''}" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
                         </div>
                         <div style="margin-bottom: 15px;">
-                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Address *</label>
-                            <textarea id="editAddress" name="address" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; min-height: 80px; resize: vertical;">${addressData.address || ''}</textarea>
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Address Line 1 *</label>
+                            <input type="text" id="editAddressLine1" name="addressLine1" value="${addressData.addressLine1 || ''}" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
                         </div>
                         <div style="margin-bottom: 15px;">
-                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Landmark</label>
-                            <input type="text" id="editLandmark" name="landmark" value="${addressData.landmark || ''}" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Address Line 2</label>
+                            <input type="text" id="editAddressLine2" name="addressLine2" value="${addressData.addressLine2 || ''}" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
                         </div>
                         <div style="display: flex; gap: 10px; margin-bottom: 15px;">
                             <div style="flex: 1;">
@@ -666,14 +657,15 @@
                             </div>
                         </div>
                         <div style="margin-bottom: 15px;">
-                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Pin Code *</label>
-                            <input type="number" id="editPinCode" name="pinCode" value="${addressData.pinCode || ''}" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Pincode *</label>
+                            <input type="text" id="editPincode" name="pincode" value="${addressData.pincode || ''}" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
                         </div>
                         <div style="margin-bottom: 15px;">
                             <label style="display: block; margin-bottom: 5px; font-weight: 600;">Address Type *</label>
                             <select id="editAddressType" name="addressType" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
-                                <option value="HOME" ${addressData.addressType === 'HOME' ? 'selected' : ''}>🏠 Home</option>
-                                <option value="WORK" ${addressData.addressType === 'WORK' ? 'selected' : ''}>💼 Work</option>
+                                <option value="Home" ${addressData.addressType === 'Home' ? 'selected' : ''}>🏠 Home</option>
+                                <option value="Work" ${addressData.addressType === 'Work' ? 'selected' : ''}>💼 Work</option>
+                                <option value="Other" ${addressData.addressType === 'Other' ? 'selected' : ''}>📍 Other</option>
                             </select>
                         </div>
                     </form>
@@ -689,7 +681,7 @@
                             const formData = new FormData(form);
                             const data = Object.fromEntries(formData);
 
-                            if (!data.fullName || !data.email || !data.phoneNo || !data.address || !data.city || !data.state || !data.pinCode) {
+                            if (!data.fullName || !data.phoneNumber || !data.addressLine1 || !data.city || !data.state || !data.pincode) {
                                 Swal.showValidationMessage('Please fill all required fields');
                                 return false;
                             }

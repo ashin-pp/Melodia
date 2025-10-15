@@ -1,0 +1,337 @@
+<%- include('../partials/header-common', { title: 'Order Placed Successfully - Melodia' }) %>
+
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Inter', sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: #334155;
+        line-height: 1.6;
+        margin-top: 80px;
+        min-height: calc(100vh - 80px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .success-container {
+        max-width: 600px;
+        margin: 2rem;
+        background: white;
+        border-radius: 20px;
+        padding: 3rem;
+        text-align: center;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+        animation: slideUp 0.6s ease-out;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .success-icon {
+        width: 120px;
+        height: 120px;
+        background: linear-gradient(135deg, #10b981, #059669);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 2rem;
+        animation: bounce 0.8s ease-out 0.3s both;
+    }
+
+    @keyframes bounce {
+        0%, 20%, 53%, 80%, 100% {
+            transform: translate3d(0, 0, 0);
+        }
+        40%, 43% {
+            transform: translate3d(0, -20px, 0);
+        }
+        70% {
+            transform: translate3d(0, -10px, 0);
+        }
+        90% {
+            transform: translate3d(0, -4px, 0);
+        }
+    }
+
+    .success-icon i {
+        font-size: 3rem;
+        color: white;
+    }
+
+    .success-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 1rem;
+    }
+
+    .success-message {
+        font-size: 1.125rem;
+        color: #64748b;
+        margin-bottom: 2rem;
+        line-height: 1.6;
+    }
+
+    .order-details {
+        background: #f8fafc;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        text-align: left;
+    }
+
+    .order-detail-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.75rem;
+        font-size: 0.875rem;
+    }
+
+    .order-detail-row:last-child {
+        margin-bottom: 0;
+        padding-top: 0.75rem;
+        border-top: 1px solid #e2e8f0;
+        font-weight: 600;
+        font-size: 1rem;
+    }
+
+    .order-detail-label {
+        color: #64748b;
+    }
+
+    .order-detail-value {
+        color: #1e293b;
+        font-weight: 500;
+    }
+
+    .order-id {
+        background: #eff6ff;
+        color: #1d4ed8;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-family: 'Courier New', monospace;
+        font-weight: 600;
+        font-size: 1rem;
+        margin: 1rem 0;
+        border: 1px solid #bfdbfe;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        padding: 0.875rem 2rem;
+        border-radius: 10px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        border: none;
+        min-width: 180px;
+        justify-content: center;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+        color: white;
+        box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+    }
+
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #2563eb, #1e40af);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+    }
+
+    .btn-secondary {
+        background: white;
+        color: #374151;
+        border: 2px solid #e5e7eb;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-secondary:hover {
+        background: #f9fafb;
+        border-color: #d1d5db;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .delivery-info {
+        background: linear-gradient(135deg, #fef3c7, #fde68a);
+        border-radius: 12px;
+        padding: 1rem;
+        margin: 1.5rem 0;
+        border-left: 4px solid #f59e0b;
+    }
+
+    .delivery-info h4 {
+        color: #92400e;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .delivery-info p {
+        color: #78350f;
+        font-size: 0.875rem;
+        margin: 0;
+    }
+
+    .thank-you-note {
+        background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin: 1.5rem 0;
+        border-left: 4px solid #10b981;
+    }
+
+    .thank-you-note h4 {
+        color: #065f46;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .thank-you-note p {
+        color: #047857;
+        font-size: 0.875rem;
+        margin: 0;
+    }
+
+    @media (max-width: 768px) {
+        .success-container {
+            margin: 1rem;
+            padding: 2rem;
+        }
+        
+        .success-title {
+            font-size: 1.5rem;
+        }
+        
+        .action-buttons {
+            flex-direction: column;
+        }
+        
+        .btn {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="success-container">
+    <!-- Success Icon -->
+    <div class="success-icon">
+        <i class="fas fa-check"></i>
+    </div>
+
+    <!-- Success Message -->
+    <h1 class="success-title">Order Placed Successfully! 🎉</h1>
+    <p class="success-message">
+        Thank you for your order! We've received your order and will start processing it soon.
+    </p>
+
+    <!-- Order ID -->
+    <div class="order-id">
+        Order ID: <%= order.orderId %>
+    </div>
+
+    <!-- Order Details -->
+    <div class="order-details">
+        <div class="order-detail-row">
+            <span class="order-detail-label">Items:</span>
+            <span class="order-detail-value"><%= order.items.length %> products</span>
+        </div>
+        <div class="order-detail-row">
+            <span class="order-detail-label">Payment Method:</span>
+            <span class="order-detail-value">
+                <% if (order.paymentMethod === 'COD') { %>
+                    💰 Cash on Delivery
+                <% } else { %>
+                    <%= order.paymentMethod %>
+                <% } %>
+            </span>
+        </div>
+        <div class="order-detail-row">
+            <span class="order-detail-label">Delivery Address:</span>
+            <span class="order-detail-value"><%= order.shippingAddress.fullName %></span>
+        </div>
+        <div class="order-detail-row">
+            <span class="order-detail-label">Order Date:</span>
+            <span class="order-detail-value"><%= new Date(order.orderDate).toLocaleDateString('en-IN') %></span>
+        </div>
+        <div class="order-detail-row">
+            <span class="order-detail-label">Total Amount:</span>
+            <span class="order-detail-value">₹<%= order.totalAmount.toFixed(2) %></span>
+        </div>
+    </div>
+
+    <!-- Delivery Information -->
+    <div class="delivery-info">
+        <h4>
+            <i class="fas fa-truck"></i>
+            Expected Delivery
+        </h4>
+        <p>
+            Your order will be delivered by <strong><%= new Date(order.expectedDeliveryDate).toLocaleDateString('en-IN') %></strong>.
+            We'll send you tracking information once your order is shipped.
+        </p>
+    </div>
+
+    <!-- Thank You Note -->
+    <div class="thank-you-note">
+        <h4>
+            <i class="fas fa-heart"></i>
+            Thank You for Choosing Melodia!
+        </h4>
+        <p>
+            We appreciate your business and trust in our products. 
+            If you have any questions about your order, feel free to contact our customer support.
+        </p>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+        <a href="/product/list" class="btn btn-primary">
+            <i class="fas fa-shopping-bag"></i>
+            Continue Shopping
+        </a>
+        <a href="/profile" class="btn btn-secondary">
+            <i class="fas fa-user"></i>
+            View Profile
+        </a>
+    </div>
+</div>
+
+</body>
+</html>
