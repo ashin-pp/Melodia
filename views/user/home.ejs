@@ -969,8 +969,8 @@
                 <input type="text" class="search-box" placeholder="Search premium audio...">
             </div>
             <div class="icon-buttons">
-                <button class="icon-btn cart-btn" data-tooltip="Cart">
-                    <!-- <span class="badge">3</span> -->
+                <button class="icon-btn cart-btn" data-tooltip="Cart" onclick="window.location.href='/cart'">
+                    <span class="badge cart-count" style="display: none;">0</span>
                 </button>
                 <button class="icon-btn wishlist-btn" data-tooltip="Wishlist"></button>
                 <button class="icon-btn profile-btn" data-tooltip="Profile">
@@ -1215,13 +1215,44 @@
         // });
 
         // Icon button functionality
-        // document.querySelector('.cart-btn').addEventListener('click', function() {
-        //     alert('Cart page coming soon!');
-        // });
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load cart count on page load
+            loadCartCount();
+        });
 
-        // document.querySelector('.wishlist-btn').addEventListener('click', function() {
-        //     alert('Wishlist page coming soon!');
-        // });
+        // Load cart count
+        function loadCartCount() {
+            <% if (typeof user !== 'undefined' && user) { %>
+                fetch('/cart/count')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            updateCartCount(data.count);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error loading cart count:', error);
+                    });
+            <% } %>
+        }
+
+        // Update cart count display
+        function updateCartCount(count) {
+            const cartCountElement = document.querySelector('.cart-count');
+            if (cartCountElement) {
+                cartCountElement.textContent = count;
+                if (count > 0) {
+                    cartCountElement.style.display = 'inline';
+                } else {
+                    cartCountElement.style.display = 'none';
+                }
+            }
+        }
+
+        // Wishlist functionality (placeholder)
+        document.querySelector('.wishlist-btn').addEventListener('click', function() {
+            window.location.href = '/wishlist';
+        });
 
         document.querySelector('.profile-btn').addEventListener('click', function () {
             window.location.href = '/profile';
