@@ -421,21 +421,21 @@
 
                                     <div class="cart-item <%= isDisabled ? 'out-of-stock' : '' %>"
                                         data-variant-id="<%= variant._id %>">
-                                        <% if (variant.images && variant.images.length> 0) { %>
-                                            <% const imageUrl=typeof variant.images[0]==='string' ? variant.images[0] :
-                                                variant.images[0].url; %>
-                                                <img src="<%= imageUrl %>" alt="<%= product.productName %>"
-                                                    class="product-image" style="cursor: pointer;"
-                                                    onclick="window.location.href='/products/<%= product._id %>'"
-                                                    onerror="this.src='https://via.placeholder.com/400x400/f8fafc/64748b?text=No+Image'">
-
-                                                <div class="product-image"
-                                                    style="background: #f1f5f9; display: flex; align-items: center; justify-content: center; cursor: pointer;"
-                                                    onclick="window.location.href='/products/<%= product._id %>'">
-                                                    <i class="fas fa-image"
-                                                        style="color: #9ca3af; font-size: 2rem;"></i>
-                                                </div>
-                                                <% } %>
+                                        <% if (variant.images && variant.images.length > 0) { %>
+                                            <% const imageUrl = typeof variant.images[0] === 'string' ? variant.images[0] : variant.images[0].url; %>
+                                            <img src="<%= imageUrl %>" 
+                                                 alt="<%= product.productName %>" 
+                                                 class="product-image"
+                                                 style="cursor: pointer;"
+                                                 onclick="window.location.href='/products/<%= product._id %>'"
+                                                 onerror="this.src='https://via.placeholder.com/400x400/f8fafc/64748b?text=No+Image'">
+                                        <% } else { %>
+                                            <div class="product-image" 
+                                                 style="background: #f1f5f9; display: flex; align-items: center; justify-content: center; cursor: pointer;"
+                                                 onclick="window.location.href='/products/<%= product._id %>'">
+                                                <i class="fas fa-image" style="color: #9ca3af; font-size: 2rem;"></i>
+                                            </div>
+                                        <% } %>
 
                                                     <div class="product-info" style="cursor: pointer;"
                                                         onclick="window.location.href='/products/<%= product._id %>'">
@@ -536,11 +536,25 @@
                             const category = product.categoryId;
                             return variant.stock > 0 && product.isListed && category.isListed;
                             });
+                            
+                            const outOfStockItems = cart.items.filter(item => {
+                                const variant = item.variantId;
+                                const product = variant.productId;
+                                const category = product.categoryId;
+                                return variant.stock === 0 || !product.isListed || !category.isListed;
+                            });
                             %>
+
+                            <% if (outOfStockItems.length > 0) { %>
+                                <div style="background: #fee2e2; color: #991b1b; padding: 12px; border-radius: 8px; margin-bottom: 16px; font-size: 14px;">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    Some items are out of stock or unavailable. Remove them to proceed.
+                                </div>
+                            <% } %>
 
                             <button class="btn-primary" id="checkout-btn" <%=!hasValidItems ? 'disabled' : '' %>>
                                 <i class="fas fa-credit-card"></i>
-                                Proceed to Checkout
+                                <%= !hasValidItems ? 'Remove unavailable items' : 'Proceed to Checkout' %>
                             </button>
 
                             <button class="btn-secondary" id="clear-cart-btn">

@@ -965,7 +965,7 @@
                                 <%= product.brand %>
                             </strong></p>
                     </div>
-                    <i class="far fa-heart wishlist-icon" onclick="toggleWishlist()"></i>
+                    <i class="<%= isInWishlist ? 'fas' : 'far' %> fa-heart wishlist-icon <%= isInWishlist ? 'active' : '' %>" onclick="toggleWishlist()"></i>
                 </div>
             </div>
 
@@ -1376,9 +1376,25 @@
                             // Update current variant ID for cart functionality
                             if (typeof currentVariantId !== 'undefined') {
                                 currentVariantId = selectedVariantId;
+                                
+                                // Update wishlist icon state for new variant
+                                <% if (typeof user !== 'undefined' && user) { %>
+                                updateWishlistIconState(selectedVariantId);
+                                <% } %>
                             }
                         }
                     }
+
+                    // Update wishlist icon state for variant
+                    <% if (typeof user !== 'undefined' && user) { %>
+                    function updateWishlistIconState(variantId) {
+                        // For now, reset to default state when variant changes
+                        // In a full implementation, you'd check if the specific variant is in wishlist
+                        const wishlistIcon = document.querySelector('.wishlist-icon');
+                        wishlistIcon.classList.remove('fas', 'active');
+                        wishlistIcon.classList.add('far');
+                    }
+                    <% } %>
 
                     // Image Magnifier - Fixed
                     function initMagnifier() {
@@ -1419,17 +1435,55 @@
 
                     // Wishlist toggle functionality
                     function toggleWishlist() {
+                        <% if (typeof user !== 'undefined' && user) { %>
                         const wishlistIcon = document.querySelector('.wishlist-icon');
-                        if (wishlistIcon.classList.contains('far')) {
-                            wishlistIcon.classList.remove('far');
-                            wishlistIcon.classList.add('fas');
-                            wishlistIcon.classList.add('active');
+                        const isCurrentlyInWishlist = wishlistIcon.classList.contains('fas');
+                        
+                        if (isCurrentlyInWishlist) {
+                            // Remove from wishlist
+                            $.ajax({
+                                url: '/wishlist/remove',
+                                method: 'DELETE',
+                                data: { variantId: currentVariantId },
+                                success: function(response) {
+                                    if (response.success) {
+                                        wishlistIcon.classList.remove('fas');
+                                        wishlistIcon.classList.add('far');
+                                        wishlistIcon.classList.remove('active');
+                                        showToast('Removed from wishlist', 'success');
+                                    } else {
+                                        showToast(response.message || 'Failed to remove from wishlist', 'error');
+                                    }
+                                },
+                                error: function() {
+                                    showToast('Failed to remove from wishlist', 'error');
+                                }
+                            });
                         } else {
-                            wishlistIcon.classList.remove('fas');
-                            wishlistIcon.classList.add('far');
-                            wishlistIcon.classList.remove('active');
+                            // Add to wishlist
+                            $.ajax({
+                                url: '/wishlist/add',
+                                method: 'POST',
+                                contentType: 'application/json',
+                                data: JSON.stringify({ variantId: currentVariantId }),
+                                success: function(response) {
+                                    if (response.success) {
+                                        wishlistIcon.classList.remove('far');
+                                        wishlistIcon.classList.add('fas');
+                                        wishlistIcon.classList.add('active');
+                                        showToast('Added to wishlist', 'success');
+                                    } else {
+                                        showToast(response.message || 'Failed to add to wishlist', 'error');
+                                    }
+                                },
+                                error: function() {
+                                    showToast('Failed to add to wishlist', 'error');
+                                }
+                            });
                         }
-                        // Add your wishlist functionality here
+                        <% } else { %>
+                        window.location.href = '/login';
+                        <% } %>
                     }
 
                     // Add to cart functionality (only if user is logged in)
@@ -1556,6 +1610,7 @@
                     opacity: 0.8;
                 }
             `;
+            
                             document.head.appendChild(style);
                         }
 
@@ -1584,3 +1639,5 @@
                     }
                     <% } // End user check for cart functions %>
                 </script>
+                
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>

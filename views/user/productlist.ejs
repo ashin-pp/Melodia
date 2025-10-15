@@ -238,6 +238,39 @@
         aspect-ratio: 1;
     }
 
+    .wishlist-icon {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 16px;
+        z-index: 2;
+    }
+
+    .wishlist-icon:hover {
+        background: rgba(225, 29, 72, 0.9);
+        transform: scale(1.1);
+    }
+
+    .wishlist-icon.active {
+        background: rgba(225, 29, 72, 0.9);
+        color: white;
+    }
+
+    .wishlist-icon.active i {
+        color: white !important;
+    }
+
     .product-image {
         width: 100%;
         height: 100%;
@@ -564,6 +597,19 @@
                             <div class="product-image-container">
                                 <img src="<%= firstImage %>" alt="<%= product.productName %>" class="product-image"
                                     onerror="this.src='https://via.placeholder.com/400x400/f8fafc/64748b?text=No+Image'">
+                                
+                                <% if (typeof user !== 'undefined' && user) { %>
+                                    <% 
+                                    const isInWishlist = firstVariant && userWishlistItems && userWishlistItems.includes(firstVariant._id.toString());
+                                    %>
+                                    <button class="wishlist-icon add-to-wishlist-btn <%= isInWishlist ? 'active' : '' %>"
+                                        data-variant-id="<%= firstVariant ? firstVariant._id : '' %>"
+                                        data-product-name="<%= product.productName %>"
+                                        onclick="event.stopPropagation(); addToWishlistFromList(this)">
+                                        <i class="<%= isInWishlist ? 'fas' : 'far' %> fa-heart"></i>
+                                    </button>
+                                <% } %>
+                                
                                 <% if (product.bestOffer> 0) { %>
                                     <div class="product-badge">
                                         <%= Math.round(product.bestOffer) %>% OFF
@@ -819,6 +865,86 @@
                 } else {
                     cartCountElement.style.display = 'none';
                 }
+            }
+        }
+
+        // Toggle wishlist functionality (add/remove)
+        function addToWishlistFromList(button) {
+            const variantId = button.dataset.variantId;
+            const productName = button.dataset.productName;
+
+            if (!variantId) {
+                showToast('Product variant not found', 'error');
+                return;
+            }
+
+            const isCurrentlyInWishlist = button.classList.contains('active');
+            const originalContent = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            button.disabled = true;
+
+            if (isCurrentlyInWishlist) {
+                // Remove from wishlist
+                $.ajax({
+                    url: '/wishlist/remove',
+                    type: 'DELETE',
+                    data: { variantId: variantId },
+                    success: function(response) {
+                        if (response && response.success) {
+                            showToast(`${productName} removed from wishlist!`, 'success');
+                            
+                            button.innerHTML = '<i class="far fa-heart"></i>';
+                            button.classList.remove('active');
+                            button.disabled = false;
+                        } else {
+                            showToast(response?.message || 'Failed to remove item from wishlist', 'error');
+                            button.innerHTML = originalContent;
+                            button.disabled = false;
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        let errorMessage = 'Failed to remove item from wishlist';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMessage = xhr.responseJSON.message;
+                        }
+                        showToast(errorMessage, 'error');
+                        button.innerHTML = originalContent;
+                        button.disabled = false;
+                    }
+                });
+            } else {
+                // Add to wishlist
+                $.ajax({
+                    url: '/wishlist/add',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        variantId: variantId
+                    }),
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response && response.success) {
+                            showToast(`${productName} added to wishlist!`, 'success');
+                            
+                            button.innerHTML = '<i class="fas fa-heart"></i>';
+                            button.classList.add('active');
+                            button.disabled = false;
+                        } else {
+                            showToast(response?.message || 'Failed to add item to wishlist', 'error');
+                            button.innerHTML = originalContent;
+                            button.disabled = false;
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        let errorMessage = 'Failed to add item to wishlist';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMessage = xhr.responseJSON.message;
+                        }
+                        showToast(errorMessage, 'error');
+                        button.innerHTML = originalContent;
+                        button.disabled = false;
+                    }
+                });
             }
         }
 

@@ -7,6 +7,7 @@ const profileCtrl = require('../controller/User/profileController');
 const productCtrl = require('../controller/User/productController')
 const categoryCtrl = require('../controller/User/categoryController')
 const cartCtrl = require('../controller/User/cartController');
+const wishlistCtrl = require('../controller/User/wishlistController');
 const { protectUser } = require('../middleware/userAuth');
 const { avatarUpload } = require('../config/multer');
 
@@ -80,12 +81,12 @@ router.post('/addresses/add', protectUser, profileCtrl.addAddress);
 router.put('/addresses/:addressId', protectUser, profileCtrl.editAddress);
 router.delete('/addresses/:addressId', protectUser, profileCtrl.deleteAddress);
 
-// Product & Category routes (accessible to all users)
-router.get('/product/list', productCtrl.getShop);
-router.get('/products/:id', productCtrl.getProductDetails);
-router.get('/products/variants/:variantId', productCtrl.getVariantDetails);
-router.get('/categories/:id', categoryCtrl.getCategoryPage);
-router.get('/categories', categoryCtrl.getCategoriesPage);
+// Product & Category routes 
+router.get('/product/list',protectUser, productCtrl.getShop);
+router.get('/products/:id',protectUser, productCtrl.getProductDetails);
+router.get('/products/variants/:variantId',protectUser, productCtrl.getVariantDetails);
+router.get('/categories/:id',protectUser, categoryCtrl.getCategoryPage);
+router.get('/categories',protectUser, categoryCtrl.getCategoriesPage);
 
 // Cart routes
 router.get('/cart', protectUser, cartCtrl.getCart);
@@ -94,6 +95,13 @@ router.put('/cart/update', protectUser, cartCtrl.updateCartQuantity);
 router.delete('/cart/remove', protectUser, cartCtrl.removeFromCart);
 router.delete('/cart/clear', protectUser, cartCtrl.clearCart);
 router.get('/cart/count', protectUser, cartCtrl.getCartCount);
+
+// Wishlist routes
+router.get('/wishlist', protectUser, wishlistCtrl.getWishlist);
+router.post('/wishlist/add', protectUser, wishlistCtrl.addToWishlist);
+router.delete('/wishlist/remove', protectUser, wishlistCtrl.removeFromWishlist);
+router.post('/wishlist/move-to-cart', protectUser, wishlistCtrl.moveToCart);
+router.get('/wishlist/count', protectUser, wishlistCtrl.getWishlistCount);
 
 
 
