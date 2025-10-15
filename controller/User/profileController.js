@@ -3,6 +3,7 @@ const User = require('../../model/userSchema');
 const bcrypt = require('bcryptjs');
 const sendMail = require('../../helper/mailer');
 const cloudinary = require('../../config/cloudinary');
+const Address=require('../../model/addressSchema');
 
 exports.getProfile = async (req, res) => {
   if (!req.session) return res.redirect('/login');
@@ -319,3 +320,160 @@ exports.resendEmailOTP = async (req, res) => {
     res.json({ success: false, message: 'Server error occurred. Please try again.' });
   }
 };
+
+exports.getChangePassword= async (req,res)=>{
+  if(!req.session){
+    return res.redirect('/login');
+  }
+  const userId=req.session.user.id;
+  if(!userId) return res.redirect('/login');
+
+  const user=await User.findById(userId);
+  if(!user){
+    delete req.session.user;
+    return res.redirect('/login')
+  }
+  res.render('user/change-password',{user});
+};
+
+
+exports.ChangePassword=async (req,res)=>{
+  try{
+  if(!req.session) return res.json({success:false,message:"session not found"});
+
+  const userId=req.session.user.id;
+  const {currentPassword,newPassword,confirmPassword}=req.body;
+  
+  if(!currentPassword||!newPassword||!confirmPassword){
+    return res.json({success:false,message:"all fields arer require"});
+  }
+  if(newPassword!==confirmPassword){
+    return res.json({success:false,message:"new password do not natch"})
+  }
+
+  if(newPassword.length<6){
+     return res.json({ success: false, message: 'Password must be at least 6 characters long' });
+  }
+
+  const user=await User.findById(userId);
+  if(!user) return res.json({success:false,message:"User not found"});
+
+   const passwordMatches=await bcrypt.compare(currentPassword,user.password);
+
+   if(!passwordMatches){
+     return res.json({ success: false, message: 'Current password is incorrect' });
+   }
+   user.password=await bcrypt.hash(newPassword,10);
+   await user.save();
+    res.json({ success: true, message: 'Password changed successfully' });
+  
+}
+   catch (error) {
+    console.error("Error in changePassword:", error);
+    res.json({ success: false, message: 'Server error occurred. Please try again.' });
+  }
+}
+
+
+exports.getAddresses=async (req,res)=>{
+  if(!req.session) return res.redirect('/login');
+  const userId=req.session.user.id;
+  if(!userId) return res.redirect('/login');
+  const user=await User.findById(userId);
+  if(!user){
+    delete req.session.user;
+    return res.redirect('/login')
+  }
+  const addresses = await Address.find({ userId }).sort({ createdAt: -1 });
+  res.render('user/addresses', { user, addresses });
+}
+
+exports.addAddress = async (req, res) => {
+  try {
+    if (!req.session) return res.json({ success: false, message: 'Session not found' });
+    
+    const { fullName, email, phoneNo, address, city, state, pinCode, addressType, landmark } = req.body;
+    const userId = req.session.user.id;
+    
+    if (!fullName || !email || !phoneNo || !address || !city || !state || !pinCode) {
+      return res.json({ success: false, message: 'All required fields must be filled' });
+    }
+    
+    const newAddress = new Address({
+      userId,
+      fullName,
+      email,
+      phoneNo: Number(phoneNo),
+      address,
+      city,
+      state,
+      pinCode: Number(pinCode),
+      addressType: addressType || 'HOME',
+      landmark: landmark || ''
+    });
+    
+    await newAddress.save();
+    res.json({ success: true, message: 'Address added successfully' });
+  } catch (error) {
+    console.error("Error in addAddress:", error);
+    res.json({ success: false, message: 'Server error occurred. Please try again.' });
+  }
+};
+
+exports.editAddress = async (req, res) => {
+  try {
+    if (!req.session) return res.json({ success: false, message: 'Session not found' });
+    
+    const { addressId } = req.params;
+    const { fullName, email, phoneNo, address, city, state, pinCode, addressType, landmark } = req.body;
+    const userId = req.session.user.id;
+    
+    if (!fullName || !email || !phoneNo || !address || !city || !state || !pinCode) {
+      return res.json({ success: false, message: 'All required fields must be filled' });
+    }
+    
+    const addressDoc = await Address.findOne({ _id: addressId, userId });
+    if (!addressDoc) {
+      return res.json({ success: false, message: 'Address not found' });
+    }
+    
+    addressDoc.fullName = fullName;
+    addressDoc.email = email;
+    addressDoc.phoneNo = Number(phoneNo);
+    addressDoc.address = address;
+    addressDoc.city = city;
+    addressDoc.state = state;
+    addressDoc.pinCode = Number(pinCode);
+    addressDoc.addressType = addressType || 'HOME';
+    addressDoc.landmark = landmark || '';
+    
+    await addressDoc.save();
+    res.json({ success: true, message: 'Address updated successfully' });
+  } catch (error) {
+    console.error("Error in editAddress:", error);
+    res.json({ success: false, message: 'Server error occurred. Please try again.' });
+  }
+};
+
+exports.deleteAddress = async (req, res) => {
+  try {
+    if (!req.session) return res.json({ success: false, message: 'Session not found' });
+    
+    const { addressId } = req.params;
+    const userId = req.session.user.id;
+    
+    const address = await Address.findOne({ _id: addressId, userId });
+    if (!address) {
+      return res.json({ success: false, message: 'Address not found' });
+    }
+    
+    await Address.findByIdAndDelete(addressId);
+    res.json({ success: true, message: 'Address deleted successfully' });
+  } catch (error) {
+    console.error("Error in deleteAddress:", error);
+    res.json({ success: false, message: 'Server error occurred. Please try again.' });
+  }
+};
+
+
+

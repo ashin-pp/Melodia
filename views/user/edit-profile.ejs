@@ -4,7 +4,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/croppie/2.6.5/croppie.min.css">
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
         * {
             margin: 0;
@@ -13,282 +13,510 @@
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 50%, #f8f9fa 100%);
-            color: #333333;
-            overflow-x: hidden;
-            scroll-behavior: smooth;
-            margin-top: 100px;
+            font-family: 'Inter', sans-serif;
+            background: #f1f5f9;
+            color: #334155;
+            line-height: 1.6;
+            margin-top: 80px;
         }
 
-        .profile-container {
-            margin-top: 100px;
-            min-height: calc(100vh - 100px);
-            background: #ffffff;
-            color: #333333;
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
         }
 
-        .account-section {
-            color: rgb(130, 130, 130);
-            text-align: center;
+        .page-header {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid #3b82f6;
         }
 
-        .account-title {
-            font-size: 2.5rem;
-            font-weight: 600;
-            margin-bottom: 10px;
-            padding-top: 30px;
-            background: linear-gradient(135deg, #050505 0%, #e0e0e0 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+        .page-title {
+            font-size: 1.875rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
         }
 
-        .main-container {
-            background-color: white;
-            min-height: calc(100vh - 200px);
-            display: flex;
+        .page-subtitle {
+            color: #64748b;
+            font-size: 1rem;
+        }
+
+        .profile-grid {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 2rem;
         }
 
         .sidebar {
-            width: 280px;
-            background-color: #f8f9fa;
-            padding: 30px 0;
-            border-right: 1px solid #e9ecef;
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            height: fit-content;
         }
 
-        .user-profile {
+        .user-card {
             text-align: center;
-            margin-bottom: 30px;
-            padding: 0 20px;
+            padding-bottom: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
         }
 
-        .user-avatar {
+        .avatar {
             width: 80px;
             height: 80px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
-            margin: 0 auto 15px;
+            margin: 0 auto 1rem;
+            overflow: hidden;
+            border: 3px solid #e2e8f0;
+            position: relative;
+        }
+
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .avatar-placeholder {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2rem;
             color: white;
-            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3);
+            font-size: 1.5rem;
+            font-weight: 600;
         }
 
         .user-name {
-            background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 25px;
+            font-size: 1.125rem;
             font-weight: 600;
-            display: inline-block;
-            font-size: 14px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            color: #1e293b;
+            margin-bottom: 0.25rem;
         }
 
-        .sidebar-menu {
+        .user-email {
+            color: #64748b;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .user-since {
+            color: #94a3b8;
+            font-size: 0.75rem;
+        }
+
+        .nav-menu {
             list-style: none;
-            padding: 0;
         }
 
-        .sidebar-menu li {
-            margin: 0;
+        .nav-item {
+            margin-bottom: 0.25rem;
         }
 
-        .sidebar-menu li a {
+        .nav-link {
             display: flex;
             align-items: center;
-            padding: 15px 25px;
-            color: #666;
+            padding: 0.75rem 1rem;
+            color: #64748b;
             text-decoration: none;
-            transition: all 0.3s ease;
+            border-radius: 8px;
+            transition: all 0.2s;
             font-weight: 500;
-            border-left: 3px solid transparent;
         }
 
-        .sidebar-menu li a:hover,
-        .sidebar-menu li.active a {
-            background-color: rgba(255, 107, 107, 0.1);
-            color: #ff6b6b;
-            border-left-color: #ff6b6b;
-        }
-
-        .sidebar-menu li a i {
-            margin-right: 12px;
-            width: 20px;
-            font-size: 16px;
-        }
-
-        .logout-btn {
-            display: block;
-            background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
-            color: white !important;
+        .nav-link:hover,
+        .nav-link.active {
+            background: #f1f5f9;
+            color: #3b82f6;
             text-decoration: none;
-            text-align: center;
-            padding: 12px 30px;
-            border-radius: 25px;
-            margin: 30px 25px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            border: none;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+        }
+
+        .nav-link i {
+            margin-right: 0.75rem;
+            width: 16px;
             font-size: 14px;
         }
 
-        .logout-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4);
-            color: white !important;
-            text-decoration: none;
-        }
-
-        .profile-content {
-            flex: 1;
-            padding: 50px;
-            background: #ffffff;
-        }
-
-        .edit-form-container {
-            max-width: 600px;
+        .logout-button {
             width: 100%;
-            background-color: rgb(226, 226, 226);
-            border-radius: 15px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-            padding: 40px;
-            border: 1px solid rgba(255, 107, 107, 0.1);
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 0.75rem;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 1.5rem;
+            font-size: 0.875rem;
         }
 
-        .form-title {
-            font-size: 1.8rem;
-            color: #1a1a1a;
-            margin-bottom: 30px;
+        .logout-button:hover {
+            background: #dc2626;
+        }
+
+        .main-content {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .content-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .content-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .avatar-section {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid #e2e8f0;
+        }
+
+        .avatar-section h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 1rem;
+        }
+
+        .avatar-preview {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            margin: 0 auto 1.5rem;
+            overflow: hidden;
+            border: 3px solid #e2e8f0;
+            position: relative;
+        }
+
+        .avatar-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .avatar-preview-placeholder {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2rem;
+            font-weight: 600;
+        }
+
+        .avatar-actions {
             text-align: center;
-            font-weight: 700;
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.875rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+            text-decoration: none;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.875rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+            text-decoration: none;
+            color: white;
+        }
+
+        .form-section {
+            margin-bottom: 2rem;
+        }
+
+        .form-section h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 1rem;
+        }
+
+        .form-grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .email-field-container {
+            display: flex;
+            gap: 1rem;
+            align-items: end;
+        }
+
+        .email-field-container .form-input {
+            flex: 1;
+        }
+
+        @media (max-width: 640px) {
+            .email-field-container {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.75rem;
+            }
+        }
+
+        /* Custom toast notification styles */
+        .custom-toast {
+            border-radius: 8px !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+            border: 1px solid #e2e8f0 !important;
+            max-width: 350px !important;
+            font-size: 14px !important;
+        }
+
+        .custom-toast .swal2-title {
+            font-size: 16px !important;
+            font-weight: 600 !important;
+            color: #1e293b !important;
+            margin-bottom: 4px !important;
+        }
+
+        .custom-toast .swal2-content {
+            font-size: 14px !important;
+            color: #64748b !important;
+            margin: 0 !important;
+        }
+
+        .custom-toast.swal2-icon-success {
+            background: #f0fdf4 !important;
+            border-left: 4px solid #10b981 !important;
+        }
+
+        .custom-toast.swal2-icon-error {
+            background: #fef2f2 !important;
+            border-left: 4px solid #ef4444 !important;
+        }
+
+        .custom-toast .swal2-success-ring {
+            border-color: #10b981 !important;
+        }
+
+        .custom-toast .swal2-success-fix {
+            background-color: #10b981 !important;
+        }
+
+        .custom-toast .swal2-success [class^='swal2-success-line'] {
+            background-color: #10b981 !important;
+        }
+
+        .custom-toast .swal2-error-x .swal2-error-line {
+            background-color: #ef4444 !important;
+        }
+
+        .custom-toast .swal2-timer-progress-bar {
+            background: #3b82f6 !important;
+        }
+
+        .custom-toast .swal2-icon {
+            width: 24px !important;
+            height: 24px !important;
+            margin: 0 8px 0 0 !important;
+        }
+
+        .custom-toast .swal2-icon.swal2-success {
+            border-width: 2px !important;
+        }
+
+        .custom-toast .swal2-icon.swal2-success [class^='swal2-success-line'] {
+            height: 2px !important;
+        }
+
+        .custom-toast .swal2-icon.swal2-success .swal2-success-line-tip {
+            width: 8px !important;
+            left: 2px !important;
+            top: 10px !important;
+        }
+
+        .custom-toast .swal2-icon.swal2-success .swal2-success-line-long {
+            width: 12px !important;
+            right: 2px !important;
+            top: 6px !important;
         }
 
         .form-group {
-            margin-bottom: 25px;
-        }
-
-        .form-group label {
-            display: block;
-            color: #333;
-            font-weight: 600;
-            font-size: 14px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 8px;
-        }
-
-        .form-group input {
-            width: 100%;
-            background-color: #f8f9fa;
-            border: 2px solid #e9ecef;
-            border-radius: 10px;
-            padding: 15px 20px;
-            font-size: 16px;
-            color: #333;
-            transition: all 0.3s ease;
-        }
-
-        .form-group input:focus {
-            outline: none;
-            border-color: #ff6b6b;
-            background-color: #ffffff;
-        }
-
-        .btn-container {
             display: flex;
-            gap: 15px;
-            justify-content: center;
-            margin-top: 30px;
+            flex-direction: column;
+            gap: 0.5rem;
         }
 
-        .btn-save {
-            background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
-            color: white;
-            border: none;
-            padding: 15px 35px;
-            border-radius: 10px;
-            cursor: pointer;
+        .form-label {
             font-weight: 600;
-            transition: all 0.3s ease;
-            font-size: 14px;
-            text-decoration: none;
-            display: inline-block;
+            color: #374151;
+            font-size: 0.875rem;
         }
 
-        .btn-save:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3);
-            color: white;
-            text-decoration: none;
+        .form-input {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            color: #1e293b;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e2e8f0;
         }
 
         .btn-cancel {
-            background: #6c757d;
-            color: white;
-            border: none;
-            padding: 15px 35px;
-            border-radius: 10px;
+            background: #f1f5f9;
+            color: #64748b;
+            border: 1px solid #e2e8f0;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 500;
             cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            font-size: 14px;
+            transition: all 0.2s;
+            font-size: 0.875rem;
             text-decoration: none;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
         .btn-cancel:hover {
-            background: #5a6268;
-            transform: translateY(-2px);
-            color: white;
+            background: #e2e8f0;
             text-decoration: none;
+            color: #64748b;
         }
 
-        .alert {
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 10px;
+        .email-section {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 2rem;
+            border: 1px solid #e2e8f0;
+        }
+
+        .email-section h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 1rem;
+        }
+
+        .email-display {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        .email-value {
+            color: #1e293b;
             font-weight: 500;
         }
 
-        .alert-success {
-            background-color: #d4edda;
-            border: 1px solid #c3e6cb;
-            color: #155724;
-        }
+        @media (max-width: 768px) {
+            .profile-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
 
-        .alert-error {
-            background-color: #f8d7da;
-            border: 1px solid #f5c6cb;
-            color: #721c24;
+            .container {
+                padding: 1rem;
+            }
+
+            .page-header,
+            .main-content {
+                padding: 1.5rem;
+            }
+
+            .avatar-actions {
+                flex-direction: column;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
         }
     </style>
 
     <body>
-        <div class="profile-container">
-            <section class="account-section">
-                <div class="container">
-                    <h1 class="account-title">Edit Profile</h1>
-                </div>
-            </section>
+        <div class="container">
+            <div class="page-header">
+                <h1 class="page-title">Edit Profile</h1>
+                <p class="page-subtitle">Update your personal information and profile settings</p>
+            </div>
 
-            <div class="main-container">
-                <aside class="sidebar">
-                    <div class="user-profile">
-                        <div class="user-avatar">
+            <div class="profile-grid">
+                <div class="sidebar">
+                    <div class="user-card">
+                        <div class="avatar">
                             <% if (user && user.avatar && user.avatar.url) { %>
-                                <img src="<%= user.avatar.url %>" alt="Profile" id="sidebarAvatar"
-                                    style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                                <img src="<%= user.avatar.url %>" alt="Profile Picture" id="sidebarAvatar">
                                 <% } else { %>
-                                    <div id="sidebarAvatarInitial"
-                                        style="width: 100%; height: 100%; background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem; font-weight: 600;">
+                                    <div class="avatar-placeholder" id="sidebarAvatarInitial">
                                         <%= user && user.name ? user.name.charAt(0).toUpperCase() : 'U' %>
                                     </div>
                                     <% } %>
@@ -296,167 +524,163 @@
                         <div class="user-name">
                             <%= user && user.name ? user.name : 'User' %>
                         </div>
+                        <div class="user-email">
+                            <%= user && user.email ? user.email : '' %>
+                        </div>
+                        <!-- <div class="user-since">
+                            Member since <%= user && user.createdOn ? new
+                                Date(user.createdOn).toLocaleDateString('en-US', { month: 'long' , year: 'numeric' })
+                                : 'Unknown' %>
+                        </div> -->
                     </div>
 
-                    <ul class="sidebar-menu">
-                        <li>
-                            <a href="/profile">
-                                <i class="fas fa-tachometer-alt"></i>
+                    <ul class="nav-menu">
+                        <li class="nav-item">
+                            <a href="/profile" class="nav-link">
+                                <i class="fas fa-user"></i>
                                 Account Overview
                             </a>
                         </li>
-                        <!-- <li class="active">
-                        <a href="/profile/edit">
-                            <i class="fas fa-edit"></i>
-                            Edit Profile
-                        </a>
-                    </li> -->
-                        <!-- <li>
-                        <a href="/profile/change-email">
-                            <i class="fas fa-envelope"></i>
-                            Change Email
-                        </a>
-                    </li> -->
-                        <li>
-                            <a href="/orders">
+                        <li class="nav-item">
+                            <a href="/orders" class="nav-link">
                                 <i class="fas fa-shopping-bag"></i>
                                 My Orders
                             </a>
                         </li>
-                        <li>
-                            <a href="/addresses">
+                        <li class="nav-item">
+                            <a href="/addresses" class="nav-link">
                                 <i class="fas fa-map-marker-alt"></i>
-                                Manage Addresses
+                                Addresses
                             </a>
                         </li>
-                        <li>
-                            <a href="/wallet">
+                        <li class="nav-item">
+                            <a href="/wallet" class="nav-link">
                                 <i class="fas fa-wallet"></i>
                                 Wallet
                             </a>
                         </li>
-                        <li>
-                            <a href="/password">
+                        <li class="nav-item">
+                            <a href="/password" class="nav-link">
                                 <i class="fas fa-lock"></i>
                                 Password
                             </a>
                         </li>
-                        <li>
-                            <a href="/wishlist">
+                        <li class="nav-item">
+                            <a href="/wishlist" class="nav-link">
                                 <i class="fas fa-heart"></i>
                                 Wishlist
                             </a>
                         </li>
                     </ul>
 
-                    <a href="#" class="logout-btn" onclick="confirmLogout()">
+                    <button class="logout-button" onclick="confirmLogout()">
+                        <i class="fas fa-sign-out-alt" style="margin-right: 0.5rem;"></i>
                         Logout
-                    </a>
-                </aside>
+                    </button>
+                </div>
 
-                <main class="profile-content">
-                    <div class="edit-form-container">
-                        <h2 class="form-title">Update Your Information</h2>
-
-                        <% if (typeof success !=='undefined' && success) { %>
-                            <div class="alert alert-success">
-                                <%= success %>
-                            </div>
-                            <% } %>
-
-                                <% if (typeof error !=='undefined' && error) { %>
-                                    <div class="alert alert-error">
-                                        <%= error %>
-                                    </div>
-                                    <% } %>
-
-                                        <!-- Avatar Section -->
-                                        <div class="avatar-section"
-                                            style="margin-bottom: 40px; padding-bottom: 30px; border-bottom: 2px solid #e9ecef;">
-                                            <h3 style="color: #1a1a1a; margin-bottom: 20px; font-weight: 700;">Profile
-                                                Picture</h3>
-
-                                            <div class="current-avatar-display"
-                                                style="text-align: center; margin-bottom: 20px;">
-                                                <div class="avatar-preview" id="currentAvatarPreview"
-                                                    style="width: 120px; height: 120px; border-radius: 50%; margin: 0 auto; overflow: hidden; border: 3px solid #ddd; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-                                                    <% if (user && user.avatar && user.avatar.url) { %>
-                                                        <img src="<%= user.avatar.url %>" alt="Current Avatar"
-                                                            id="currentAvatarImg"
-                                                            style="width: 100%; height: 100%; object-fit: cover;">
-                                                        <% } else { %>
-                                                            <div id="currentAvatarInitial"
-                                                                style="width: 100%; height: 100%; background: linear-gradient(135deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; color: white; font-size: 3rem; font-weight: 600;">
-                                                                <%= user && user.name ?
-                                                                    user.name.charAt(0).toUpperCase() : 'U' %>
-                                                            </div>
-                                                            <% } %>
-                                                </div>
-                                            </div>
-
-                                            <div class="avatar-actions" style="text-align: center;">
-                                                <button type="button" class="btn-save" onclick="showAvatarUpload()"
-                                                    style="margin-right: 10px;">
-                                                    <i class="fas fa-camera" style="margin-right: 8px;"></i>Change
-                                                    Picture
-                                                </button>
-                                                <% if (user && user.avatar && user.avatar.url) { %>
-                                                    <button type="button" class="btn-cancel" onclick="deleteAvatar()">
-                                                        <i class="fas fa-trash" style="margin-right: 8px;"></i>Remove
-                                                        Picture
-                                                    </button>
-                                                    <% } %>
-                                            </div>
-                                        </div>
-
-                                        <!-- Profile Information Form -->
-                                        <form action="/profile/edit" method="POST">
-                                            <div class="form-group">
-                                                <label for="name">Full Name</label>
-                                                <input type="text" id="name" name="name"
-                                                    value="<%= user && user.name ? user.name : '' %>" required>
-                                            </div>
-
-                                            <div class="form-group">
-                                                <label for="phone">Phone Number</label>
-                                                <input type="tel" id="phone" name="phone"
-                                                    value="<%= user && user.phone ? user.phone : '' %>">
-                                            </div>
-
-                                            <div class="btn-container">
-                                                <button type="submit" class="btn-save">
-                                                    <i class="fas fa-save" style="margin-right: 8px;"></i>Save Changes
-                                                </button>
-                                                <a href="/profile" class="btn-cancel">
-                                                    <i class="fas fa-times" style="margin-right: 8px;"></i>Cancel
-                                                </a>
-                                            </div>
-                                        </form>
-
-                                        <!-- Email Information Section -->
-                                        <div class="email-info-section"
-                                            style="margin-top: 40px; padding-top: 30px; border-top: 2px solid #e9ecef;">
-                                            <h3 style="color: #1a1a1a; margin-bottom: 20px; font-weight: 700;">Email
-                                                Address</h3>
-
-                                            <div class="form-group">
-                                                <label>Current Email</label>
-                                                <div class="detail-value"
-                                                    style="background-color: #f8f9fa; border: 2px solid #e9ecef; border-radius: 10px; padding: 15px 20px; font-size: 16px; color: #333; min-height: 50px; display: flex; align-items: center; justify-content: space-between;">
-                                                    <span>
-                                                        <%= user && user.email ? user.email : 'Not set' %>
-                                                    </span>
-                                                    <button type="button" class="btn-save"
-                                                        onclick="showChangeEmailPopup()"
-                                                        style="padding: 8px 16px; font-size: 12px;">
-                                                        <i class="fas fa-edit" style="margin-right: 5px;"></i>Change
-                                                        Email
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
+                <div class="main-content">
+                    <div class="content-header">
+                        <h2 class="content-title">Edit Profile</h2>
                     </div>
-                </main>
+
+                    <% if (typeof success !=='undefined' && success) { %>
+                        <div
+                            style="background: #dcfce7; border: 1px solid #bbf7d0; color: #166534; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                            <%= success %>
+                        </div>
+                        <% } %>
+
+                            <% if (typeof error !=='undefined' && error) { %>
+                                <div
+                                    style="background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                                    <%= error %>
+                                </div>
+                                <% } %>
+
+                                    <!-- Avatar Section -->
+                                    <div class="avatar-section">
+                                        <h3>Profile Picture</h3>
+                                        <div class="avatar-preview" id="currentAvatarPreview">
+                                            <% if (user && user.avatar && user.avatar.url) { %>
+                                                <img src="<%= user.avatar.url %>" alt="Current Avatar"
+                                                    id="currentAvatarImg">
+                                                <% } else { %>
+                                                    <div class="avatar-preview-placeholder" id="currentAvatarInitial">
+                                                        <%= user && user.name ? user.name.charAt(0).toUpperCase() : 'U'
+                                                            %>
+                                                    </div>
+                                                    <% } %>
+                                        </div>
+                                        <div class="avatar-actions">
+                                            <button type="button" class="btn-primary" onclick="showAvatarUpload()">
+                                                <i class="fas fa-camera"></i>
+                                                Change Picture
+                                            </button>
+                                            <% if (user && user.avatar && user.avatar.url) { %>
+                                                <button type="button" class="btn-secondary" onclick="deleteAvatar()">
+                                                    <i class="fas fa-trash"></i>
+                                                    Remove Picture
+                                                </button>
+                                                <% } %>
+                                        </div>
+                                    </div>
+
+                                    <!-- Profile Information Form -->
+                                    <div class="form-section">
+                                        <h3>Personal Information</h3>
+                                        <form action="/profile/edit" method="POST" id="profileForm"
+                                            onsubmit="return validateProfileForm(event)">
+                                            <div class="form-grid">
+                                                <div class="form-group">
+                                                    <label class="form-label" for="name">Full Name</label>
+                                                    <input type="text" id="name" name="name" class="form-input"
+                                                        value="<%= user && user.name ? user.name : '' %>" required
+                                                        minlength="2" maxlength="50">
+                                                    <div id="nameError"
+                                                        style="color: #ef4444; font-size: 0.75rem; margin-top: 0.25rem; display: none;">
+                                                    </div>
+                                                </div>
+
+                                                <div class="form-group">
+                                                    <label class="form-label" for="email">Email Address</label>
+                                                    <div class="email-field-container">
+                                                        <input type="email" id="email" name="email" class="form-input"
+                                                            value="<%= user && user.email ? user.email : '' %>" readonly
+                                                            style="background: #f1f5f9; cursor: not-allowed;">
+                                                        <button type="button" class="btn-primary"
+                                                            onclick="showChangeEmailModal()"
+                                                            style="white-space: nowrap;">
+                                                            <i class="fas fa-edit"></i>
+                                                            Change Email
+                                                        </button>
+                                                    </div>
+                                                </div>
+
+                                                <div class="form-group">
+                                                    <label class="form-label" for="phone">Phone Number</label>
+                                                    <input type="tel" id="phone" name="phone" class="form-input"
+                                                        value="<%= user && user.phone ? user.phone : '' %>"
+                                                        pattern="[\+]?[1-9][\d\s\-\(\)]{0,15}"
+                                                        title="Please enter a valid phone number">
+                                                    <div id="phoneError"
+                                                        style="color: #ef4444; font-size: 0.75rem; margin-top: 0.25rem; display: none;">
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="form-actions">
+                                                <a href="/profile" class="btn-cancel">
+                                                    <i class="fas fa-times"></i>
+                                                    Cancel
+                                                </a>
+                                                <button type="submit" class="btn-primary" id="saveButton">
+                                                    <i class="fas fa-save"></i>
+                                                    Save Changes
+                                                </button>
+                                            </div>
+                                    </div>
+                </div>
             </div>
         </div>
 
@@ -466,7 +690,7 @@
             <script src="https://cdnjs.cloudflare.com/ajax/libs/croppie/2.6.5/croppie.min.js"></script>
             <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.14.5/dist/sweetalert2.all.min.js"></script>
             <script>
-                // Show success/error messages from URL parameters
+                // Show success/error messages from URL parameters as toast notifications
                 const urlParams = new URLSearchParams(window.location.search);
                 const success = urlParams.get('success');
                 const error = urlParams.get('error');
@@ -476,8 +700,24 @@
                         title: 'Success!',
                         text: success,
                         icon: 'success',
-                        confirmButtonColor: '#ff6b6b'
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 4000,
+                        timerProgressBar: true,
+                        customClass: {
+                            popup: 'custom-toast'
+                        },
+                        didOpen: (toast) => {
+                            toast.addEventListener('mouseenter', Swal.stopTimer);
+                            toast.addEventListener('mouseleave', Swal.resumeTimer);
+                        }
                     });
+
+                    // Clear URL parameters after showing message
+                    const url = new URL(window.location);
+                    url.searchParams.delete('success');
+                    window.history.replaceState({}, document.title, url.pathname);
                 }
 
                 if (error) {
@@ -485,9 +725,48 @@
                         title: 'Error!',
                         text: error,
                         icon: 'error',
-                        confirmButtonColor: '#ff6b6b'
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 5000,
+                        timerProgressBar: true,
+                        customClass: {
+                            popup: 'custom-toast'
+                        },
+                        didOpen: (toast) => {
+                            toast.addEventListener('mouseenter', Swal.stopTimer);
+                            toast.addEventListener('mouseleave', Swal.resumeTimer);
+                        }
                     });
+
+                    // Clear URL parameters after showing message
+                    const url = new URL(window.location);
+                    url.searchParams.delete('error');
+                    window.history.replaceState({}, document.title, url.pathname);
                 }
+
+                // Ensure form submission works even if validation fails
+                document.addEventListener('DOMContentLoaded', function () {
+                    const form = document.getElementById('profileForm');
+                    const saveButton = document.getElementById('saveButton');
+
+                    if (form && saveButton) {
+                        console.log('Form and button found successfully');
+
+                        // Add click handler as backup
+                        saveButton.addEventListener('click', function (e) {
+                            console.log('Save button clicked');
+
+                            // If it's not a submit button, prevent default and submit form
+                            if (this.type !== 'submit') {
+                                e.preventDefault();
+                                form.submit();
+                            }
+                        });
+                    } else {
+                        console.error('Form or button not found:', { form, saveButton });
+                    }
+                });
 
                 // Avatar upload functionality with Croppie
                 let croppieInstance = null;
@@ -509,8 +788,8 @@
                         showCancelButton: true,
                         confirmButtonText: 'Upload',
                         cancelButtonText: 'Cancel',
-                        confirmButtonColor: '#ff6b6b',
-                        cancelButtonColor: '#6c757d',
+                        confirmButtonColor: '#3b82f6',
+                        cancelButtonColor: '#6b7280',
                         allowOutsideClick: false,
                         width: 600,
                         didOpen: () => {
@@ -637,46 +916,54 @@
                                         sidebarAvatar.src = data.avatar.url;
                                     } else if (sidebarAvatarInitial) {
                                         // Replace initial with image in sidebar
-                                        sidebarAvatarInitial.parentElement.innerHTML = `<img src="${data.avatar.url}" alt="Profile" id="sidebarAvatar" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+                                        sidebarAvatarInitial.parentElement.innerHTML = `<img src="${data.avatar.url}" alt="Profile" id="sidebarAvatar" style="width: 100%; height: 100%; object-fit: cover;">`;
                                     }
 
                                     // Update the action buttons to show delete option
                                     const actionsDiv = document.querySelector('.avatar-actions');
-                                    if (actionsDiv && !actionsDiv.querySelector('.btn-cancel')) {
+                                    if (actionsDiv && !actionsDiv.querySelector('.btn-secondary')) {
                                         actionsDiv.innerHTML += `
-                                <button type="button" class="btn-cancel" onclick="deleteAvatar()" style="margin-left: 10px;">
-                                    <i class="fas fa-trash" style="margin-right: 8px;"></i>Remove Picture
-                                </button>
-                            `;
+                                    <button type="button" class="btn-secondary" onclick="deleteAvatar()">
+                                        <i class="fas fa-trash"></i>
+                                        Remove Picture
+                                    </button>
+                                `;
                                     }
                                 }
 
                                 Swal.fire({
-                                    title: 'Success!',
+                                    title: 'Avatar Updated!',
                                     text: 'Profile picture updated successfully!',
                                     icon: 'success',
-                                    confirmButtonColor: '#ff6b6b'
+                                    toast: true,
+                                    position: 'top-end',
+                                    showConfirmButton: false,
+                                    timer: 3000,
+                                    timerProgressBar: true,
+                                    customClass: {
+                                        popup: 'custom-toast'
+                                    },
+                                    didOpen: (toast) => {
+                                        toast.addEventListener('mouseenter', Swal.stopTimer);
+                                        toast.addEventListener('mouseleave', Swal.resumeTimer);
+                                    }
                                 });
                             } else {
                                 Swal.fire({
                                     title: 'Error!',
                                     text: data.message || 'Failed to upload profile picture',
                                     icon: 'error',
-                                    confirmButtonColor: '#ff6b6b'
+                                    confirmButtonColor: '#3b82f6'
                                 });
                             }
                         })
                         .catch(error => {
                             Swal.close();
-                            console.error('Upload error details:', error);
-                            console.error('Error message:', error.message);
-                            console.error('Error stack:', error.stack);
-
                             Swal.fire({
                                 title: 'Error!',
-                                text: `Network error: ${error.message}. Please check console for details.`,
+                                text: 'Network error occurred. Please try again.',
                                 icon: 'error',
-                                confirmButtonColor: '#ff6b6b'
+                                confirmButtonColor: '#3b82f6'
                             });
                         });
                 }
@@ -687,8 +974,8 @@
                         text: 'Are you sure you want to remove your profile picture?',
                         icon: 'warning',
                         showCancelButton: true,
-                        confirmButtonColor: '#f44336',
-                        cancelButtonColor: '#6c757d',
+                        confirmButtonColor: '#ef4444',
+                        cancelButtonColor: '#6b7280',
                         confirmButtonText: 'Yes, remove it',
                         cancelButtonText: 'Cancel'
                     }).then((result) => {
@@ -710,19 +997,33 @@
                                     Swal.close();
                                     if (data.success) {
                                         Swal.fire({
-                                            title: 'Removed!',
+                                            title: 'Avatar Removed!',
                                             text: 'Profile picture has been removed.',
                                             icon: 'success',
-                                            confirmButtonColor: '#ff6b6b'
-                                        }).then(() => {
-                                            window.location.reload();
+                                            toast: true,
+                                            position: 'top-end',
+                                            showConfirmButton: false,
+                                            timer: 3000,
+                                            timerProgressBar: true,
+                                            customClass: {
+                                                popup: 'custom-toast'
+                                            },
+                                            didOpen: (toast) => {
+                                                toast.addEventListener('mouseenter', Swal.stopTimer);
+                                                toast.addEventListener('mouseleave', Swal.resumeTimer);
+                                            }
                                         });
+
+                                        // Reload after a short delay
+                                        setTimeout(() => {
+                                            location.reload();
+                                        }, 1000);
                                     } else {
                                         Swal.fire({
                                             title: 'Error!',
                                             text: data.message || 'Failed to remove profile picture',
                                             icon: 'error',
-                                            confirmButtonColor: '#ff6b6b'
+                                            confirmButtonColor: '#3b82f6'
                                         });
                                     }
                                 })
@@ -732,61 +1033,59 @@
                                         title: 'Error!',
                                         text: 'Network error occurred. Please try again.',
                                         icon: 'error',
-                                        confirmButtonColor: '#ff6b6b'
+                                        confirmButtonColor: '#3b82f6'
                                     });
                                 });
                         }
                     });
                 }
 
-                function confirmLogout() {
-                    Swal.fire({
-                        title: 'Logout',
-                        text: 'Are you sure you want to logout?',
-                        icon: 'question',
-                        showCancelButton: true,
-                        confirmButtonColor: '#ff6b6b',
-                        cancelButtonColor: '#6c757d',
-                        confirmButtonText: 'Yes, logout',
-                        cancelButtonText: 'Cancel'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            window.location.href = '/logout';
-                        }
-                    });
-                }
-
-                function showChangeEmailPopup() {
+                function showChangeEmailModal() {
                     Swal.fire({
                         title: 'Change Email Address',
                         html: `
                     <div style="text-align: left;">
-                        <p style="margin-bottom: 15px; color: #666;">Enter your new email address below:</p>
-                        <input type="email" id="newEmailInput" class="swal2-input" placeholder="Enter new email address" style="margin-bottom: 10px;">
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #374151;">Current Email</label>
+                            <input type="email" value="<%= user && user.email ? user.email : '' %>" readonly 
+                                style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; background: #f9fafb; color: #6b7280;">
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #374151;">New Email Address *</label>
+                            <input type="email" id="newEmail" placeholder="Enter new email address" required 
+                                style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px;">
+                        </div>
+                        <div style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 12px; margin-top: 15px;">
+                            <p style="margin: 0; font-size: 13px; color: #0369a1;">
+                                <i class="fas fa-info-circle" style="margin-right: 5px;"></i>
+                                We'll send a verification code to your new email address to confirm the change.
+                            </p>
+                        </div>
                     </div>
                 `,
                         showCancelButton: true,
-                        confirmButtonText: 'Send OTP',
+                        confirmButtonText: 'Send Verification Code',
                         cancelButtonText: 'Cancel',
-                        confirmButtonColor: '#ff6b6b',
-                        cancelButtonColor: '#6c757d',
-                        allowOutsideClick: false,
-                        didOpen: () => {
-                            // Focus on email input
-                            document.getElementById('newEmailInput').focus();
-                        },
+                        confirmButtonColor: '#3b82f6',
+                        cancelButtonColor: '#6b7280',
+                        width: 500,
                         preConfirm: () => {
-                            const newEmail = document.getElementById('newEmailInput').value;
+                            const newEmail = document.getElementById('newEmail').value.trim();
 
                             if (!newEmail) {
-                                Swal.showValidationMessage('Please enter an email address');
+                                Swal.showValidationMessage('Please enter a new email address');
                                 return false;
                             }
 
-                            // Email format validation
                             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                             if (!emailRegex.test(newEmail)) {
                                 Swal.showValidationMessage('Please enter a valid email address');
+                                return false;
+                            }
+
+                            const currentEmail = '<%= user && user.email ? user.email : "" %>';
+                            if (newEmail === currentEmail) {
+                                Swal.showValidationMessage('This is already your current email address');
                                 return false;
                             }
 
@@ -799,223 +1098,387 @@
                     });
                 }
 
-                function sendEmailOTP(newEmail) {
-                    // Show loading
-                    Swal.fire({
-                        title: 'Sending OTP...',
-                        text: 'Please wait while we send the verification code',
-                        allowOutsideClick: false,
-                        didOpen: () => {
-                            Swal.showLoading();
-                        }
-                    });
-
-                    // Submit form data
-                    fetch('/profile/send-email-otp', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            newEmail: newEmail
-                        })
-                    })
-                        .then(response => response.json())
-                        .then(data => {
-                            Swal.close();
-                            if (data.success) {
-                                // Show OTP input dialog
-                                showOTPDialog(newEmail);
-                            } else {
-                                Swal.fire({
-                                    title: 'Error!',
-                                    text: data.message || 'Failed to send OTP',
-                                    icon: 'error',
-                                    confirmButtonColor: '#ff6b6b'
-                                });
+                async function sendEmailOTP(newEmail) {
+                    try {
+                        Swal.fire({
+                            title: 'Sending Verification Code...',
+                            text: 'Please wait while we send the verification code to your new email address.',
+                            allowOutsideClick: false,
+                            didOpen: () => {
+                                Swal.showLoading();
                             }
-                        })
-                        .catch(error => {
-                            Swal.close();
+                        });
+
+                        const response = await fetch('/profile/send-email-otp', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ newEmail })
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            showOTPVerificationModal(newEmail);
+                        } else {
                             Swal.fire({
                                 title: 'Error!',
-                                text: 'Network error occurred. Please try again.',
+                                text: data.message || 'Failed to send verification code',
                                 icon: 'error',
-                                confirmButtonColor: '#ff6b6b'
+                                confirmButtonColor: '#3b82f6'
                             });
+                        }
+                    } catch (error) {
+                        Swal.fire({
+                            title: 'Error!',
+                            text: 'Network error occurred. Please try again.',
+                            icon: 'error',
+                            confirmButtonColor: '#3b82f6'
                         });
+                    }
                 }
 
-                function showOTPDialog(newEmail) {
+                function showOTPVerificationModal(newEmail) {
+                    let countdown = 300; // 5 minutes
+                    let countdownInterval;
+
+                    const updateCountdown = () => {
+                        const minutes = Math.floor(countdown / 60);
+                        const seconds = countdown % 60;
+                        const timeString = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+                        const timerElement = document.getElementById('otpTimer');
+                        if (timerElement) {
+                            timerElement.textContent = timeString;
+                        }
+
+                        countdown--;
+
+                        if (countdown < 0) {
+                            clearInterval(countdownInterval);
+                            const timerElement = document.getElementById('otpTimer');
+                            if (timerElement) {
+                                timerElement.textContent = 'Expired';
+                                timerElement.style.color = '#ef4444';
+                            }
+                        }
+                    };
+
                     Swal.fire({
-                        title: 'Enter OTP',
+                        title: 'Enter Verification Code',
                         html: `
-                    <p style="margin-bottom: 20px;">We've sent a verification code to <strong>${newEmail}</strong></p>
-                    <input type="text" id="otpInput" class="swal2-input" placeholder="Enter 6-digit OTP" maxlength="6" style="text-align: center; font-size: 18px; letter-spacing: 2px;">
-                    <div style="margin-top: 15px;">
-                        <button type="button" id="resendOtpBtn" class="swal2-confirm swal2-styled" style="background-color: #6c757d; margin-right: 10px;">Resend OTP</button>
-                        <span id="resendTimer" style="color: #666; font-size: 14px;"></span>
+                    <div style="text-align: left;">
+                        <div style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+                            <p style="margin: 0; font-size: 14px; color: #0369a1; text-align: center;">
+                                <i class="fas fa-envelope" style="margin-right: 5px;"></i>
+                                We've sent a 6-digit verification code to:<br>
+                                <strong>${newEmail}</strong>
+                            </p>
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #374151;">Verification Code *</label>
+                            <input type="text" id="otpCode" placeholder="Enter 6-digit code" maxlength="6" required 
+                                style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 16px; text-align: center; letter-spacing: 2px;">
+                        </div>
+                        <div style="text-align: center; margin-bottom: 15px;">
+                            <p style="margin: 0; font-size: 13px; color: #6b7280;">
+                                Code expires in: <span id="otpTimer" style="font-weight: 600; color: #ef4444;">5:00</span>
+                            </p>
+                        </div>
+                        <div style="text-align: center;">
+                            <button type="button" id="resendOtpBtn" onclick="resendEmailOTP('${newEmail}')" 
+                                style="background: none; border: none; color: #3b82f6; text-decoration: underline; cursor: pointer; font-size: 13px;">
+                                Didn't receive the code? Resend
+                            </button>
+                        </div>
                     </div>
                 `,
                         showCancelButton: true,
-                        confirmButtonText: 'Verify OTP',
+                        confirmButtonText: 'Verify & Update Email',
                         cancelButtonText: 'Cancel',
-                        confirmButtonColor: '#ff6b6b',
-                        cancelButtonColor: '#6c757d',
+                        confirmButtonColor: '#3b82f6',
+                        cancelButtonColor: '#6b7280',
+                        width: 500,
                         allowOutsideClick: false,
-                        allowEscapeKey: false,
                         didOpen: () => {
-                            // Start countdown timer
-                            startResendTimer(newEmail);
+                            countdownInterval = setInterval(updateCountdown, 1000);
+                            updateCountdown();
+
                             // Focus on OTP input
-                            document.getElementById('otpInput').focus();
+                            const otpInput = document.getElementById('otpCode');
+                            if (otpInput) {
+                                otpInput.focus();
+
+                                // Auto-format OTP input
+                                otpInput.addEventListener('input', function (e) {
+                                    this.value = this.value.replace(/[^0-9]/g, '');
+                                });
+                            }
+                        },
+                        willClose: () => {
+                            if (countdownInterval) {
+                                clearInterval(countdownInterval);
+                            }
                         },
                         preConfirm: () => {
-                            const otp = document.getElementById('otpInput').value;
-                            if (!otp || otp.length !== 6) {
-                                Swal.showValidationMessage('Please enter a valid 6-digit OTP');
+                            const otpCode = document.getElementById('otpCode').value.trim();
+
+                            if (!otpCode) {
+                                Swal.showValidationMessage('Please enter the verification code');
                                 return false;
                             }
-                            return otp;
+
+                            if (otpCode.length !== 6) {
+                                Swal.showValidationMessage('Please enter a valid 6-digit code');
+                                return false;
+                            }
+
+                            return { newEmail, otp: otpCode };
                         }
                     }).then((result) => {
+                        if (countdownInterval) {
+                            clearInterval(countdownInterval);
+                        }
+
                         if (result.isConfirmed) {
-                            verifyEmailOTP(newEmail, result.value);
+                            verifyEmailOTP(result.value.newEmail, result.value.otp);
                         }
                     });
                 }
 
-                function startResendTimer(newEmail) {
-                    let timeLeft = 60; // 60 seconds countdown
-                    const resendBtn = document.getElementById('resendOtpBtn');
-                    const timerSpan = document.getElementById('resendTimer');
+                async function verifyEmailOTP(newEmail, otp) {
+                    try {
+                        Swal.fire({
+                            title: 'Verifying...',
+                            text: 'Please wait while we verify your code and update your email address.',
+                            allowOutsideClick: false,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            }
+                        });
 
-                    // Disable resend button initially
-                    resendBtn.disabled = true;
-                    resendBtn.style.opacity = '0.5';
+                        const response = await fetch('/profile/verify-email-otp', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ newEmail, otp })
+                        });
 
-                    const countdown = setInterval(() => {
-                        timerSpan.textContent = `Resend available in ${timeLeft}s`;
-                        timeLeft--;
+                        const data = await response.json();
 
-                        if (timeLeft < 0) {
-                            clearInterval(countdown);
+                        if (data.success) {
+                            // Update the email field in the form first
+                            const emailInput = document.getElementById('email');
+                            if (emailInput) {
+                                emailInput.value = newEmail;
+                            }
+
+                            // Show success toast
+                            Swal.fire({
+                                title: 'Email Updated!',
+                                text: 'Your email address has been updated successfully!',
+                                icon: 'success',
+                                toast: true,
+                                position: 'top-end',
+                                showConfirmButton: false,
+                                timer: 4000,
+                                timerProgressBar: true,
+                                customClass: {
+                                    popup: 'custom-toast'
+                                },
+                                didOpen: (toast) => {
+                                    toast.addEventListener('mouseenter', Swal.stopTimer);
+                                    toast.addEventListener('mouseleave', Swal.resumeTimer);
+                                }
+                            });
+
+                            // Reload the page after a short delay to reflect changes
+                            setTimeout(() => {
+                                location.reload();
+                            }, 1000);
+                        } else {
+                            Swal.fire({
+                                title: 'Verification Failed',
+                                text: data.message || 'Invalid verification code',
+                                icon: 'error',
+                                confirmButtonColor: '#3b82f6'
+                            }).then(() => {
+                                // Show the OTP modal again
+                                showOTPVerificationModal(newEmail);
+                            });
+                        }
+                    } catch (error) {
+                        Swal.fire({
+                            title: 'Error!',
+                            text: 'Network error occurred. Please try again.',
+                            icon: 'error',
+                            confirmButtonColor: '#3b82f6'
+                        });
+                    }
+                }
+
+                async function resendEmailOTP(newEmail) {
+                    try {
+                        const resendBtn = document.getElementById('resendOtpBtn');
+                        if (resendBtn) {
+                            resendBtn.disabled = true;
+                            resendBtn.textContent = 'Sending...';
+                        }
+
+                        const response = await fetch('/profile/resend-email-otp', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ newEmail })
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            // Show success message briefly
+                            const resendBtn = document.getElementById('resendOtpBtn');
+                            if (resendBtn) {
+                                resendBtn.textContent = 'Code sent!';
+                                resendBtn.style.color = '#10b981';
+
+                                setTimeout(() => {
+                                    resendBtn.disabled = false;
+                                    resendBtn.textContent = "Didn't receive the code? Resend";
+                                    resendBtn.style.color = '#3b82f6';
+                                }, 3000);
+                            }
+                        } else {
+                            const resendBtn = document.getElementById('resendOtpBtn');
+                            if (resendBtn) {
+                                resendBtn.disabled = false;
+                                resendBtn.textContent = "Didn't receive the code? Resend";
+                            }
+
+                            // Show error in a small toast
+                            Swal.fire({
+                                title: 'Error',
+                                text: data.message || 'Failed to resend code',
+                                icon: 'error',
+                                toast: true,
+                                position: 'top-end',
+                                showConfirmButton: false,
+                                timer: 3000
+                            });
+                        }
+                    } catch (error) {
+                        const resendBtn = document.getElementById('resendOtpBtn');
+                        if (resendBtn) {
                             resendBtn.disabled = false;
-                            resendBtn.style.opacity = '1';
-                            timerSpan.textContent = '';
+                            resendBtn.textContent = "Didn't receive the code? Resend";
                         }
-                    }, 1000);
 
-                    // Add click handler for resend button
-                    resendBtn.addEventListener('click', () => {
-                        resendEmailOTP(newEmail);
-                        // Restart timer
-                        timeLeft = 60;
-                        resendBtn.disabled = true;
-                        resendBtn.style.opacity = '0.5';
-                    });
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'Network error occurred',
+                            icon: 'error',
+                            toast: true,
+                            position: 'top-end',
+                            showConfirmButton: false,
+                            timer: 3000
+                        });
+                    }
                 }
 
-                function resendEmailOTP(newEmail) {
-                    Swal.fire({
-                        title: 'Resending OTP...',
-                        text: 'Please wait while we send a new verification code',
-                        allowOutsideClick: false,
-                        didOpen: () => {
-                            Swal.showLoading();
-                        }
-                    });
+                function validateProfileForm(event) {
+                    console.log('Form validation started'); // Debug log
 
-                    fetch('/profile/resend-email-otp', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            newEmail: newEmail
-                        })
-                    })
-                        .then(response => response.json())
-                        .then(data => {
-                            Swal.close();
-                            if (data.success) {
-                                Swal.fire({
-                                    title: 'OTP Resent!',
-                                    text: 'A new verification code has been sent to your email',
-                                    icon: 'success',
-                                    confirmButtonColor: '#ff6b6b',
-                                    timer: 2000,
-                                    showConfirmButton: false
-                                });
-                            } else {
-                                Swal.fire({
-                                    title: 'Error!',
-                                    text: data.message || 'Failed to resend OTP',
-                                    icon: 'error',
-                                    confirmButtonColor: '#ff6b6b'
-                                });
+                    try {
+                        const nameInput = document.getElementById('name');
+                        const phoneInput = document.getElementById('phone');
+                        const nameError = document.getElementById('nameError');
+                        const phoneError = document.getElementById('phoneError');
+
+                        let isValid = true;
+
+                        // Reset error displays
+                        if (nameError) {
+                            nameError.style.display = 'none';
+                            nameInput.style.borderColor = '#d1d5db';
+                        }
+                        if (phoneError) {
+                            phoneError.style.display = 'none';
+                            phoneInput.style.borderColor = '#d1d5db';
+                        }
+
+                        // Validate name
+                        const name = nameInput.value.trim();
+                        if (!name) {
+                            if (nameError) {
+                                nameError.textContent = 'Name is required';
+                                nameError.style.display = 'block';
+                                nameInput.style.borderColor = '#ef4444';
                             }
-                        })
-                        .catch(error => {
-                            Swal.close();
-                            Swal.fire({
-                                title: 'Error!',
-                                text: 'Network error occurred. Please try again.',
-                                icon: 'error',
-                                confirmButtonColor: '#ff6b6b'
-                            });
-                        });
+                            isValid = false;
+                        } else if (name.length < 2) {
+                            if (nameError) {
+                                nameError.textContent = 'Name must be at least 2 characters long';
+                                nameError.style.display = 'block';
+                                nameInput.style.borderColor = '#ef4444';
+                            }
+                            isValid = false;
+                        } else if (name.length > 50) {
+                            if (nameError) {
+                                nameError.textContent = 'Name must be less than 50 characters';
+                                nameError.style.display = 'block';
+                                nameInput.style.borderColor = '#ef4444';
+                            }
+                            isValid = false;
+                        }
+
+                        // Validate phone (if provided)
+                        const phone = phoneInput.value.trim();
+                        if (phone) {
+                            const phoneRegex = /^[\+]?[1-9][\d\s\-\(\)]{0,15}$/;
+                            if (!phoneRegex.test(phone)) {
+                                if (phoneError) {
+                                    phoneError.textContent = 'Please enter a valid phone number';
+                                    phoneError.style.display = 'block';
+                                    phoneInput.style.borderColor = '#ef4444';
+                                }
+                                isValid = false;
+                            }
+                        }
+
+                        // Show loading state if valid
+                        if (isValid) {
+                            const saveButton = document.getElementById('saveButton');
+                            if (saveButton) {
+                                saveButton.disabled = true;
+                                saveButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+                            }
+                        }
+
+                        return isValid;
+                    } catch (error) {
+                        console.error('Form validation error:', error);
+                        // If validation fails, allow form to submit normally
+                        return true;
+                    }
                 }
 
-                function verifyEmailOTP(newEmail, otp) {
+                function confirmLogout() {
                     Swal.fire({
-                        title: 'Verifying OTP...',
-                        allowOutsideClick: false,
-                        didOpen: () => {
-                            Swal.showLoading();
+                        title: 'Logout',
+                        text: 'Are you sure you want to logout?',
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#ef4444',
+                        cancelButtonColor: '#6b7280',
+                        confirmButtonText: 'Yes, logout',
+                        cancelButtonText: 'Cancel'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = '/logout';
                         }
                     });
-
-                    fetch('/profile/verify-email-otp', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            newEmail: newEmail,
-                            otp: otp
-                        })
-                    })
-                        .then(response => response.json())
-                        .then(data => {
-                            Swal.close();
-                            if (data.success) {
-                                Swal.fire({
-                                    title: 'Success!',
-                                    text: 'Email address updated successfully!',
-                                    icon: 'success',
-                                    confirmButtonColor: '#ff6b6b'
-                                }).then(() => {
-                                    window.location.reload();
-                                });
-                            } else {
-                                Swal.fire({
-                                    title: 'Error!',
-                                    text: data.message || 'Failed to verify OTP',
-                                    icon: 'error',
-                                    confirmButtonColor: '#ff6b6b'
-                                });
-                            }
-                        })
-                        .catch(error => {
-                            Swal.close();
-                            Swal.fire({
-                                title: 'Error!',
-                                text: 'Network error occurred. Please try again.',
-                                icon: 'error',
-                                confirmButtonColor: '#ff6b6b'
-                            });
-                        });
                 }
             </script>
     </body>

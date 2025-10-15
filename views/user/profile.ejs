@@ -1,780 +1,416 @@
 <%- include('../partials/header-common', { title: 'My Account - Melodia' }) %>
 
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Inter', sans-serif;
+        background: #f1f5f9;
+        color: #334155;
+        line-height: 1.6;
+        margin-top: 80px;
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    .page-header {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        border-left: 4px solid #3b82f6;
+    }
+
+    .page-title {
+        font-size: 1.875rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-subtitle {
+        color: #64748b;
+        font-size: 1rem;
+    }
+
+    .profile-grid {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        gap: 2rem;
+    }
+
+    .sidebar {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        height: fit-content;
+    }
+
+    .user-card {
+        text-align: center;
+        padding-bottom: 1.5rem;
+        margin-bottom: 1.5rem;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        margin: 0 auto 1rem;
+        overflow: hidden;
+        border: 3px solid #e2e8f0;
+        position: relative;
+    }
+
+    .avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .avatar-placeholder {
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+    .user-name {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 0.25rem;
+    }
+
+    .user-email {
+        color: #64748b;
+        font-size: 0.875rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .user-since {
+        color: #94a3b8;
+        font-size: 0.75rem;
+    }
+
+    .nav-menu {
+        list-style: none;
+    }
+
+    .nav-item {
+        margin-bottom: 0.25rem;
+    }
+
+    .nav-link {
+        display: flex;
+        align-items: center;
+        padding: 0.75rem 1rem;
+        color: #64748b;
+        text-decoration: none;
+        border-radius: 8px;
+        transition: all 0.2s;
+        font-weight: 500;
+    }
+
+    .nav-link:hover,
+    .nav-link.active {
+        background: #f1f5f9;
+        color: #3b82f6;
+        text-decoration: none;
+    }
+
+    .nav-link i {
+        margin-right: 0.75rem;
+        width: 16px;
+        font-size: 14px;
+    }
+
+    .logout-button {
+        width: 100%;
+        background: #ef4444;
+        color: white;
+        border: none;
+        padding: 0.75rem;
+        border-radius: 8px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+        margin-top: 1.5rem;
+        font-size: 0.875rem;
+    }
+
+    .logout-button:hover {
+        background: #dc2626;
+    }
+
+    .main-content {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .content-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .content-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #1e293b;
+    }
+
+    .btn-primary {
+        background: #3b82f6;
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 500;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 0.875rem;
+    }
+
+    .btn-primary:hover {
+        background: #2563eb;
+        text-decoration: none;
+        color: white;
+    }
+
+    .info-grid {
+        display: grid;
+        gap: 1.5rem;
+    }
+
+    .info-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .info-label {
+        font-weight: 600;
+        color: #374151;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+    }
+
+    .info-value {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 1rem;
+        color: #1e293b;
+        font-size: 1rem;
+    }
+
+    @media (max-width: 768px) {
+        .profile-grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
         }
 
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 50%, #f8f9fa 100%);
-            color: #333333;
-            overflow-x: hidden;
-            scroll-behavior: smooth;
-            margin-top: 100px;
+        .container {
+            padding: 1rem;
         }
 
-        /* Ensure footer displays properly on light background */
-        .footer {
-            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%) !important;
-            color: #ffffff !important;
+        .page-header,
+        .main-content {
+            padding: 1.5rem;
         }
+    }
 
-        .navbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px 60px;
-            background: rgba(10, 10, 10, 0.95);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            position: fixed;
-            top: 0;
-            width: 100%;
-            z-index: 1000;
-            transition: all 0.3s ease;
-        }
 
-        .navbar.scrolled {
-            padding: 15px 60px;
-            background: rgba(0, 0, 0, 0.98);
-        }
+</style>
 
-        .logo {
-            display: flex;
-            align-items: center;
-            font-size: 26px;
-            font-weight: 700;
-            color: #ffffff;
-            text-decoration: none;
-        }
-
-        /* .logo::before {
-            content: "♪";
-            margin-right: 12px;
-            font-size: 32px;
-            background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        } */
-
-        .nav-links {
-            display: flex;
-            list-style: none;
-            gap: 40px;
-            align-items: center;
-        }
-
-        .nav-links a {
-            color: rgba(255, 255, 255, 0.8);
-            text-decoration: none;
-            font-size: 15px;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            position: relative;
-            padding: 8px 0;
-        }
-
-        .nav-links a:hover {
-            color: #ffffff;
-        }
-
-        .nav-actions {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .search-box {
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 25px;
-            padding: 12px 20px;
-            color: #ffffff;
-            outline: none;
-            width: 250px;
-            font-size: 14px;
-            transition: all 0.3s ease;
-        }
-
-        .icon-buttons {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .icon-btn {
-            position: relative;
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 50%;
-            width: 45px;
-            height: 45px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 18px;
-        }
-
-        .icon-btn:hover {
-            background: rgba(255, 255, 255, 0.12);
-            border-color: rgba(255, 107, 107, 0.5);
-            color: #ffffff;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(255, 107, 107, 0.2);
-        }
-
-        .icon-btn.cart-btn::after {
-            content: "🛒";
-        }
-
-        .icon-btn.wishlist-btn::after {
-            content: "❤️";
-        }
-
-        /* .icon-btn.profile-btn::after {
-            content: "👤";
-        } */
-
-        .profile-container {
-            margin-top: 100px;
-            min-height: calc(100vh - 100px);
-            background: #ffffff;
-            color: #333333;
-        }
-
-        .account-section {
-            color: rgb(130, 130, 130);
-            text-align: center;
-        }
-
-        .account-title {
-            font-size: 2.5rem;
-            font-weight: 600;
-            margin-bottom: 10px;
-            padding-top: 30px;
-            background: linear-gradient(135deg, #050505 0%, #e0e0e0 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .main-container {
-            background-color: white;
-            min-height: calc(100vh - 200px);
-            display: flex;
-        }
-
-        .sidebar {
-            width: 280px;
-            background-color: #f8f9fa;
-            padding: 30px 0;
-            border-right: 1px solid #e9ecef;
-        }
-
-        .user-profile {
-            text-align: center;
-            margin-bottom: 30px;
-            padding: 0 20px;
-        }
-
-        .user-avatar-container {
-            position: relative;
-            margin-bottom: 20px;
-        }
-
-        .user-avatar {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            margin: 0 auto;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3);
-            border: 3px solid #fff;
-        }
-
-        .default-avatar {
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            position: relative;
-        }
-
-        .avatar-initials {
-            font-size: 2.5rem;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-
-        .user-email {
-            color: #666;
-            font-size: 14px;
-            margin-bottom: 8px;
-            text-align: center;
-        }
-
-        .user-joined {
-            color: #999;
-            font-size: 12px;
-            text-align: center;
-            font-style: italic;
-        }
-
-        .user-name {
-            background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 25px;
-            font-weight: 600;
-            display: inline-block;
-            font-size: 14px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .sidebar-menu {
-            list-style: none;
-            padding: 0;
-        }
-
-        .sidebar-menu li {
-            margin: 0;
-        }
-
-        .sidebar-menu li a {
-            display: flex;
-            align-items: center;
-            padding: 15px 25px;
-            color: #666;
-            text-decoration: none;
-            transition: all 0.3s ease;
-            font-weight: 500;
-            border-left: 3px solid transparent;
-        }
-
-        .sidebar-menu li a:hover,
-        .sidebar-menu li.active a {
-            background-color: rgba(255, 107, 107, 0.1);
-            color: #ff6b6b;
-            border-left-color: #ff6b6b;
-        }
-
-        .sidebar-menu li a i {
-            margin-right: 12px;
-            width: 20px;
-            font-size: 16px;
-        }
-
-        .logout-btn {
-            display: block;
-            background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
-            color: white !important;
-            text-decoration: none;
-            text-align: center;
-            padding: 12px 30px;
-            border-radius: 25px;
-            margin: 30px 25px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            border: none;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-size: 14px;
-        }
-
-        .logout-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4);
-            color: white !important;
-            text-decoration: none;
-        }
-
-        .profile-content {
-            flex: 1;
-            padding: 50px;
-            background: #ffffff;
-        }
-
-        .profile-form-container {
-            max-width: 800px;
-            background-color: rgb(226, 226, 226);
-            border-radius: 15px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-            padding: 40px;
-            border: 1px solid rgba(255, 107, 107, 0.1);
-        }
-
-        .profile-form-title {
-            font-size: 1.8rem;
-            color: #1a1a1a;
-            margin-bottom: 30px;
-            text-align: left;
-            font-weight: 700;
-        }
-
-        .btn-save {
-            background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
-            color: white;
-            border: none;
-            padding: 15px 35px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            font-size: 14px;
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        .btn-save:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3);
-            color: white;
-            text-decoration: none;
-        }
-
-        .profile-details {
-            display: flex;
-            flex-direction: column;
-            gap: 25px;
-        }
-
-        .detail-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .detail-group label {
-            color: #333;
-            font-weight: 600;
-            font-size: 14px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .detail-value {
-            background-color: #f8f9fa;
-            border: 2px solid #e9ecef;
-            border-radius: 10px;
-            padding: 15px 20px;
-            font-size: 16px;
-            color: #333;
-            min-height: 50px;
-            display: flex;
-            align-items: center;
-        }
-
-        @media (max-width: 1024px) {
-            .main-container {
-                flex-direction: column;
-            }
-
-            .sidebar {
-                width: 100%;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .navbar {
-                padding: 15px 30px;
-                flex-direction: column;
-                gap: 20px;
-            }
-
-            .nav-links {
-                gap: 25px;
-            }
-
-            .search-box {
-                width: 200px;
-            }
-
-            .icon-buttons {
-                gap: 10px;
-            }
-
-            .icon-btn {
-                width: 40px;
-                height: 40px;
-                font-size: 16px;
-            }
-
-            .profile-content {
-                padding: 30px 20px;
-            }
-
-            .profile-form-container {
-                padding: 30px 20px;
-            }
-        }
-    </style>
-    </head>
-
-    <body>
-
-
-        <div class="profile-container">
-            <section class="account-section">
-                <div class="container">
-                    <h1 class="account-title">My Account</h1>
-                </div>
-            </section>
-
-            <div class="main-container">
-                <aside class="sidebar">
-                    <div class="user-profile">
-                        <div class="user-avatar-container">
-                            <div class="user-avatar">
-                                <% if (user && user.avatar && user.avatar.url) { %>
-                                    <img src="<%= user.avatar.url %>" alt="Profile Picture"
-                                        style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
-                                <% } else { %>
-                                    <div class="default-avatar">
-                                        <div class="avatar-initials">
-                                            <%= user && user.name ? user.name.charAt(0).toUpperCase() : 'U' %>
-                                        </div>
-                                    </div>
-                                <% } %>
-                            </div>
-                        </div>
-                        <div class="user-name">
-                            <%= user && user.name ? user.name : 'User' %>
-                        </div>
-                        <div class="user-email">
-                            <%= user && user.email ? user.email : '' %>
-                        </div>
-                        <div class="user-joined">
-                            Member since <%= user && user.createdOn ? new
-                                Date(user.createdOn).toLocaleDateString('en-US', { month: 'long' , year: 'numeric' })
-                                : 'Unknown' %>
-                        </div>
-                    </div>
-
-                    <ul class="sidebar-menu">
-                        <li class="active">
-                            <a href="/profile">
-                                <i class="fas fa-tachometer-alt"></i>
-                                Account Overview
-                            </a>
-                        </li>
-                        <!-- <li>
-                            <a href="/profile/edit">
-                                <i class="fas fa-edit"></i>
-                                Edit Profile
-                            </a>
-                        </li> -->
-
-                        <li>
-                            <a href="/orders">
-                                <i class="fas fa-shopping-bag"></i>
-                                My Orders
-                            </a>
-                        </li>
-                        <li>
-                            <a href="/addresses">
-                                <i class="fas fa-map-marker-alt"></i>
-                                Manage Addresses
-                            </a>
-                        </li>
-                        <li>
-                            <a href="/wallet">
-                                <i class="fas fa-wallet"></i>
-                                Wallet
-                            </a>
-                        </li>
-                        <li>
-                            <a href="/password">
-                                <i class="fas fa-lock"></i>
-                                Password
-                            </a>
-                        </li>
-                        <li>
-                            <a href="/wishlist">
-                                <i class="fas fa-heart"></i>
-                                Wishlist
-                            </a>
-                        </li>
-                    </ul>
-
-                    <a href="#" class="logout-btn" onclick="confirmLogout()">
-                        Logout
-                    </a>
-                </aside>
-
-                <main class="profile-content">
-                    <div class="profile-form-container">
-                        <div
-                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-                            <h2 class="profile-form-title">My Profile</h2>
-                            <a href="/profile/edit" class="btn-save">
-                                <i class="fas fa-edit" style="margin-right: 8px;"></i>Edit Profile
-                            </a>
-                        </div>
-
-                        <div class="profile-details">
-                            <div class="detail-group">
-                                <label>Full Name</label>
-                                <div class="detail-value">
-                                    <%= user && user.name ? user.name : 'Not provided' %>
-                                </div>
-                            </div>
-
-                            <div class="detail-group">
-                                <label>Email</label>
-                                <div class="detail-value">
-                                    <%= user && user.email ? user.email : 'Not provided' %>
-                                </div>
-                            </div>
-
-                            <div class="detail-group">
-                                <label>Phone Number</label>
-                                <div class="detail-value">
-                                    <%= user && user.phone ? user.phone : 'Not provided' %>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </main>
-            </div>
+<body>
+    <div class="container">
+        <div class="page-header">
+            <h1 class="page-title">My Account</h1>
+            <p class="page-subtitle">Manage your profile information and account settings</p>
         </div>
 
-        <%- include('../partials/footer') %>
-
-
-            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.14.5/dist/sweetalert2.all.min.js"></script>
-            <script>
-                window.addEventListener('scroll', () => {
-                    const navbar = document.getElementById('navbar');
-                    if (window.scrollY > 100) {
-                        navbar.classList.add('scrolled');
-                    } else {
-                        navbar.classList.remove('scrolled');
-                    }
-                });
-
-                document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-                    anchor.addEventListener('click', function (e) {
-                        e.preventDefault();
-                        const target = document.querySelector(this.getAttribute('href'));
-                        if (target) {
-                            target.scrollIntoView({
-                                behavior: 'smooth',
-                                block: 'start'
-                            });
-                        }
-                    });
-                });
-
-                document.querySelector('.profile-btn').addEventListener('click', function () {
-                    window.location.href = '/profile';
-                });
-
-                function showAvatarOptions() {
-                    Swal.fire({
-                        title: 'Change Profile Picture',
-                        html: `
-                            <div style="text-align: center;">
-                                <input type="file" id="avatarInput" accept="image/*" style="display: none;">
-                                <button onclick="document.getElementById('avatarInput').click()" class="swal2-confirm swal2-styled" style="margin: 10px;">
-                                    <i class="fas fa-upload"></i> Upload New Photo
-                                </button>
-                                <div id="imagePreview" style="margin-top: 20px; display: none;">
-                                    <img id="previewImg" style="max-width: 200px; max-height: 200px; border-radius: 10px; border: 2px solid #ddd;">
-                                </div>
+        <div class="profile-grid">
+            <div class="sidebar">
+                <div class="user-card">
+                    <div class="avatar">
+                        <% if (user && user.avatar && user.avatar.url) { %>
+                            <img src="<%= user.avatar.url %>" alt="Profile Picture">
+                        <% } else { %>
+                            <div class="avatar-placeholder">
+                                <%= user && user.name ? user.name.charAt(0).toUpperCase() : 'U' %>
                             </div>
-                        `,
-                        showCancelButton: true,
-                        confirmButtonText: 'Save Changes',
-                        cancelButtonText: 'Cancel',
-                        confirmButtonColor: '#ff6b6b',
-                        cancelButtonColor: '#6c757d',
-                        allowOutsideClick: false,
-                        didOpen: () => {
-                            const input = document.getElementById('avatarInput');
-                            const preview = document.getElementById('imagePreview');
-                            const previewImg = document.getElementById('previewImg');
+                        <% } %>
+                    </div>
+                    <div class="user-name"><%= user && user.name ? user.name : 'User' %></div>
+                    <div class="user-email"><%= user && user.email ? user.email : '' %></div>
+                    <!-- <div class="user-since">
+                        Member since <%= user && user.createdOn ? new Date(user.createdOn).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'Unknown' %>
+                    </div> -->
+                </div>
 
-                            input.addEventListener('change', function (e) {
-                                const file = e.target.files[0];
-                                if (file) {
-                                    // Validate file type
-                                    if (!file.type.startsWith('image/')) {
-                                        Swal.showValidationMessage('Please select a valid image file');
-                                        return;
-                                    }
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a href="/profile" class="nav-link active">
+                            <i class="fas fa-user"></i>
+                            Account Overview
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/orders" class="nav-link">
+                            <i class="fas fa-shopping-bag"></i>
+                            My Orders
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/addresses" class="nav-link">
+                            <i class="fas fa-map-marker-alt"></i>
+                            Addresses
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/wallet" class="nav-link">
+                            <i class="fas fa-wallet"></i>
+                            Wallet
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/password" class="nav-link">
+                            <i class="fas fa-lock"></i>
+                            Password
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/wishlist" class="nav-link">
+                            <i class="fas fa-heart"></i>
+                            Wishlist
+                        </a>
+                    </li>
+                </ul>
 
-                                    // Validate file size (max 5MB)
-                                    if (file.size > 5 * 1024 * 1024) {
-                                        Swal.showValidationMessage('Image size should be less than 5MB');
-                                        return;
-                                    }
+                <button class="logout-button" onclick="confirmLogout()">
+                    <i class="fas fa-sign-out-alt" style="margin-right: 0.5rem;"></i>
+                    Logout
+                </button>
+            </div>
 
-                                    const reader = new FileReader();
-                                    reader.onload = function (e) {
-                                        previewImg.src = e.target.result;
-                                        preview.style.display = 'block';
-                                    };
-                                    reader.readAsDataURL(file);
-                                }
-                            });
-                        },
-                        preConfirm: () => {
-                            const input = document.getElementById('avatarInput');
-                            const file = input.files[0];
+            <div class="main-content">
+                <div class="content-header">
+                    <h2 class="content-title">Profile Information</h2>
+                    <a href="/profile/edit" class="btn-primary">
+                        <i class="fas fa-edit"></i>
+                        Edit Profile
+                    </a>
+                </div>
 
-                            if (!file) {
-                                Swal.showValidationMessage('Please select an image');
-                                return false;
-                            }
+                <div class="info-grid">
+                    <div class="info-item">
+                        <label class="info-label">Full Name</label>
+                        <div class="info-value">
+                            <%= user && user.name ? user.name : 'Not provided' %>
+                        </div>
+                    </div>
 
-                            return file;
-                        }
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            uploadAvatar(result.value);
-                        }
-                    });
+                    <div class="info-item">
+                        <label class="info-label">Email Address</label>
+                        <div class="info-value">
+                            <%= user && user.email ? user.email : 'Not provided' %>
+                        </div>
+                    </div>
+
+                    <div class="info-item">
+                        <label class="info-label">Phone Number</label>
+                        <div class="info-value">
+                            <%= user && user.phone ? user.phone : 'Not provided' %>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <%- include('../partials/footer') %>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.14.5/dist/sweetalert2.all.min.js"></script>
+    <script>
+        // Show success/error messages from URL parameters as toast notifications
+        const urlParams = new URLSearchParams(window.location.search);
+        const success = urlParams.get('success');
+        const error = urlParams.get('error');
+
+        if (success) {
+            Swal.fire({
+                title: 'Success!',
+                text: success,
+                icon: 'success',
+                confirmButtonColor: '#3b82f6'
+            });
+            
+            // Clear URL parameters after showing message
+            const url = new URL(window.location);
+            url.searchParams.delete('success');
+            window.history.replaceState({}, document.title, url.pathname);
+        }
+
+        if (error) {
+            Swal.fire({
+                title: 'Error!',
+                text: error,
+                icon: 'error',
+                confirmButtonColor: '#3b82f6'
+            });
+            
+            // Clear URL parameters after showing message
+            const url = new URL(window.location);
+            url.searchParams.delete('error');
+            window.history.replaceState({}, document.title, url.pathname);
+        }
+
+        function confirmLogout() {
+            Swal.fire({
+                title: 'Logout',
+                text: 'Are you sure you want to logout?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Yes, logout',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = '/logout';
                 }
-
-                function uploadAvatar(file) {
-                    const formData = new FormData();
-                    formData.append('avatar', file);
-
-                    Swal.fire({
-                        title: 'Uploading...',
-                        text: 'Please wait while we upload your profile picture',
-                        allowOutsideClick: false,
-                        didOpen: () => {
-                            Swal.showLoading();
-                        }
-                    });
-
-                    fetch('/profile/upload-avatar', {
-                        method: 'POST',
-                        body: formData
-                    })
-                        .then(response => response.json())
-                        .then(data => {
-                            Swal.close();
-                            if (data.success) {
-                                Swal.fire({
-                                    title: 'Success!',
-                                    text: 'Profile picture updated successfully!',
-                                    icon: 'success',
-                                    confirmButtonColor: '#ff6b6b'
-                                }).then(() => {
-                                    window.location.reload();
-                                });
-                            } else {
-                                Swal.fire({
-                                    title: 'Error!',
-                                    text: data.message || 'Failed to upload profile picture',
-                                    icon: 'error',
-                                    confirmButtonColor: '#ff6b6b'
-                                });
-                            }
-                        })
-                        .catch(error => {
-                            Swal.close();
-                            Swal.fire({
-                                title: 'Error!',
-                                text: 'Network error occurred. Please try again.',
-                                icon: 'error',
-                                confirmButtonColor: '#ff6b6b'
-                            });
-                        });
-                }
-
-                function deleteAvatar() {
-                    Swal.fire({
-                        title: 'Remove Profile Picture',
-                        text: 'Are you sure you want to remove your profile picture?',
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#f44336',
-                        cancelButtonColor: '#6c757d',
-                        confirmButtonText: 'Yes, remove it',
-                        cancelButtonText: 'Cancel'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            Swal.fire({
-                                title: 'Removing...',
-                                text: 'Please wait while we remove your profile picture',
-                                allowOutsideClick: false,
-                                didOpen: () => {
-                                    Swal.showLoading();
-                                }
-                            });
-
-                            fetch('/profile/delete-avatar', {
-                                method: 'DELETE'
-                            })
-                                .then(response => response.json())
-                                .then(data => {
-                                    Swal.close();
-                                    if (data.success) {
-                                        Swal.fire({
-                                            title: 'Removed!',
-                                            text: 'Profile picture has been removed.',
-                                            icon: 'success',
-                                            confirmButtonColor: '#ff6b6b'
-                                        }).then(() => {
-                                            window.location.reload();
-                                        });
-                                    } else {
-                                        Swal.fire({
-                                            title: 'Error!',
-                                            text: data.message || 'Failed to remove profile picture',
-                                            icon: 'error',
-                                            confirmButtonColor: '#ff6b6b'
-                                        });
-                                    }
-                                })
-                                .catch(error => {
-                                    Swal.close();
-                                    Swal.fire({
-                                        title: 'Error!',
-                                        text: 'Network error occurred. Please try again.',
-                                        icon: 'error',
-                                        confirmButtonColor: '#ff6b6b'
-                                    });
-                                });
-                        }
-                    });
-                }
-
-                function confirmLogout() {
-                    Swal.fire({
-                        title: 'Logout',
-                        text: 'Are you sure you want to logout?',
-                        icon: 'question',
-                        showCancelButton: true,
-                        confirmButtonColor: '#ff6b6b',
-                        cancelButtonColor: '#6c757d',
-                        confirmButtonText: 'Yes, logout',
-                        cancelButtonText: 'Cancel'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            window.location.href = '/logout';
-                        }
-                    });
-                }
-            </script>
-    </body>
-
-    </html>
+            });
+        }
+    </script>
+</body>
+</html>
