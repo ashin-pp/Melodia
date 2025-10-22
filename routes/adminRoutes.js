@@ -7,6 +7,8 @@ const productController = require('../controller/Admin/productController');
 const { uploadProductImages } = require('../config/multer');
 const { processImages, processImagesOptional } = require('../middleware/imageProcessor');
 const categoryController = require("../controller/Admin/categoryController");
+const adminOrderCtrl = require('../controller/Admin/orderController');
+
 
 router.get('/login', adminCtrl.getLogin);
 router.post('/login', adminCtrl.postLogin);
@@ -34,6 +36,13 @@ router.get('/category/add', categoryController.getAddCategory);
 router.post('/category/add', categoryController.postAddCategory);
 router.get('/category/:id/edit', categoryController.getEditCategory);
 router.post('/category/:id/edit', categoryController.postEditCategory);
+
+
+// Order Management routes
+router.get('/orders', adminAuth, adminOrderCtrl.renderOrdersPage);
+router.get('/api/orders', adminAuth, adminOrderCtrl.listOrder);
+router.put('/api/orders/items/:itemId/status', adminAuth, adminOrderCtrl.updateItemStatus);
+router.get('/orders/:orderId', adminAuth, adminOrderCtrl.getAdminOrderDetails);
 
 
 module.exports = router;

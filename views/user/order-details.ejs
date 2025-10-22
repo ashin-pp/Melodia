@@ -1,0 +1,921 @@
+<%- include('../partials/header-common', { title: title }) %>
+
+<style>
+    body {
+        font-family: 'Inter', sans-serif;
+        background: #f8fafc;
+        color: #334155;
+        line-height: 1.6;
+        margin-top: 80px;
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    .page-header {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        border-left: 4px solid #3b82f6;
+    }
+
+    .page-title {
+        font-size: 1.875rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-subtitle {
+        color: #64748b;
+        font-size: 1rem;
+    }
+
+    .profile-grid {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        gap: 2rem;
+    }
+
+    .sidebar {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        height: fit-content;
+    }
+
+    .user-card {
+        text-align: center;
+        padding-bottom: 1.5rem;
+        margin-bottom: 1.5rem;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        margin: 0 auto 1rem;
+        overflow: hidden;
+        border: 3px solid #e2e8f0;
+        position: relative;
+    }
+
+    .avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .avatar-placeholder {
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+    .user-name {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 0.25rem;
+    }
+
+    .user-email {
+        color: #64748b;
+        font-size: 0.875rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .nav-menu {
+        list-style: none;
+    }
+
+    .nav-item {
+        margin-bottom: 0.25rem;
+    }
+
+    .nav-link {
+        display: flex;
+        align-items: center;
+        padding: 0.75rem 1rem;
+        color: #64748b;
+        text-decoration: none;
+        border-radius: 8px;
+        transition: all 0.2s;
+        font-weight: 500;
+    }
+
+    .nav-link:hover,
+    .nav-link.active {
+        background: #f1f5f9;
+        color: #3b82f6;
+        text-decoration: none;
+    }
+
+    .nav-link i {
+        margin-right: 0.75rem;
+        width: 16px;
+        font-size: 14px;
+    }
+
+    .logout-button {
+        width: 100%;
+        background: #ef4444;
+        color: white;
+        border: none;
+        padding: 0.75rem;
+        border-radius: 8px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+        margin-top: 1.5rem;
+        font-size: 0.875rem;
+    }
+
+    .logout-button:hover {
+        background: #dc2626;
+    }
+
+    .main-content {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .breadcrumb {
+        margin-bottom: 2rem;
+        font-size: 0.875rem;
+    }
+
+    .breadcrumb a {
+        color: #3b82f6;
+        text-decoration: none;
+    }
+
+    .breadcrumb a:hover {
+        text-decoration: underline;
+    }
+
+    .breadcrumb span {
+        color: #64748b;
+        margin: 0 0.5rem;
+    }
+
+    .order-info {
+        background: #f8fafc;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .order-meta {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .meta-item {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .meta-label {
+        font-size: 0.75rem;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.25rem;
+    }
+
+    .meta-value {
+        font-size: 0.875rem;
+        color: #1e293b;
+        font-weight: 500;
+    }
+
+    @media (max-width: 768px) {
+        .container {
+            padding: 1rem;
+        }
+
+        .profile-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .sidebar {
+            order: 2;
+            margin-top: 2rem;
+        }
+
+        .main-content {
+            order: 1;
+        }
+    }
+</style>
+
+<div class="container">
+    <!-- Page Header at Top -->
+    <div class="page-header">
+        <h1 class="page-title">Order #<%= order.orderId %></h1>
+        <p class="page-subtitle">View and manage your order details</p>
+    </div>
+
+    <div class="profile-grid">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="user-card">
+                <div class="avatar">
+                    <% if (user && user.avatar && user.avatar.url) { %>
+                        <img src="<%= user.avatar.url %>" alt="Profile Picture">
+                    <% } else { %>
+                        <div class="avatar-placeholder">
+                            <%= user && user.name ? user.name.charAt(0).toUpperCase() : 'U' %>
+                        </div>
+                    <% } %>
+                </div>
+                <div class="user-name"><%= user && user.name ? user.name : 'User' %></div>
+                <div class="user-email"><%= user && user.email ? user.email : '' %></div>
+            </div>
+
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="/profile" class="nav-link">
+                        <i class="fas fa-user"></i>
+                        Account Overview
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/orders" class="nav-link active">
+                        <i class="fas fa-shopping-bag"></i>
+                        My Orders
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/addresses" class="nav-link">
+                        <i class="fas fa-map-marker-alt"></i>
+                        Addresses
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/wallet" class="nav-link">
+                        <i class="fas fa-wallet"></i>
+                        Wallet
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/password" class="nav-link">
+                        <i class="fas fa-lock"></i>
+                        Password
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/wishlist" class="nav-link">
+                        <i class="fas fa-heart"></i>
+                        Wishlist
+                    </a>
+                </li>
+            </ul>
+
+            <button class="logout-button" onclick="confirmLogout()">
+                <i class="fas fa-sign-out-alt" style="margin-right: 0.5rem;"></i>
+                Logout
+            </button>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Breadcrumb -->
+            <div class="breadcrumb">
+                <a href="/orders">My Orders</a>
+                <span>/</span>
+                <span>Order #<%= order.orderId %></span>
+            </div>
+
+            <!-- Order Information -->
+            <div class="order-info">
+                <div class="order-meta">
+                    <div class="meta-item">
+                        <span class="meta-label">Order Date</span>
+                        <span class="meta-value">
+                            <%= new Date(order.orderDate).toLocaleDateString('en-IN', { 
+                                year: 'numeric', 
+                                month: 'long', 
+                                day: 'numeric', 
+                                hour: '2-digit', 
+                                minute: '2-digit' 
+                            }) %>
+                        </span>
+                    </div>
+
+                    <div class="meta-item">
+                        <span class="meta-label">Payment Method</span>
+                        <span class="meta-value">
+                            <% if (order.paymentMethod === 'COD') { %>
+                                💰 Cash on Delivery
+                            <% } else { %>
+                                <%= order.paymentMethod %>
+                            <% } %>
+                        </span>
+                    </div>
+
+                    <div class="meta-item">
+                        <span class="meta-label">Total Amount</span>
+                        <span class="meta-value">₹<%= order.totalAmount.toFixed(2) %></span>
+                    </div>
+
+                    <div class="meta-item">
+                        <span class="meta-label">Items Count</span>
+                        <span class="meta-value"><%= order.items.length %> items</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Actions -->
+            <div style="margin-bottom: 2rem;">
+                <% 
+                    // Check if any items can be cancelled
+                    const canCancelAnyItem = order.items.some(item => 
+                        ['Pending', 'Confirmed', 'Processing'].includes(item.status || 'Pending')
+                    );
+                %>
+                
+                <% if (canCancelAnyItem) { %>
+                    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                        <% if (canCancelAnyItem) { %>
+                            <button onclick="cancelOrder('<%= order._id %>')" style="padding: 0.75rem 1.5rem; background: #ef4444; color: white; border: none; border-radius: 8px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem;">
+                                <i class="fas fa-times"></i>
+                                Cancel Available Items
+                            </button>
+                        <% } %>
+                        
+                        <a href="/orders/<%= order._id %>/invoice" style="padding: 0.75rem 1.5rem; background: #6b7280; color: white; text-decoration: none; border-radius: 8px; font-weight: 500; display: inline-flex; align-items: center; gap: 0.5rem;">
+                            <i class="fas fa-download"></i>
+                            Download Invoice
+                        </a>
+                    </div>
+                <% } %>
+            </div>
+
+            <!-- Active Order Items -->
+            <% 
+                // Filter active items (non-cancelled and non-returned)
+                const activeItems = order.items.filter(item => {
+                    const isCancelled = order.cancelledItems && order.cancelledItems.some(cancelled => 
+                        cancelled.variantId.toString() === item.variantId._id.toString()
+                    );
+                    const isReturned = item.status === 'Returned';
+                    const isCancelledStatus = item.status === 'Cancelled';
+                    return !isCancelled && !isReturned && !isCancelledStatus;
+                });
+            %>
+            
+            <% if (activeItems.length > 0) { %>
+                <div style="background: #f8fafc; border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem;">
+                    <h3 style="margin-bottom: 1rem; color: #1e293b; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fas fa-box"></i>
+                        Order Items (<%= activeItems.length %>)
+                    </h3>
+                    
+                    <% activeItems.forEach((item, index) => { %>
+                        <div style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.5rem; margin-bottom: 1rem; background: white; display: flex; gap: 1rem;">
+                            <!-- Product Image -->
+                            <div style="width: 80px; height: 80px; border-radius: 8px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                <% if (item.variantId && item.variantId.images && item.variantId.images.length > 0) { %>
+                                    <img src="<%= item.variantId.images[0].url || item.variantId.images[0] %>" 
+                                         alt="<%= item.variantId.productId ? item.variantId.productId.productName : 'Product' %>" 
+                                         style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;"
+                                         onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=\'fas fa-image\' style=\'color: #64748b;\'></i>';">
+                                <% } else { %>
+                                    <i class="fas fa-image" style="color: #64748b;"></i>
+                                <% } %>
+                            </div>
+                            
+                            <!-- Product Details -->
+                            <div style="flex: 1;">
+                                <div style="font-weight: 600; color: #1e293b; margin-bottom: 0.5rem; font-size: 1rem;">
+                                    <%= item.variantId && item.variantId.productId ? item.variantId.productId.productName : 'Product' %>
+                                </div>
+                                
+                                <% if (item.variantId && item.variantId.productId && item.variantId.productId.brand) { %>
+                                    <div style="color: #64748b; font-size: 0.875rem; margin-bottom: 0.25rem;">
+                                        Brand: <%= item.variantId.productId.brand %>
+                                    </div>
+                                <% } %>
+                                
+                                <% if (item.variantId && item.variantId.color) { %>
+                                    <div style="color: #64748b; font-size: 0.875rem; margin-bottom: 0.5rem;">
+                                        Color: <%= item.variantId.color %>
+                                    </div>
+                                <% } %>
+                                
+                                <!-- Status -->
+                                <div style="margin-bottom: 0.5rem;">
+                                    <span style="font-size: 0.875rem; color: #64748b; margin-right: 0.5rem;">Status:</span>
+                                    <span style="padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; background: #dbeafe; color: #1e40af;">
+                                        <%= item.status || 'Pending' %>
+                                    </span>
+                                </div>
+                                
+                                <!-- Price -->
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                    <div style="color: #64748b; font-size: 0.875rem;">
+                                        Qty: <%= item.quantity %> × ₹<%= (item.price || 0).toFixed(2) %>
+                                    </div>
+                                    <div style="font-size: 1rem; font-weight: 600; color: #1e293b;">
+                                        ₹<%= (item.totalPrice || 0).toFixed(2) %>
+                                    </div>
+                                </div>
+                                
+                                <!-- Item Actions -->
+                                <% 
+                                    const itemStatus = item.status || 'Pending';
+                                    const canCancelItem = ['Pending', 'Confirmed', 'Processing'].includes(itemStatus);
+                                    const canReturnItem = itemStatus === 'Delivered';
+                                %>
+                                
+                                <% if (canCancelItem || canReturnItem) { %>
+                                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                                        <% if (canCancelItem) { %>
+                                            <button onclick="cancelItem('<%= order._id %>', '<%= item.variantId._id %>', '<%= item.quantity %>', 'Product')" style="padding: 0.375rem 0.75rem; background: #ef4444; color: white; border: none; border-radius: 6px; font-size: 0.75rem; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 0.25rem;">
+                                                <i class="fas fa-times"></i>
+                                                Cancel Item
+                                            </button>
+                                        <% } %>
+                                        
+                                        <% if (canReturnItem) { %>
+                                            <button onclick="returnItem('<%= order._id %>', '<%= item.variantId._id %>', '<%= item.quantity %>', 'Product')" style="padding: 0.375rem 0.75rem; background: #f59e0b; color: white; border: none; border-radius: 6px; font-size: 0.75rem; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 0.25rem;">
+                                                <i class="fas fa-undo"></i>
+                                                Return Item
+                                            </button>
+                                        <% } %>
+                                    </div>
+                                <% } %>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+            <% } %>
+
+            <!-- Cancelled Items Section -->
+            <% if (order.cancelledItems && order.cancelledItems.length > 0) { %>
+                <div style="background: #fef2f2; border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem; border-left: 4px solid #ef4444;">
+                    <h3 style="margin-bottom: 1rem; color: #dc2626; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fas fa-times-circle"></i>
+                        Cancelled Items (<%= order.cancelledItems.length %>)
+                    </h3>
+                    
+                    <% order.cancelledItems.forEach((cancelledItem, index) => { %>
+                        <% 
+                            // Find the original item details
+                            const originalItem = order.items.find(item => 
+                                item.variantId._id.toString() === cancelledItem.variantId.toString()
+                            );
+                        %>
+                        
+                        <div style="border: 1px solid #fecaca; border-radius: 8px; padding: 1.5rem; margin-bottom: 1rem; background: white; opacity: 0.8; display: flex; gap: 1rem;">
+                            <!-- Product Image -->
+                            <div style="width: 80px; height: 80px; border-radius: 8px; background: #fee2e2; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                <% if (originalItem && originalItem.variantId && originalItem.variantId.images && originalItem.variantId.images.length > 0) { %>
+                                    <img src="<%= originalItem.variantId.images[0].url || originalItem.variantId.images[0] %>" 
+                                         alt="<%= originalItem.variantId.productId ? originalItem.variantId.productId.productName : 'Product' %>" 
+                                         style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px; opacity: 0.6;"
+                                         onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=\'fas fa-times\' style=\'color: #dc2626;\'></i>';">
+                                <% } else { %>
+                                    <i class="fas fa-times" style="color: #dc2626;"></i>
+                                <% } %>
+                            </div>
+                            
+                            <!-- Product Details -->
+                            <div style="flex: 1;">
+                                <div style="font-weight: 600; color: #dc2626; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                                    <% if (originalItem && originalItem.variantId && originalItem.variantId.productId) { %>
+                                        <%= originalItem.variantId.productId.productName %>
+                                    <% } else { %>
+                                        Product
+                                    <% } %>
+                                    <span style="background: #ef4444; color: white; font-size: 0.625rem; font-weight: 600; padding: 0.125rem 0.375rem; border-radius: 4px; text-transform: uppercase;">CANCELLED</span>
+                                </div>
+                                
+                                <% if (originalItem && originalItem.variantId && originalItem.variantId.productId && originalItem.variantId.productId.brand) { %>
+                                    <div style="color: #64748b; font-size: 0.875rem; margin-bottom: 0.25rem;">
+                                        Brand: <%= originalItem.variantId.productId.brand %>
+                                    </div>
+                                <% } %>
+                                
+                                <% if (originalItem && originalItem.variantId && originalItem.variantId.color) { %>
+                                    <div style="color: #64748b; font-size: 0.875rem; margin-bottom: 0.5rem;">
+                                        Color: <%= originalItem.variantId.color %>
+                                    </div>
+                                <% } %>
+                                
+                                <!-- Status -->
+                                <div style="margin-bottom: 0.5rem;">
+                                    <span style="font-size: 0.875rem; color: #64748b; margin-right: 0.5rem;">Status:</span>
+                                    <span style="padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; background: #fee2e2; color: #dc2626;">
+                                        Cancelled
+                                    </span>
+                                </div>
+                                
+                                <div style="color: #64748b; font-size: 0.875rem; margin-bottom: 0.5rem;">
+                                    Qty: <%= cancelledItem.quantity %> × ₹<%= originalItem ? originalItem.price.toFixed(2) : '0.00' %> = 
+                                    <span style="text-decoration: line-through;">₹<%= originalItem ? (cancelledItem.quantity * originalItem.price).toFixed(2) : '0.00' %></span>
+                                </div>
+                            
+                                <% if (cancelledItem && cancelledItem.reason) { %>
+                                    <div style="margin-top: 0.5rem; padding: 0.5rem; background: #fef3c7; border-radius: 4px; font-size: 0.75rem; color: #92400e; border-left: 3px solid #f59e0b;">
+                                        <strong>Cancellation Reason:</strong> <%= cancelledItem.reason %>
+                                    </div>
+                                <% } %>
+                                
+                                <% if (cancelledItem && cancelledItem.cancelledAt) { %>
+                                    <div style="margin-top: 0.5rem; font-size: 0.75rem; color: #64748b;">
+                                        <strong>Cancelled on:</strong>
+                                        <%= new Date(cancelledItem.cancelledAt).toLocaleDateString('en-IN', { 
+                                            year: 'numeric', 
+                                            month: 'long', 
+                                            day: 'numeric',
+                                            hour: '2-digit',
+                                            minute: '2-digit'
+                                        }) %>
+                                    </div>
+                                <% } %>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+            <% } %>
+
+            <!-- Returned Items Section -->
+            <% 
+                const returnedItems = order.items.filter(item => item.status === 'Returned');
+            %>
+            
+            <% if (returnedItems.length > 0) { %>
+                <div style="background: #fffbeb; border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem; border-left: 4px solid #f59e0b;">
+                    <h3 style="margin-bottom: 1rem; color: #f59e0b; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fas fa-undo"></i>
+                        Returned Items (<%= returnedItems.length %>)
+                    </h3>
+                    
+                    <% returnedItems.forEach((item, index) => { %>
+                        <div style="border: 1px solid #fed7aa; border-radius: 8px; padding: 1.5rem; margin-bottom: 1rem; background: white; display: flex; gap: 1rem;">
+                            <!-- Product Image -->
+                            <div style="width: 80px; height: 80px; border-radius: 8px; background: #fef3c7; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                <% if (item.variantId && item.variantId.images && item.variantId.images.length > 0) { %>
+                                    <img src="<%= item.variantId.images[0].url || item.variantId.images[0] %>" 
+                                         alt="<%= item.variantId.productId ? item.variantId.productId.productName : 'Product' %>" 
+                                         style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px; opacity: 0.7;"
+                                         onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=\'fas fa-undo\' style=\'color: #f59e0b;\'></i>';">
+                                <% } else { %>
+                                    <i class="fas fa-undo" style="color: #f59e0b;"></i>
+                                <% } %>
+                            </div>
+                            
+                            <!-- Product Details -->
+                            <div style="flex: 1;">
+                                <div style="font-weight: 600; color: #f59e0b; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                                    <%= item.variantId && item.variantId.productId ? item.variantId.productId.productName : 'Product' %>
+                                    <span style="background: #f59e0b; color: white; font-size: 0.625rem; font-weight: 600; padding: 0.125rem 0.375rem; border-radius: 4px; text-transform: uppercase;">RETURNED</span>
+                                </div>
+                                
+                                <% if (item.variantId && item.variantId.productId && item.variantId.productId.brand) { %>
+                                    <div style="color: #64748b; font-size: 0.875rem; margin-bottom: 0.25rem;">
+                                        Brand: <%= item.variantId.productId.brand %>
+                                    </div>
+                                <% } %>
+                                
+                                <% if (item.variantId && item.variantId.color) { %>
+                                    <div style="color: #64748b; font-size: 0.875rem; margin-bottom: 0.5rem;">
+                                        Color: <%= item.variantId.color %>
+                                    </div>
+                                <% } %>
+                                
+                                <!-- Status -->
+                                <div style="margin-bottom: 0.5rem;">
+                                    <span style="font-size: 0.875rem; color: #64748b; margin-right: 0.5rem;">Status:</span>
+                                    <span style="padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; background: #fef3c7; color: #f59e0b;">
+                                        Returned
+                                    </span>
+                                </div>
+                                
+                                <div style="color: #64748b; font-size: 0.875rem; margin-bottom: 0.5rem;">
+                                    Qty: <%= item.quantity %> × ₹<%= (item.price || 0).toFixed(2) %> = ₹<%= (item.totalPrice || 0).toFixed(2) %>
+                                </div>
+                            
+                                <% if (item.returnReason) { %>
+                                    <div style="margin-top: 0.5rem; padding: 0.5rem; background: #fef3c7; border-radius: 4px; font-size: 0.75rem; color: #92400e; border-left: 3px solid #f59e0b;">
+                                        <strong>Return Reason:</strong> <%= item.returnReason %>
+                                        <% if (item.returnComments) { %>
+                                            <br><strong>Comments:</strong> <%= item.returnComments %>
+                                        <% } %>
+                                    </div>
+                                <% } %>
+                                
+                                <% if (item.returnedAt) { %>
+                                    <div style="margin-top: 0.5rem; font-size: 0.75rem; color: #64748b;">
+                                        <strong>Returned on:</strong>
+                                        <%= new Date(item.returnedAt).toLocaleDateString('en-IN', { 
+                                            year: 'numeric', 
+                                            month: 'long', 
+                                            day: 'numeric',
+                                            hour: '2-digit',
+                                            minute: '2-digit'
+                                        }) %>
+                                    </div>
+                                <% } %>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+            <% } %>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    // Logout function
+    function confirmLogout() {
+        Swal.fire({
+            title: 'Logout?',
+            text: 'Are you sure you want to logout?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Yes, logout',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = '/logout';
+            }
+        });
+    }
+
+    // Cancel item function
+    function cancelItem(orderId, variantId, quantity, productName) {
+        Swal.fire({
+            title: 'Cancel Item?',
+            text: `Are you sure you want to cancel this ${productName}?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Yes, cancel it',
+            cancelButtonText: 'No, keep it',
+            input: 'select',
+            inputOptions: {
+                'Changed my mind': 'Changed my mind',
+                'Found better price': 'Found better price',
+                'Ordered by mistake': 'Ordered by mistake',
+                'Delivery too slow': 'Delivery too slow',
+                'Other': 'Other reason'
+            },
+            inputPlaceholder: 'Select cancellation reason',
+            inputValidator: (value) => {
+                if (!value) {
+                    return 'Please select a reason for cancellation';
+                }
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const reason = result.value;
+                
+                // Show loading
+                Swal.fire({
+                    title: 'Processing...',
+                    text: 'Cancelling item...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+                
+                fetch(`/orders/${orderId}/cancel-items`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        items: [{
+                            variantId: variantId,
+                            quantity: parseInt(quantity)
+                        }],
+                        reason: reason
+                    })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            title: 'Cancelled!',
+                            text: 'Item has been cancelled successfully.',
+                            icon: 'success',
+                            confirmButtonColor: '#3b82f6'
+                        }).then(() => {
+                            window.location.reload();
+                        });
+                    } else {
+                        Swal.fire({
+                            title: 'Error!',
+                            text: data.message || 'Failed to cancel item.',
+                            icon: 'error',
+                            confirmButtonColor: '#ef4444'
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Cancel error:', error);
+                    Swal.fire({
+                        title: 'Error!',
+                        text: 'Something went wrong. Please try again.',
+                        icon: 'error',
+                        confirmButtonColor: '#ef4444'
+                    });
+                });
+            }
+        });
+    }
+
+    // Return item function
+    function returnItem(orderId, variantId, quantity, productName) {
+        Swal.fire({
+            title: 'Return Item?',
+            text: `Are you sure you want to return this ${productName}?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#f59e0b',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Yes, return it',
+            cancelButtonText: 'No, keep it',
+            input: 'select',
+            inputOptions: {
+                'Defective product': 'Defective product',
+                'Wrong item received': 'Wrong item received',
+                'Not as described': 'Not as described',
+                'Size/fit issues': 'Size/fit issues',
+                'Quality issues': 'Quality issues',
+                'Other': 'Other reason'
+            },
+            inputPlaceholder: 'Select return reason',
+            inputValidator: (value) => {
+                if (!value) {
+                    return 'Please select a reason for return';
+                }
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const reason = result.value;
+                
+                // Show loading
+                Swal.fire({
+                    title: 'Processing...',
+                    text: 'Submitting return request...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+                
+                fetch(`/orders/${orderId}/return-item`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        variantId: variantId,
+                        quantity: parseInt(quantity),
+                        reason: reason
+                    })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            title: 'Return Requested!',
+                            text: 'Return request has been submitted successfully.',
+                            icon: 'success',
+                            confirmButtonColor: '#3b82f6'
+                        }).then(() => {
+                            window.location.reload();
+                        });
+                    } else {
+                        Swal.fire({
+                            title: 'Error!',
+                            text: data.message || 'Failed to submit return request.',
+                            icon: 'error',
+                            confirmButtonColor: '#ef4444'
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Return error:', error);
+                    Swal.fire({
+                        title: 'Error!',
+                        text: 'Something went wrong. Please try again.',
+                        icon: 'error',
+                        confirmButtonColor: '#ef4444'
+                    });
+                });
+            }
+        });
+    }
+
+    // Cancel order function
+    function cancelOrder(orderId) {
+        Swal.fire({
+            title: 'Cancel Order?',
+            text: 'Are you sure you want to cancel this entire order?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Yes, cancel order',
+            cancelButtonText: 'No, keep order',
+            input: 'select',
+            inputOptions: {
+                'Changed my mind': 'Changed my mind',
+                'Found better price': 'Found better price',
+                'Ordered by mistake': 'Ordered by mistake',
+                'Delivery too slow': 'Delivery too slow',
+                'Other': 'Other reason'
+            },
+            inputPlaceholder: 'Select cancellation reason',
+            inputValidator: (value) => {
+                if (!value) {
+                    return 'Please select a reason for cancellation';
+                }
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const reason = result.value;
+                
+                fetch(`/orders/${orderId}/cancel`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        reason: reason
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            title: 'Cancelled!',
+                            text: 'Order has been cancelled successfully.',
+                            icon: 'success',
+                            confirmButtonColor: '#3b82f6'
+                        }).then(() => {
+                            location.reload();
+                        });
+                    } else {
+                        Swal.fire({
+                            title: 'Error!',
+                            text: data.message || 'Failed to cancel order.',
+                            icon: 'error',
+                            confirmButtonColor: '#ef4444'
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        title: 'Error!',
+                        text: 'Something went wrong. Please try again.',
+                        icon: 'error',
+                        confirmButtonColor: '#ef4444'
+                    });
+                });
+            }
+        });
+    }
+</script>
+
+</body>
+</html>

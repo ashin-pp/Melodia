@@ -1,5 +1,3 @@
-
-
 const express = require('express');
 const router = express.Router();
 const passport = require('passport');
@@ -13,6 +11,7 @@ const wishlistCtrl = require('../controller/User/wishlistController');
 const addressCtrl = require('../controller/User/addressController');
 const checkoutCtrl = require('../controller/User/checkoutController');
 const { protectUser } = require('../middleware/userAuth');
+const orderCtrl = require('../controller/User/orderController');
 const { avatarUpload } = require('../config/multer');
 
 //landing page route
@@ -80,12 +79,15 @@ router.get('/password', protectUser, profileCtrl.getChangePassword);
 router.post('/password/change', protectUser, profileCtrl.ChangePassword);
 
 
+// About page route
+router.get('/about', userCtrl.loadAboutPage);
+
 // Product & Category routes
-router.get('/product/list',protectUser, productCtrl.getShop);
-router.get('/products/:id',protectUser, productCtrl.getProductDetails);
-router.get('/products/variants/:variantId',protectUser, productCtrl.getVariantDetails);
-router.get('/categories/:id',protectUser, categoryCtrl.getCategoryPage);
-router.get('/categories',protectUser, categoryCtrl.getCategoriesPage);
+router.get('/product/list', productCtrl.getShop);
+router.get('/products/:id', productCtrl.getProductDetails);
+router.get('/products/variants/:variantId', productCtrl.getVariantDetails);
+router.get('/categories/:id', categoryCtrl.getCategoryPage);
+router.get('/categories', categoryCtrl.getCategoriesPage);
 
 // Cart routes
 router.get('/cart', protectUser, cartCtrl.getCart);
@@ -114,6 +116,15 @@ router.put('/addresses/:id/default', protectUser, addressCtrl.setDefaultAddress)
 router.get('/checkout', protectUser, checkoutCtrl.getCheckout);
 router.post('/checkout/place-order', protectUser, checkoutCtrl.placeOrder);
 router.get('/order-success/:orderId', protectUser, checkoutCtrl.orderSuccess);
+
+// Order Management routes
+router.get('/orders', protectUser, orderCtrl.getOrders);
+router.get('/orders/:orderId', protectUser, orderCtrl.getOrderDetails);
+router.post('/orders/:orderId/cancel', protectUser, orderCtrl.cancelOrder);
+router.post('/orders/:orderId/cancel-items', protectUser, orderCtrl.cancelOrderItems);
+router.post('/orders/:orderId/return', protectUser, orderCtrl.returnOrder);
+router.post('/orders/:orderId/return-item', protectUser, orderCtrl.returnOrderItem);
+router.get('/orders/:orderId/invoice', protectUser, orderCtrl.downloadInvoice);
 
 
 

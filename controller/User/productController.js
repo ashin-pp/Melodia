@@ -174,24 +174,21 @@ exports.getShop = async (req, res) => {
     const totalProducts = countResult.length > 0 ? countResult[0].totalCount : 0;
     const totalPages = Math.ceil(totalProducts / limit);
 
-    // Get categories with product count for filter dropdown
-    const categories = await Category.aggregate([
-      { $match: { isListed: true } },
-      {
-        $lookup: {
-          from: 'products',
-          localField: '_id',
-          foreignField: 'categoryId',
-          as: 'products'
-        }
-      },
-      {
-        $addFields: {
-          productCount: { $size: '$products' }
-        }
-      },
+   //product count with category
 
-    ]);
+    const allCategories=await Category.find({isListed:true}).lean();
+    const allProducts=await Product.find({isListed:true}).lean();
+
+    const categories=allCategories.map(category=>{
+      const productCount=allProducts.filter(product=>
+        product.categoryId.toString()===category._id.toString()
+      ).length;
+    
+      return {
+        ...category,
+        productCount
+      };
+    })
 
     // Build pagination URLs
     const baseUrl = req.originalUrl.split('?')[0];

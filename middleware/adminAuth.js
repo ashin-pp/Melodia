@@ -1,7 +1,15 @@
 
 
 
-exports.adminAuth = function(req, res, next) {
+exports.adminAuth = function (req, res, next) {
+  
+  if (req.session?.admin) {
+    console.log('👤 Admin details:', {
+      id: req.session.admin.id,
+      email: req.session.admin.email
+    });
+  }
+  
   res.set({
     'Cache-Control': 'no-cache, no-store, must-revalidate, private',
     'Pragma': 'no-cache',
@@ -9,8 +17,11 @@ exports.adminAuth = function(req, res, next) {
   });
 
   if (req.session && req.session.admin) {
+    
     return next();
   }
+
+ 
   
   if (req.session) {
     req.session.destroy((err) => {
@@ -22,7 +33,7 @@ exports.adminAuth = function(req, res, next) {
   }
 };
 
-exports.validateAdminSession = function(req, res, next) {
+exports.validateAdminSession = function (req, res, next) {
   console.log('=== validateAdminSession MIDDLEWARE ===');
 
   res.set({

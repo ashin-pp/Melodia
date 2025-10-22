@@ -26,19 +26,6 @@ app.locals.getImageUrl = getImageUrl;
 app.disable('etag');
 app.set('etag', false);
 
-// Cache-control to prevent back button issues
-app.use((req, res, next) => {
-  // Only apply no-cache to HTML pages, not static assets
-  if (!req.path.match(/\.(css|js|png|jpg|jpeg|gif|ico|svg)$/)) {
-    res.set({
-      'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-      'Pragma': 'no-cache',
-      'Expires': '0'
-    });
-  }
-  next();
-});
-
 
 app.use(session({
   secret: process.env.SESSION_SECRET || 'your-secret-key-here',
@@ -81,7 +68,7 @@ app.set('views', 'views');
 app.use((req, res, next) => {
   if (req.session && req.session.admin) {
     // If admin is trying to access user routes, redirect to admin dashboard
-    if (req.originalUrl.startsWith('/user') || req.originalUrl === '/' || req.originalUrl === '/login'||req.originalUrl==='/signUp') {
+    if (req.originalUrl.startsWith('/user') || req.originalUrl === '/' || req.originalUrl === '/login' || req.originalUrl === '/signUp') {
       return res.redirect('/admin/dashboard');
     }
   }

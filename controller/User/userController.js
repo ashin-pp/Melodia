@@ -548,7 +548,7 @@ exports.verifyOtp = async (req, res) => {
       }
 
       console.log('Session saved successfully, redirecting to home...');
-      res.redirect('/user/home');
+      res.redirect('/home');
     });
 
   } catch (err) {
@@ -997,6 +997,48 @@ exports.postResetPassword = async (req, res) => {
       token: req.params.token,
       message: 'Server error occurred. Please try again.',
       isError: true,
+    });
+  }
+};
+
+// Load About Page
+exports.loadAboutPage = async (req, res) => {
+  try {
+    let user = null;
+    let cartCount = 0;
+
+    // If user is logged in, fetch full user data from database
+    if (req.session?.user?.id) {
+      const Cart = require('../../model/cartSchema');
+
+      user = await User.findById(req.session.user.id);
+
+      // Get cart count
+      const cart = await Cart.findOne({ userId: req.session.user.id });
+      if (cart && cart.items) {
+        cartCount = cart.items.reduce((total, item) => total + item.quantity, 0);
+      }
+    }
+
+    // Set cache control headers
+    res.set({
+      'Cache-Control': 'no-store, no-cache, must-revalidate, private',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    });
+
+    res.render('user/about', {
+      title: 'About Us - Melodia',
+      user: user,
+      cartCount: cartCount
+    });
+
+  } catch (err) {
+    console.error('Error loading about page:', err);
+    res.render('user/about', {
+      title: 'About Us - Melodia',
+      user: null,
+      cartCount: 0
     });
   }
 };

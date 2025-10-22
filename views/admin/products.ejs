@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -159,7 +160,7 @@
       border-radius: 12px;
       padding: 25px;
       margin-bottom: 30px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
       border: 1px solid #f0f0f0;
     }
 
@@ -364,7 +365,7 @@
       background: white;
       border-radius: 12px;
       overflow: hidden;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
       border: 1px solid #f0f0f0;
     }
 
@@ -394,29 +395,34 @@
     }
 
     /* Variants Styling */
-    .variant-list { display: flex; flex-wrap: wrap; gap: 4px; }
+    .variant-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
     .variant-item {
-      display: inline-block; 
-      background: #f0f0f0; 
-      border-radius: 4px; 
-      padding: 4px 8px; 
+      display: inline-block;
+      background: #f0f0f0;
+      border-radius: 4px;
+      padding: 4px 8px;
       font-size: 12px;
     }
 
     /* Enhanced Status Styling */
-    .status-listed { 
-      color: #28a745; 
-      font-weight: 600; 
+    .status-listed {
+      color: #28a745;
+      font-weight: 600;
       background: #d4edda;
       padding: 4px 8px;
       border-radius: 12px;
       font-size: 12px;
       text-transform: uppercase;
     }
-    
-    .status-unlisted { 
-      color: #dc3545; 
-      font-weight: 600; 
+
+    .status-unlisted {
+      color: #dc3545;
+      font-weight: 600;
       background: #f8d7da;
       padding: 4px 8px;
       border-radius: 12px;
@@ -424,7 +430,15 @@
       text-transform: uppercase;
     }
 
+
+
     /* Action Buttons */
+    .action-buttons {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
     .edit-btn {
       padding: 8px 12px;
       background: #ffc107;
@@ -437,6 +451,8 @@
       display: inline-flex;
       align-items: center;
       gap: 4px;
+      border: none;
+      cursor: pointer;
     }
 
     .edit-btn:hover {
@@ -444,6 +460,192 @@
       transform: translateY(-1px);
       box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3);
     }
+
+
+
+    /* Inventory Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+    }
+
+    .modal-content {
+      background-color: #fff;
+      margin: 5% auto;
+      padding: 0;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 600px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      animation: modalSlideIn 0.3s ease;
+    }
+
+    @keyframes modalSlideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-50px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .modal-header {
+      padding: 20px 25px;
+      border-bottom: 1px solid #e9ecef;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-radius: 12px 12px 0 0;
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    .close {
+      color: white;
+      font-size: 24px;
+      font-weight: bold;
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 0;
+      line-height: 1;
+    }
+
+    .close:hover {
+      opacity: 0.7;
+    }
+
+    .modal-body {
+      padding: 25px;
+    }
+
+    .inventory-form {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .variant-inventory {
+      border: 1px solid #e9ecef;
+      border-radius: 8px;
+      padding: 15px;
+      background: #f8f9fa;
+    }
+
+    .variant-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #dee2e6;
+    }
+
+    .variant-name {
+      font-weight: 600;
+      color: #495057;
+      font-size: 14px;
+    }
+
+    .current-stock {
+      font-size: 12px;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-weight: 600;
+    }
+
+    .stock-controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+
+    .stock-input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .stock-input-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #6c757d;
+      text-transform: uppercase;
+    }
+
+    .stock-input {
+      padding: 10px 12px;
+      border: 1px solid #ced4da;
+      border-radius: 6px;
+      font-size: 14px;
+      transition: border-color 0.3s ease;
+    }
+
+    .stock-input:focus {
+      outline: none;
+      border-color: #007bff;
+      box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+    }
+
+    .modal-footer {
+      padding: 20px 25px;
+      border-top: 1px solid #e9ecef;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      background: #f8f9fa;
+      border-radius: 0 0 12px 12px;
+    }
+
+    .btn-cancel {
+      padding: 10px 20px;
+      background: #6c757d;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-cancel:hover {
+      background: #545b62;
+    }
+
+    .btn-save {
+      padding: 10px 20px;
+      background: #28a745;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-save:hover {
+      background: #218838;
+    }
+
+
 
     /* Empty State */
     .empty-state {
@@ -519,46 +721,46 @@
       .main-content {
         flex-direction: column;
       }
-      
+
       .sidebar {
         width: 100%;
         min-height: auto;
       }
-      
+
       .sidebar nav ul {
         display: flex;
         overflow-x: auto;
         padding: 10px;
       }
-      
+
       .sidebar nav li {
         margin: 0 5px;
         white-space: nowrap;
       }
-      
+
       .search-form {
         flex-direction: column;
         align-items: stretch;
       }
-      
+
       .form-group {
         min-width: auto;
       }
-      
+
       .search-input,
       .filter-select {
         min-width: auto;
       }
-      
+
       .products-table {
         font-size: 12px;
       }
-      
+
       .products-table th,
       .products-table td {
         padding: 10px 8px;
       }
-      
+
       .pagination {
         flex-direction: column;
         gap: 15px;
@@ -567,10 +769,26 @@
       .pagination-controls {
         justify-content: center;
       }
+
+
+
+      .action-buttons {
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .stock-info {
+        min-width: auto;
+      }
+
+      .variant-stock {
+        flex-wrap: wrap;
+      }
     }
   </style>
 </head>
-<body data-justedited="<%= typeof productJustEditted !== 'undefined' ? productJustEditted : false %>" 
+
+<body data-justedited="<%= typeof productJustEditted !== 'undefined' ? productJustEditted : false %>"
   data-justadded="<%= typeof productJustAdded !== 'undefined' ? productJustAdded : false %>">
   <div class="admin-container">
     <!-- Header -->
@@ -591,9 +809,10 @@
           <ul>
             <li><a href="/admin/dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
             <li class="active"><a href="/admin/products"><i class="fas fa-box"></i> Products</a></li>
-            <li><a href="/admin/orders"><i class="fas fa-list"></i> Order Lists</a></li>
+            <li><a href="/admin/orders"><i class="fas fa-list"></i> Order Management</a></li>
+            <!-- <li><a href="/admin/inventory"><i class="fas fa-boxes"></i> Inventory</a></li> -->
             <li><a href="/admin/customer"><i class="fas fa-users"></i>Users</a></li>
-             <li><a href="/admin/sales-report"><i class="fas fa-chart-bar"></i> Sales Report</a></li>
+            <li><a href="/admin/sales-report"><i class="fas fa-chart-bar"></i> Sales Report</a></li>
             <li><a href="/admin/coupons"><i class="fas fa-tags"></i> Coupons</a></li>
             <li><a href="/admin/category"><i class="fas fa-folder"></i> Category</a></li>
             <li><a href="/admin/banners"><i class="fas fa-flag"></i> Banners</a></li>
@@ -630,14 +849,8 @@
             <!-- Search Input -->
             <div class="form-group">
               <label class="form-label">Search</label>
-              <input
-                type="text"
-                name="q"
-                value="<%= typeof query !== 'undefined' ? query : '' %>"
-                placeholder="Search by name or brand..."
-                class="search-input"
-                id="searchInput"
-              />
+              <input type="text" name="q" value="<%= typeof query !== 'undefined' ? query : '' %>"
+                placeholder="Search by name or brand..." class="search-input" id="searchInput" />
             </div>
 
             <!-- Status Filter -->
@@ -645,10 +858,10 @@
               <label class="form-label">Status</label>
               <select name="status" class="filter-select" id="statusFilter">
                 <option value="">All Products</option>
-                <option value="listed" <%= typeof status !== 'undefined' && status === 'listed' ? 'selected' : '' %>>
+                <option value="listed" <%=typeof status !=='undefined' && status==='listed' ? 'selected' : '' %>>
                   Listed Only
                 </option>
-                <option value="unlisted" <%= typeof status !== 'undefined' && status === 'unlisted' ? 'selected' : '' %>>
+                <option value="unlisted" <%=typeof status !=='undefined' && status==='unlisted' ? 'selected' : '' %>>
                   Unlisted Only
                 </option>
               </select>
@@ -660,13 +873,14 @@
               <select name="category" class="filter-select" id="categoryFilter">
                 <option value="">All Categories</option>
                 <!-- You can populate this with your categories -->
-                <% if (typeof categories !== 'undefined' && categories.length > 0) { %>
-                  <% categories.forEach(cat => { %>
-                    <option value="<%= cat._id %>" <%= typeof category !== 'undefined' && category === cat._id.toString() ? 'selected' : '' %>>
+                <% if (typeof categories !=='undefined' && categories.length> 0) { %>
+                  <% categories.forEach(cat=> { %>
+                    <option value="<%= cat._id %>" <%=typeof category !=='undefined' && category===cat._id.toString()
+                      ? 'selected' : '' %>>
                       <%= cat.name %>
                     </option>
-                  <% }) %>
-                <% } %>
+                    <% }) %>
+                      <% } %>
               </select>
             </div>
 
@@ -674,16 +888,16 @@
             <div class="form-group">
               <label class="form-label">Sort By</label>
               <select name="sort" class="filter-select" id="sortFilter">
-                <option value="newest" <%= typeof sort !== 'undefined' && sort === 'newest' ? 'selected' : '' %>>
+                <option value="newest" <%=typeof sort !=='undefined' && sort==='newest' ? 'selected' : '' %>>
                   Newest First
                 </option>
-                <option value="oldest" <%= typeof sort !== 'undefined' && sort === 'oldest' ? 'selected' : '' %>>
+                <option value="oldest" <%=typeof sort !=='undefined' && sort==='oldest' ? 'selected' : '' %>>
                   Oldest First
                 </option>
-                <option value="name" <%= typeof sort !== 'undefined' && sort === 'name' ? 'selected' : '' %>>
+                <option value="name" <%=typeof sort !=='undefined' && sort==='name' ? 'selected' : '' %>>
                   Name A-Z
                 </option>
-                <option value="name_desc" <%= typeof sort !== 'undefined' && sort === 'name_desc' ? 'selected' : '' %>>
+                <option value="name_desc" <%=typeof sort !=='undefined' && sort==='name_desc' ? 'selected' : '' %>>
                   Name Z-A
                 </option>
               </select>
@@ -696,13 +910,14 @@
               </button>
             </div>
 
-            <% if (typeof query !== 'undefined' && query || typeof status !== 'undefined' && status || typeof category !== 'undefined' && category || typeof sort !== 'undefined' && sort !== 'newest') { %>
+            <% if (typeof query !=='undefined' && query || typeof status !=='undefined' && status || typeof category
+              !=='undefined' && category || typeof sort !=='undefined' && sort !=='newest' ) { %>
               <div class="form-group">
                 <a href="/admin/products" class="clear-btn">
                   <i class="fas fa-undo"></i> Clear All
                 </a>
               </div>
-            <% } %>
+              <% } %>
           </form>
 
           <!-- Active Filters Display -->
@@ -716,24 +931,27 @@
         <!-- Results Summary -->
         <div class="results-summary">
           <div class="results-count">
-            <% if (typeof products !== 'undefined') { %>
-              Showing <%= products.length %> of <%= typeof totalProducts !== 'undefined' ? totalProducts : products.length %> products
-            <% } else { %>
-              No products found
-            <% } %>
+            <% if (typeof products !=='undefined' ) { %>
+              Showing <%= products.length %> of <%= typeof totalProducts !=='undefined' ? totalProducts :
+                  products.length %> products
+                  <% } else { %>
+                    No products found
+                    <% } %>
           </div>
           <div class="results-actions">
             <span style="font-size: 12px; color: #999;">
-              <% if (typeof query !== 'undefined' && query) { %>
+              <% if (typeof query !=='undefined' && query) { %>
                 Filtered by: "<%= query %>"
-              <% } %>
-              <% if (typeof status !== 'undefined' && status) { %>
-                | Status: <%= status.charAt(0).toUpperCase() + status.slice(1) %>
-              <% } %>
+                  <% } %>
+                    <% if (typeof status !=='undefined' && status) { %>
+                      | Status: <%= status.charAt(0).toUpperCase() + status.slice(1) %>
+                        <% } %>
             </span>
           </div>
         </div>
-        
+
+
+
         <!-- Products Table -->
         <div class="table-section">
           <table class="products-table">
@@ -743,73 +961,96 @@
                 <th>Product Name</th>
                 <th>Brand</th>
                 <th>Category</th>
-                <th>Variants<br><span style="font-size: 11px; color: #888; font-weight: normal;">(Color/ Price)</span></th>
+                <th>Variants<br><span style="font-size: 11px; color: #888; font-weight: normal;">(Color/ Price)</span>
+                </th>
                 <th>Offer</th>
                 <th>Status</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              <% if (typeof products !== 'undefined' && products.length > 0) { %>
-                <% products.forEach((product, index) => { %>
+              <% if (typeof products !=='undefined' && products.length> 0) { %>
+                <% products.forEach((product, index)=> { %>
                   <tr>
-                    <td><%= (typeof currentPage !== 'undefined' ? currentPage - 1 : 0) * 10 + index + 1 %></td>
-                    <td style="font-weight: 500;"><%= product.productName %></td>
-                    <td style="color: #6c757d;"><%= product.brand %></td>
-                    <td style="color: #6c757d;"><%= product.categoryId ? product.categoryId.name : 'Unknown' %></td>
                     <td>
-                      <% if(product.variants && product.variants.length > 0) { %>
-                        <div class="variant-list">
-                          <% product.variants.forEach(variant => { %>
-                            <span class="variant-item">
-                              <b><%= variant.color %></b>: ₹<%= variant.regularPrice.toFixed(2) %>
-                            </span>
-                          <% }) %>
-                        </div>
-                      <% } else { %>
-                        <span style="color: #999;">No variants</span>
-                      <% } %>
+                      <%= (typeof currentPage !=='undefined' ? currentPage - 1 : 0) * 10 + index + 1 %>
                     </td>
-                    <td><%= product.offer ? product.offer + '%' : '—' %></td>
+                    <td style="font-weight: 500;">
+                      <%= product.productName %>
+                    </td>
+                    <td style="color: #6c757d;">
+                      <%= product.brand %>
+                    </td>
+                    <td style="color: #6c757d;">
+                      <%= product.categoryId ? product.categoryId.name : 'Unknown' %>
+                    </td>
+                    <td>
+                      <% if(product.variants && product.variants.length> 0) { %>
+                        <div class="variant-list">
+                          <% product.variants.forEach(variant=> { %>
+                            <span class="variant-item">
+                              <b>
+                                <%= variant.color %>
+                              </b>: ₹<%= variant.regularPrice.toFixed(2) %>
+                            </span>
+                            <% }) %>
+                        </div>
+                        <% } else { %>
+                          <span style="color: #999;">No variants</span>
+                          <% } %>
+                    </td>
+
+                    <td>
+                      <%= product.offer ? product.offer + '%' : '—' %>
+                    </td>
                     <td>
                       <% if (product.isListed) { %>
                         <span class="status-listed">Listed</span>
-                      <% } else { %>
-                        <span class="status-unlisted">Unlisted</span>
-                      <% } %>
+                        <% } else { %>
+                          <span class="status-unlisted">Unlisted</span>
+                          <% } %>
                     </td>
                     <td>
-                      <a href="/admin/products/<%= product._id %>/edit" class="edit-btn">
-                        <i class="fas fa-edit"></i>
-                      </a>
+                      <div class="action-buttons">
+                        <a href="/admin/products/<%= product._id %>/edit" class="edit-btn" title="Edit Product">
+                          <i class="fas fa-edit"></i>
+                        </a>
+
+                      </div>
                     </td>
                   </tr>
-                <% }) %>
-              <% } else { %>
-                <tr>
-                  <td colspan="8" class="empty-state">
-                    <i class="fas fa-box-open"></i>
-                    <div>No products found</div>
-                    <% if (typeof query !== 'undefined' && query || typeof status !== 'undefined' && status) { %>
-                      <div style="font-size: 14px; color: #999; margin-top: 8px;">Try adjusting your filters or <a href="/admin/products">view all products</a></div>
+                  <% }) %>
                     <% } else { %>
-                      <div style="font-size: 14px; color: #999; margin-top: 8px;">No products are added yet</div>
-                    <% } %>
-                  </td>
-                </tr>
-              <% } %>
+                      <tr>
+                        <td colspan="9" class="empty-state">
+                          <i class="fas fa-box-open"></i>
+                          <div>No products found</div>
+                          <% if (typeof query !=='undefined' && query || typeof status !=='undefined' && status) { %>
+                            <div style="font-size: 14px; color: #999; margin-top: 8px;">Try adjusting your filters or <a
+                                href="/admin/products">view all products</a></div>
+                            <% } else { %>
+                              <div style="font-size: 14px; color: #999; margin-top: 8px;">No products are added yet
+                              </div>
+                              <% } %>
+                        </td>
+                      </tr>
+                      <% } %>
             </tbody>
           </table>
-          
+
           <!-- Enhanced Pagination -->
-          <% if (typeof totalPages !== 'undefined' && totalPages > 1) { %>
+          <% if (typeof totalPages !=='undefined' && totalPages> 1) { %>
             <div class="pagination">
               <div class="pagination-info">
-                Page <span class="font-medium"><%= typeof currentPage !== 'undefined' ? currentPage : 1 %></span> of <span class="font-medium"><%= totalPages %></span>
+                Page <span class="font-medium">
+                  <%= typeof currentPage !=='undefined' ? currentPage : 1 %>
+                </span> of <span class="font-medium">
+                  <%= totalPages %>
+                </span>
               </div>
-               
+
               <div class="pagination-controls">
-                <% if (typeof currentPage !== 'undefined' && currentPage > 1) { %>
+                <% if (typeof currentPage !=='undefined' && currentPage> 1) { %>
                   <a href="?<%= new URLSearchParams({ 
                     ...(typeof query !== 'undefined' && query ? { q: query } : {}),
                     ...(typeof status !== 'undefined' && status ? { status: status } : {}),
@@ -817,24 +1058,29 @@
                     ...(typeof sort !== 'undefined' && sort ? { sort: sort } : {}),
                     page: currentPage - 1 
                   }).toString() %>" class="pagination-btn">Previous</a>
-                <% } %>
-                <% if (typeof currentPage !== 'undefined' && typeof totalPages !== 'undefined' && currentPage < totalPages) { %>
-                  <a href="?<%= new URLSearchParams({ 
+                  <% } %>
+                    <% if (typeof currentPage !=='undefined' && typeof totalPages !=='undefined' && currentPage <
+                      totalPages) { %>
+                      <a href="?<%= new URLSearchParams({ 
                     ...(typeof query !== 'undefined' && query ? { q: query } : {}),
                     ...(typeof status !== 'undefined' && status ? { status: status } : {}),
                     ...(typeof category !== 'undefined' && category ? { category: category } : {}),
                     ...(typeof sort !== 'undefined' && sort ? { sort: sort } : {}),
                     page: parseInt(currentPage) + 1 
                   }).toString() %>" class="pagination-btn">Next</a>
-                <% } %>
+                      <% } %>
               </div>
             </div>
-          <% } %>
+            <% } %>
         </div>
       </div>
     </div>
   </div>
-  
+
+
+
+
+
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const body = document.body;
@@ -875,7 +1121,7 @@
       // Toggle advanced filters
       filterToggle.addEventListener('click', () => {
         const isExpanded = filterIcon.classList.contains('fa-chevron-up');
-        
+
         if (isExpanded) {
           filterIcon.classList.remove('fa-chevron-up');
           filterIcon.classList.add('fa-chevron-down');
@@ -889,23 +1135,23 @@
       function updateActiveFilters() {
         const urlParams = new URLSearchParams(window.location.search);
         const tags = [];
-        
+
         if (urlParams.get('q')) {
           tags.push({ label: `Search: "${urlParams.get('q')}"`, param: 'q' });
         }
-        
+
         if (urlParams.get('status')) {
           const status = urlParams.get('status');
-          tags.push({ 
-            label: `Status: ${status.charAt(0).toUpperCase() + status.slice(1)}`, 
-            param: 'status' 
+          tags.push({
+            label: `Status: ${status.charAt(0).toUpperCase() + status.slice(1)}`,
+            param: 'status'
           });
         }
-        
+
         if (urlParams.get('category')) {
           tags.push({ label: `Category: ${urlParams.get('category')}`, param: 'category' });
         }
-        
+
         if (urlParams.get('sort') && urlParams.get('sort') !== 'newest') {
           tags.push({ label: `Sort: ${urlParams.get('sort')}`, param: 'sort' });
         }
@@ -924,13 +1170,13 @@
       }
 
       // Global function for removing filters
-      window.removeFilter = function(param) {
+      window.removeFilter = function (param) {
         const urlParams = new URLSearchParams(window.location.search);
         urlParams.delete(param);
-        
+
         // Reset to page 1 when removing filters
         urlParams.delete('page');
-        
+
         const newUrl = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
         window.location.href = newUrl;
       };
@@ -951,6 +1197,17 @@
         }
       });
     });
+
+
+
+
+
+
+
+
+
+
   </script>
 </body>
+
 </html>
