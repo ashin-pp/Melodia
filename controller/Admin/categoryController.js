@@ -1,6 +1,6 @@
-const Category = require('../../model/categorySchema'); 
+import Category from '../../model/categorySchema.js'; 
 
-exports.getCategories = async (req, res) => {
+export const getCategories = async (req, res) => {
   try {
     const justedited = req.session.categoryEditted ? req.session.categoryEditted : false
     delete req.session.categoryEditted;
@@ -38,11 +38,11 @@ exports.getCategories = async (req, res) => {
   }
 };
 
-exports.getAddCategory = async(req,res)=>{
+export const getAddCategory = async(req,res) => {
    res.render('admin/addcategory',{ errors: [], old: {} }) 
 }
 
-exports.postAddCategory = async (req, res) => {
+export const postAddCategory = async (req, res) => {
   const { name, description, offer, isListed } = req.body;
   let errors = [];
 
@@ -103,7 +103,7 @@ exports.postAddCategory = async (req, res) => {
   }
 };
 
-exports.getEditCategory = async (req, res) => {
+export const getEditCategory = async (req, res) => {
   try {
     const category = await Category.findById(req.params.id);
     if (!category) {
@@ -128,7 +128,7 @@ function validateCategoryInput({ name, offer }) {
 }
 
 // ✅ FIXED: The main problem was here in postEditCategory
-exports.postEditCategory = async (req, res) => {
+export const postEditCategory = async (req, res) => {
   const { name, description, offer, isListed } = req.body;
   const categoryId = req.params.id;
 
@@ -220,7 +220,7 @@ exports.postEditCategory = async (req, res) => {
 };
 
 // ✅ BONUS: Add a toggle route for easier status changes
-exports.toggleCategoryStatus = async (req, res) => {
+export const toggleCategoryStatus = async (req, res) => {
   try {
     const categoryId = req.params.id;
     
@@ -262,4 +262,13 @@ exports.toggleCategoryStatus = async (req, res) => {
       message: 'Error updating category status' 
     });
   }
+};
+// Default export for compatibility
+export default {
+  getCategories,
+  getAddCategory,
+  postAddCategory,
+  getEditCategory,
+  postEditCategory,
+  toggleCategoryStatus
 };

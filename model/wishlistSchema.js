@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const wishlistItemSchema = new mongoose.Schema({
   variantId: {
@@ -49,4 +49,4 @@ wishlistSchema.methods.getTotalItems = function() {
 };
 
 const Wishlist = mongoose.model('Wishlist', wishlistSchema);
-module.exports = Wishlist;
+export default Wishlist;

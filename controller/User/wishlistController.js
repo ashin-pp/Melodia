@@ -1,8 +1,9 @@
-const Wishlist = require('../../model/wishlistSchema');
-const Variant = require('../../model/variantSchema');
-const Product = require('../../model/productSchema');
-const Category = require('../../model/categorySchema');
-const Cart = require('../../model/cartSchema');
+import Wishlist from '../../model/wishlistSchema.js';
+import Variant from '../../model/variantSchema.js';
+import Product from '../../model/productSchema.js';
+import Category from '../../model/categorySchema.js';
+import Cart from '../../model/cartSchema.js';
+import User from '../../model/userSchema.js';
 
 // Maximum quantity per product
 const MAX_QUANTITY_PER_PRODUCT = 5;
@@ -104,7 +105,7 @@ const getWishlist = async (req, res) => {
     const userId = req.session.user.id;
     
     // Get full user data including avatar
-    const User = require('../../model/userSchema');
+    // User is now imported at the top
     const fullUser = await User.findById(userId);
 
     const wishlist = await Wishlist.findOne({ userId })
@@ -323,7 +324,10 @@ const getWishlistCount = async (req, res) => {
   }
 };
 
-module.exports = {
+export { addToWishlist, getWishlist, removeFromWishlist, moveToCart, getWishlistCount };
+
+// Default export for compatibility
+export default {
   addToWishlist,
   getWishlist,
   removeFromWishlist,

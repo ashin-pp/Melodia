@@ -1,16 +1,18 @@
-const Product = require('../../model/productSchema');
-const Category = require('../../model/categorySchema');
-const Review = require('../../model/reviewSchema');
-const Variant = require('../../model/variantSchema');
-const mongoose = require('mongoose');
-const productSchema = require('../../model/productSchema');
-const User=require('../../model/userSchema');
+import Product from '../../model/productSchema.js';
+import Category from '../../model/categorySchema.js';
+import Review from '../../model/reviewSchema.js';
+import Variant from '../../model/variantSchema.js';
+import mongoose from 'mongoose';
+import productSchema from '../../model/productSchema.js';
+import User from '../../model/userSchema.js';
+import Cart from '../../model/cartSchema.js';
+import Wishlist from '../../model/wishlistSchema.js';
 
 
 
 
 
-exports.getShop = async (req, res) => {
+export const getShop = async (req, res) => {
   try {
     console.log(' getShop called - User:', req.session?.user?.name || 'Not logged in');
 
@@ -229,12 +231,12 @@ exports.getShop = async (req, res) => {
     let cartCount = 0;
     let userWishlistItems = [];
     if (user) {
-      const Cart = require('../../model/cartSchema');
+      // Cart is now imported at the top
       const cart = await Cart.findOne({ userId: user._id });
       cartCount = cart ? cart.getTotalItems() : 0;
       
       // Get user's wishlist items
-      const Wishlist = require('../../model/wishlistSchema');
+      // Wishlist is now imported at the top
       const wishlist = await Wishlist.findOne({ userId: user._id });
       if (wishlist) {
         userWishlistItems = wishlist.items.map(item => item.variantId.toString());
@@ -284,7 +286,7 @@ exports.getShop = async (req, res) => {
 };
 
 
-exports.getProductDetails = async (req, res) => {
+export const getProductDetails = async (req, res) => {
   try {
     const productId = req.params.id;
     let user = null;
@@ -342,7 +344,7 @@ exports.getProductDetails = async (req, res) => {
     // Check if default variant is in user's wishlist
     let isInWishlist = false;
     if (user && defaultVariant) {
-      const Wishlist = require('../../model/wishlistSchema');
+      // Wishlist is now imported at the top
       const wishlist = await Wishlist.findOne({ userId: user._id });
       if (wishlist) {
         isInWishlist = wishlist.items.some(item => item.variantId.toString() === defaultVariant._id.toString());
@@ -367,7 +369,7 @@ exports.getProductDetails = async (req, res) => {
   }
 };
 
-exports.getVariantDetails = async (req, res) => {
+export const getVariantDetails = async (req, res) => {
   try {
     const variantId = req.params.variantId;
     console.log("Fetching variant details for:", variantId);
@@ -425,4 +427,10 @@ exports.getVariantDetails = async (req, res) => {
       error: 'Internal server error'
     });
   }
+};
+// Default export for compatibility
+export default {
+  getShop,
+  getProductDetails,
+  getVariantDetails
 };

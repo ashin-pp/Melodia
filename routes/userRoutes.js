@@ -1,18 +1,19 @@
-const express = require('express');
+import express from 'express';
+import passport from 'passport';
+import userCtrl from '../controller/User/userController.js';
+import { isNotAuthenticated } from '../middleware/auth.js';
+import profileCtrl from '../controller/User/profileController.js';
+import productCtrl from '../controller/User/productController.js';
+import categoryCtrl from '../controller/User/categoryController.js';
+import cartCtrl from '../controller/User/cartController.js';
+import wishlistCtrl from '../controller/User/wishlistController.js';
+import addressCtrl from '../controller/User/addressController.js';
+import checkoutCtrl from '../controller/User/checkoutController.js';
+import { protectUser } from '../middleware/userAuth.js';
+import orderCtrl from '../controller/User/orderController.js';
+import { avatarUpload } from '../config/multer.js';
+
 const router = express.Router();
-const passport = require('passport');
-const userCtrl = require('../controller/User/userController');
-const { isNotAuthenticated } = require('../middleware/auth');
-const profileCtrl = require('../controller/User/profileController');
-const productCtrl = require('../controller/User/productController')
-const categoryCtrl = require('../controller/User/categoryController')
-const cartCtrl = require('../controller/User/cartController');
-const wishlistCtrl = require('../controller/User/wishlistController');
-const addressCtrl = require('../controller/User/addressController');
-const checkoutCtrl = require('../controller/User/checkoutController');
-const { protectUser } = require('../middleware/userAuth');
-const orderCtrl = require('../controller/User/orderController');
-const { avatarUpload } = require('../config/multer');
 
 //landing page route
 router.get('/', (req, res) => {
@@ -130,4 +131,4 @@ router.get('/orders/:orderId/invoice', protectUser, orderCtrl.downloadInvoice);
 
 
 
-module.exports = router;
+export default router;

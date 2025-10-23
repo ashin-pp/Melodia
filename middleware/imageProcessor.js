@@ -1,6 +1,5 @@
-const sharp = require('sharp');
-
-const cloudinary = require('../config/cloudinary');
+import sharp from 'sharp';
+import cloudinary from '../config/cloudinary.js';
 
 
 // Image processing and upload middleware for Cloudinary
@@ -138,8 +137,4 @@ const extractPublicId = (url) => {
   }
 };
 
-module.exports = {
-  processImages,
-  processImagesOptional,
-  deleteImages
-};
+export { processImages, processImagesOptional, deleteImages };

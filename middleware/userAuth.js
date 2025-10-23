@@ -1,7 +1,7 @@
-const { checkUserBlocked } = require('./auth');
+import { checkUserBlocked } from './auth.js';
 
 // Ensures the user is logged in and not blocked before accessing protected routes
-exports.protectUser = async (req, res, next) => {
+export const protectUser = async (req, res, next) => {
   try {
     // Strong cache prevention for authenticated pages
     res.set({

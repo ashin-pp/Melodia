@@ -1,10 +1,11 @@
-const Order = require('../../model/orderSchema');
-const User = require('../../model/userSchema');
-const Variant = require('../../model/variantSchema');
-const Product = require('../../model/productSchema');
-const puppeteer = require('puppeteer');
+import mongoose from 'mongoose';
+import Order from '../../model/orderSchema.js';
+import User from '../../model/userSchema.js';
+import Variant from '../../model/variantSchema.js';
+import Product from '../../model/productSchema.js';
+import puppeteer from 'puppeteer';
 
-exports.listOrder = async (req, res) => {
+export const listOrder = async (req, res) => {
     try {
         const { page = 1, limit = 10, search = '', status = 'all', sortBy = 'orderDate', order = 'desc' } = req.query;
         const skip = (page - 1) * limit;
@@ -88,7 +89,7 @@ exports.listOrder = async (req, res) => {
     }
 };
 
-exports.renderOrdersPage = async (req, res) => {
+export const renderOrdersPage = async (req, res) => {
     try {
         res.render('admin/orders');
     } catch (error) {
@@ -99,7 +100,7 @@ exports.renderOrdersPage = async (req, res) => {
 
 
 
-exports.getAdminOrderDetails = async (req, res) => {
+export const getAdminOrderDetails = async (req, res) => {
     console.log('🔍 ===== ADMIN ORDER DETAILS DEBUG START =====');
     console.log('📍 Function called at:', new Date().toISOString());
     console.log('🌐 Request URL:', req.url);
@@ -113,7 +114,6 @@ exports.getAdminOrderDetails = async (req, res) => {
         console.log('✅ Order ID extracted:', orderId);
 
         // Validate ObjectId
-        const mongoose = require('mongoose');
         if (!mongoose.Types.ObjectId.isValid(orderId)) {
             console.log('❌ Invalid ObjectId format:', orderId);
             return res.send(`
@@ -177,12 +177,12 @@ exports.getAdminOrderDetails = async (req, res) => {
         }
 
         console.log('🎨 Rendering original EJS template with full functionality');
-        
+
         res.render('admin/order-details', {
             order: order,
             title: `Admin - Order #${order.orderId}`
         });
-        
+
         console.log('✅ EJS template rendered successfully');
         console.log('🔍 ===== ADMIN ORDER DETAILS DEBUG END =====');
 
@@ -218,7 +218,7 @@ exports.getAdminOrderDetails = async (req, res) => {
     }
 };
 
-exports.updateItemStatus = async (req, res) => {
+export const updateItemStatus = async (req, res) => {
     try {
         const { itemId } = req.params;
         const { status, reason } = req.body;
@@ -298,7 +298,7 @@ exports.updateItemStatus = async (req, res) => {
 };
 
 // Inventory Management Functions
-exports.renderInventoryPage = async (req, res) => {
+export const renderInventoryPage = async (req, res) => {
     try {
         res.render('admin/inventory');
     } catch (error) {
@@ -307,7 +307,7 @@ exports.renderInventoryPage = async (req, res) => {
     }
 };
 
-exports.getInventory = async (req, res) => {
+export const getInventory = async (req, res) => {
     try {
         const { page = 1, limit = 20, search = '', stockFilter = '', sortBy = 'stock', order = 'asc' } = req.query;
         const skip = (page - 1) * limit;
@@ -406,7 +406,7 @@ exports.getInventory = async (req, res) => {
     }
 };
 
-exports.updateStock = async (req, res) => {
+export const updateStock = async (req, res) => {
     try {
         const { variantId } = req.params;
         const { stock } = req.body;
@@ -455,54 +455,54 @@ exports.updateStock = async (req, res) => {
 let globalBrowser = null;
 
 const getBrowser = async () => {
-  if (!globalBrowser || !globalBrowser.isConnected()) {
-    globalBrowser = await puppeteer.launch({
-      headless: true,
-      args: [
-        '--no-sandbox', 
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-accelerated-2d-canvas',
-        '--no-first-run',
-        '--no-zygote',
-        '--disable-gpu',
-        '--disable-background-timer-throttling',
-        '--disable-backgrounding-occluded-windows',
-        '--disable-renderer-backgrounding'
-      ]
-    });
-  }
-  return globalBrowser;
+    if (!globalBrowser || !globalBrowser.isConnected()) {
+        globalBrowser = await puppeteer.launch({
+            headless: true,
+            args: [
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--disable-dev-shm-usage',
+                '--disable-accelerated-2d-canvas',
+                '--no-first-run',
+                '--no-zygote',
+                '--disable-gpu',
+                '--disable-background-timer-throttling',
+                '--disable-backgrounding-occluded-windows',
+                '--disable-renderer-backgrounding'
+            ]
+        });
+    }
+    return globalBrowser;
 };
 
-exports.downloadInvoice = async (req, res) => {
-  try {
-    const orderId = req.params.orderId;
-    
-    // Set response headers for PDF download
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename="Invoice-${orderId}.pdf"`);
-    res.setHeader('Cache-Control', 'no-cache');
-    
-    // Fetch order details with minimal fields for faster query
-    const order = await Order.findById(orderId)
-      .populate('userId', 'name email phone')
-      .populate({
-        path: 'items.variantId',
-        select: 'color',
-        populate: {
-          path: 'productId',
-          select: 'productName brand'
+export const downloadInvoice = async (req, res) => {
+    try {
+        const orderId = req.params.orderId;
+
+        // Set response headers for PDF download
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename="Invoice-${orderId}.pdf"`);
+        res.setHeader('Cache-Control', 'no-cache');
+
+        // Fetch order details with minimal fields for faster query
+        const order = await Order.findById(orderId)
+            .populate('userId', 'name email phone')
+            .populate({
+                path: 'items.variantId',
+                select: 'color',
+                populate: {
+                    path: 'productId',
+                    select: 'productName brand'
+                }
+            })
+            .lean(); // Use lean() for faster queries
+
+        if (!order) {
+            return res.status(404).json({ success: false, error: 'Order not found' });
         }
-      })
-      .lean(); // Use lean() for faster queries
 
-    if (!order) {
-      return res.status(404).json({ success: false, error: 'Order not found' });
-    }
-
-    // Generate optimized HTML for invoice (removed heavy styling for speed)
-    const invoiceHTML = `
+        // Generate optimized HTML for invoice (removed heavy styling for speed)
+        const invoiceHTML = `
     <!DOCTYPE html>
     <html>
     <head>
@@ -593,46 +593,56 @@ exports.downloadInvoice = async (req, res) => {
     </html>
     `;
 
-    // Generate PDF using optimized browser instance
-    const browser = await getBrowser();
-    const page = await browser.newPage();
-    
-    // Optimize page settings for speed
-    await page.setViewport({ width: 794, height: 1123 }); // A4 size
-    await page.setContent(invoiceHTML, { 
-      waitUntil: 'domcontentloaded', // Faster than networkidle0
-      timeout: 10000 
-    });
-    
-    const pdfBuffer = await page.pdf({
-      format: 'A4',
-      printBackground: true,
-      margin: { top: '15px', right: '15px', bottom: '15px', left: '15px' },
-      preferCSSPageSize: false
-    });
-    
-    await page.close(); // Close page but keep browser open for reuse
+        // Generate PDF using optimized browser instance
+        const browser = await getBrowser();
+        const page = await browser.newPage();
 
-    // Send PDF buffer to client
-    res.setHeader('Content-Length', pdfBuffer.length);
-    res.end(pdfBuffer);
+        // Optimize page settings for speed
+        await page.setViewport({ width: 794, height: 1123 }); // A4 size
+        await page.setContent(invoiceHTML, {
+            waitUntil: 'domcontentloaded', // Faster than networkidle0
+            timeout: 10000
+        });
 
-  } catch (error) {
-    console.error('Invoice generation error:', error.message);
-    
-    // Provide appropriate error response
-    if (error.message.includes('puppeteer') || error.message.includes('browser')) {
-      res.status(500).json({ 
-        success: false, 
-        error: 'PDF generation service is temporarily unavailable. Please try again later.' 
-      });
-    } else {
-      res.status(500).json({ 
-        success: false, 
-        error: 'Failed to generate invoice. Please try again later.' 
-      });
+        const pdfBuffer = await page.pdf({
+            format: 'A4',
+            printBackground: true,
+            margin: { top: '15px', right: '15px', bottom: '15px', left: '15px' },
+            preferCSSPageSize: false
+        });
+
+        await page.close(); // Close page but keep browser open for reuse
+
+        // Send PDF buffer to client
+        res.setHeader('Content-Length', pdfBuffer.length);
+        res.end(pdfBuffer);
+
+    } catch (error) {
+        console.error('Invoice generation error:', error.message);
+
+        // Provide appropriate error response
+        if (error.message.includes('puppeteer') || error.message.includes('browser')) {
+            res.status(500).json({
+                success: false,
+                error: 'PDF generation service is temporarily unavailable. Please try again later.'
+            });
+        } else {
+            res.status(500).json({
+                success: false,
+                error: 'Failed to generate invoice. Please try again later.'
+            });
+        }
     }
-  }
 };
 
-module.exports = exports;
+// Default export for compatibility
+export default {
+    listOrder,
+    renderOrdersPage,
+    getAdminOrderDetails,
+    updateItemStatus,
+    renderInventoryPage,
+    getInventory,
+    updateStock,
+    downloadInvoice
+};

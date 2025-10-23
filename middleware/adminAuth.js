@@ -1,10 +1,10 @@
 
 
 
-exports.adminAuth = function (req, res, next) {
+export const adminAuth = function (req, res, next) {
   
   if (req.session?.admin) {
-    console.log('👤 Admin details:', {
+    console.log(' Admin details:', {
       id: req.session.admin.id,
       email: req.session.admin.email
     });
@@ -33,7 +33,7 @@ exports.adminAuth = function (req, res, next) {
   }
 };
 
-exports.validateAdminSession = function (req, res, next) {
+export const validateAdminSession = function (req, res, next) {
   console.log('=== validateAdminSession MIDDLEWARE ===');
 
   res.set({
@@ -59,4 +59,9 @@ exports.validateAdminSession = function (req, res, next) {
 
   // If not logged in, force login
   return res.redirect('/admin/login');
+};
+// Default export for compatibility
+export default {
+  adminAuth,
+  validateAdminSession
 };

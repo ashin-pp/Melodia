@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const addressSchema = new mongoose.Schema({
   userId: {
@@ -85,4 +85,4 @@ addressSchema.methods.setAsDefault = async function() {
 };
 
 const Address = mongoose.model('Address', addressSchema);
-module.exports = Address;
+export default Address;

@@ -1,6 +1,6 @@
-const User =require('../../model/userSchema')
+import User from '../../model/userSchema.js';
 
-exports.getUsers = async (req, res) => {
+export const getUsers = async (req, res) => {
   try {
     const search = req.query.search ? req.query.search.trim() : '';
     const status = req.query.status || 'all';
@@ -56,7 +56,7 @@ exports.getUsers = async (req, res) => {
   }
 };
 
-exports.toggleBlockStatus = async (req, res) => {
+export const toggleBlockStatus = async (req, res) => {
   try {
     const userId = req.params.id;
     const user = await User.findById(userId);
@@ -79,4 +79,9 @@ exports.toggleBlockStatus = async (req, res) => {
     console.error(error);
     return res.status(500).json({ success: false, message: 'Server error' });
   }
+};
+// Default export for compatibility
+export default {
+  getUsers,
+  toggleBlockStatus
 };

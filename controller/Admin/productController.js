@@ -1,15 +1,16 @@
-const Product = require('../../model/productSchema');
-const Category = require('../../model/categorySchema');
-const path = require('path');
-const fs = require('fs');
-const sharp = require('sharp');
-const Variant = require('../../model/variantSchema');
-const { promisify } = require('util');
+import Product from '../../model/productSchema.js';
+import Category from '../../model/categorySchema.js';
+import path from 'path';
+import fs from 'fs';
+import sharp from 'sharp';
+import Variant from '../../model/variantSchema.js';
+import { promisify } from 'util';
+import { uploadBufferToCloudinary } from '../../helper/cloudinaryUploadHelper.js';
+
 const unlinkAsync = promisify(fs.unlink);
-const { uploadBufferToCloudinary } = require('../../helper/cloudinaryUploadHelper');
 
 
-exports.getProducts = async (req, res) => {
+export const getProducts = async (req, res) => {
   try {
     // Session handling
     const productJustAdded = req.session.productAdded ? req.session.productAdded : false;
@@ -122,7 +123,7 @@ exports.getProducts = async (req, res) => {
 };
 
 
-exports.toggleProductStatus = async (req, res) => {
+export const toggleProductStatus = async (req, res) => {
   try {
     const productId = req.params.id;
 
@@ -170,7 +171,7 @@ exports.toggleProductStatus = async (req, res) => {
 };
 
 // Your existing functions remain the same...
-exports.getAddProduct = async (req, res) => {
+export const getAddProduct = async (req, res) => {
   try {
     const categories = await Category.find({ isListed: true }).sort({ name: 1 });
     res.render('admin/addproduct', {
@@ -184,7 +185,7 @@ exports.getAddProduct = async (req, res) => {
   }
 };
 
-exports.postAddProduct = async (req, res) => {
+export const postAddProduct = async (req, res) => {
   const { productName, description, brand, categoryId, offer, type, batteryHealth } = req.body;
   let { variants } = req.body;
 
@@ -434,7 +435,7 @@ exports.postAddProduct = async (req, res) => {
   }
 };
 
-exports.getEditProduct = async (req, res) => {
+export const getEditProduct = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id)
       .populate('categoryId', 'name')
@@ -467,7 +468,7 @@ exports.getEditProduct = async (req, res) => {
   }
 };
 
-exports.postEditProduct = async (req, res) => {
+export const postEditProduct = async (req, res) => {
   try {
     const { id } = req.params;
     const { productName, brand, categoryId, description, offer, isListed, type, batteryHealth, deletedImages } = req.body;
@@ -681,7 +682,7 @@ exports.postEditProduct = async (req, res) => {
   }
 };
 
-exports.uploadProductImage = async (req, res) => {
+export const uploadProductImage = async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No file uploaded' });
@@ -701,3 +702,13 @@ exports.uploadProductImage = async (req, res) => {
 };
 
 
+// Default export for compatibility
+export default {
+  getProducts,
+  toggleProductStatus,
+  getAddProduct,
+  postAddProduct,
+  getEditProduct,
+  postEditProduct,
+  uploadProductImage
+};

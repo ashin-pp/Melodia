@@ -1,6 +1,6 @@
 
-const cloudinary = require('../config/cloudinary');
-const streamifier = require('streamifier');
+import cloudinary from '../config/cloudinary.js';
+import streamifier from 'streamifier';
 
 function uploadBufferToCloudinary(buffer, folder = 'melodia/products') {
   return new Promise((resolve, reject) => {
@@ -15,4 +15,4 @@ function uploadBufferToCloudinary(buffer, folder = 'melodia/products') {
   });
 }
 
-module.exports = { uploadBufferToCloudinary };
+export { uploadBufferToCloudinary };

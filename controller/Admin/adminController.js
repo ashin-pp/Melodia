@@ -1,7 +1,7 @@
-const User = require('../../model/userSchema');
-const bcrypt = require('bcryptjs');
+import User from '../../model/userSchema.js';
+import bcrypt from 'bcryptjs';
 
-exports.getLogin = (req, res) => {
+export const getLogin = (req, res) => {
 
   res.set({
     'Cache-Control': 'no-cache, no-store, must-revalidate, private',
@@ -17,7 +17,7 @@ exports.getLogin = (req, res) => {
 };
 
 
-exports.postLogin = async (req, res) => {
+export const postLogin = async (req, res) => {
   const { email, password } = req.body;
   let errMessage = "";
   
@@ -72,7 +72,7 @@ exports.postLogin = async (req, res) => {
   }
 };
 
-exports.getDashboard = async (req, res) => {
+export const getDashboard = async (req, res) => {
   console.log("entering dashboard");
   try {
     res.set({
@@ -90,7 +90,7 @@ exports.getDashboard = async (req, res) => {
   }
 };
 
-exports.logout = (req, res) => {
+export const logout = (req, res) => {
   try {
     res.set({
       'Cache-Control': 'no-cache, no-store, must-revalidate, private',
@@ -115,4 +115,11 @@ exports.logout = (req, res) => {
     console.error('Error in admin logout:', err);
     res.render('error/500', { title: 'Server Error' });
   }
+};
+// Default export for compatibility
+export default {
+  getLogin,
+  postLogin,
+  getDashboard,
+  logout
 };

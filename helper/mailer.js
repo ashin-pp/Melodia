@@ -1,6 +1,8 @@
 // helper/mailer.js
-require('dotenv').config();
-const nodemailer = require('nodemailer');
+import dotenv from 'dotenv';
+
+dotenv.config();
+import nodemailer from 'nodemailer';
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',
@@ -36,4 +38,4 @@ const sendMail = async (to, subject, text, html = null) => {
   }
 };
 
-module.exports = sendMail;
+export default sendMail;

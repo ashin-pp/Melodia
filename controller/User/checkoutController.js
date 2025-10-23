@@ -1,8 +1,8 @@
-const Cart = require('../../model/cartSchema');
-const Address = require('../../model/addressSchema');
-const Order = require('../../model/orderSchema');
-const Variant = require('../../model/variantSchema');
- const User = require('../../model/userSchema');
+import Cart from '../../model/cartSchema.js';
+import Address from '../../model/addressSchema.js';
+import Order from '../../model/orderSchema.js';
+import Variant from '../../model/variantSchema.js';
+import User from '../../model/userSchema.js';
 
 // Get checkout page
 const getCheckout = async (req, res) => {
@@ -333,7 +333,10 @@ const orderSuccess = async (req, res) => {
   }
 };
 
-module.exports = {
+export { getCheckout, placeOrder, orderSuccess };
+
+// Default export for compatibility
+export default {
   getCheckout,
   placeOrder,
   orderSuccess

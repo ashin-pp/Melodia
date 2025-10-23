@@ -1,13 +1,13 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const adminCtrl = require('../controller/Admin/adminController');
-const { validateAdminSession, adminAuth } = require('../middleware/adminAuth');
-const customerCtrl = require('../controller/Admin/customerController')
-const productController = require('../controller/Admin/productController');
-const { uploadProductImages } = require('../config/multer');
-const { processImages, processImagesOptional } = require('../middleware/imageProcessor');
-const categoryController = require("../controller/Admin/categoryController");
-const adminOrderCtrl = require('../controller/Admin/orderController');
+import adminCtrl from '../controller/Admin/adminController.js';
+import { validateAdminSession, adminAuth } from '../middleware/adminAuth.js';
+import customerCtrl from '../controller/Admin/customerController.js';
+import productController from '../controller/Admin/productController.js';
+import { uploadProductImages } from '../config/multer.js';
+import { processImages, processImagesOptional } from '../middleware/imageProcessor.js';
+import categoryController from '../controller/Admin/categoryController.js';
+import adminOrderCtrl from '../controller/Admin/orderController.js';
 
 
 router.get('/login', adminCtrl.getLogin);
@@ -46,4 +46,4 @@ router.get('/orders/:orderId', adminAuth, adminOrderCtrl.getAdminOrderDetails);
 router.get('/orders/:orderId/invoice', adminAuth, adminOrderCtrl.downloadInvoice);
 
 
-module.exports = router;
+export default router;

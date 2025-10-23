@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const categorySchema = new mongoose.Schema({
   name: {
@@ -67,4 +67,4 @@ categorySchema.post('findOneAndUpdate', async function(category) {
     await Variant.bulkWrite(bulkOps);
   }
 });
-module.exports = mongoose.model('Category', categorySchema);
+export default mongoose.model('Category', categorySchema);

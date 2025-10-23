@@ -1,6 +1,6 @@
-const Address = require('../../model/addressSchema');
- const User = require('../../model/userSchema');
-const Cart = require('../../model/cartSchema');
+import Address from '../../model/addressSchema.js';
+import User from '../../model/userSchema.js';
+import Cart from '../../model/cartSchema.js';
 
 
 
@@ -300,7 +300,7 @@ const setDefaultAddress = async (req, res) => {
   }
 };
 
-module.exports = {
+export default {
   renderAddressesPage,
   getAddresses,
   addAddress,

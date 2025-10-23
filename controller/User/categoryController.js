@@ -1,10 +1,10 @@
-const Category = require('../../model/categorySchema');
-const Product = require('../../model/productSchema');
-const mongoose = require('mongoose');
-const User=require('../../model/userSchema')
+import Category from '../../model/categorySchema.js';
+import Product from '../../model/productSchema.js';
+import mongoose from 'mongoose';
+import User from '../../model/userSchema.js';
 
 
-exports.getCategoryPage = async (req, res) => {
+export const getCategoryPage = async (req, res) => {
   try {
     const { id } = req.params;
     const userId = req.session.user.id;
@@ -189,7 +189,7 @@ exports.getCategoryPage = async (req, res) => {
   }
 };
 
-exports.getCategoriesPage = async (req, res) => {
+export const getCategoriesPage = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
      const userId = req.session.user.id;
@@ -308,4 +308,9 @@ exports.getCategoriesPage = async (req, res) => {
       message: 'An error occurred while loading categories.'
     });
   }
+};
+// Default export for compatibility
+export default {
+  getCategoryPage,
+  getCategoriesPage
 };

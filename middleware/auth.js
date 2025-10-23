@@ -1,7 +1,7 @@
-const User = require('../model/userSchema');
+import User from '../model/userSchema.js';
 
 // FIXED: Enhanced authentication middleware
-exports.isAuthenticated = (req, res, next) => {
+export const isAuthenticated = (req, res, next) => {
   console.log('=== isAuthenticated MIDDLEWARE ===');
   console.log('Session user:', req.session?.user);
   console.log('Request URL:', req.url);
@@ -24,7 +24,7 @@ exports.isAuthenticated = (req, res, next) => {
   next();
 };
 
-exports.isNotAuthenticated = (req, res, next) => {
+export const isNotAuthenticated = (req, res, next) => {
   console.log('=== isNotAuthenticated MIDDLEWARE ===');
   console.log('Session user:', req.session?.user);
   console.log('Request URL:', req.url);
@@ -46,7 +46,7 @@ exports.isNotAuthenticated = (req, res, next) => {
 };
 
 // Admin authentication middleware
-exports.isAdmin = (req, res, next) => {
+export const isAdmin = (req, res, next) => {
   console.log('=== isAdmin MIDDLEWARE ===');
   console.log('Session user:', req.session?.user);
   
@@ -75,7 +75,7 @@ exports.isAdmin = (req, res, next) => {
   next();
 };
 
-exports.checkUserBlocked = async (req, res, next) => {
+export const checkUserBlocked = async (req, res, next) => {
   try {
     if (req.session && req.session.user) {
       const user = await User.findById(req.session.user.id);
@@ -102,7 +102,7 @@ exports.checkUserBlocked = async (req, res, next) => {
 
 
 // FIXED: Session validation middleware (optional, use only when needed)
-exports.validateUserSession = (req, res, next) => {
+export const validateUserSession = (req, res, next) => {
   console.log('=== validateUserSession MIDDLEWARE ===');
   
   // Set cache control headers
@@ -130,4 +130,13 @@ exports.validateUserSession = (req, res, next) => {
   }
   
   next();
+};
+
+// Default export for compatibility
+export default {
+  isAuthenticated,
+  isNotAuthenticated,
+  isAdmin,
+  checkUserBlocked,
+  validateUserSession
 };

@@ -1,8 +1,9 @@
-const Order = require('../../model/orderSchema');
-const Variant = require('../../model/variantSchema');
-const User = require('../../model/userSchema');
-const Cart = require('../../model/cartSchema');
-const PDFDocument = require('pdfkit');
+import Order from '../../model/orderSchema.js';
+import Variant from '../../model/variantSchema.js';
+import User from '../../model/userSchema.js';
+import Cart from '../../model/cartSchema.js';
+import PDFDocument from 'pdfkit';
+import mongoose from 'mongoose';
 
 // Get all orders for user
 const getOrders = async (req, res) => {
@@ -80,7 +81,6 @@ const getOrderDetails = async (req, res) => {
     console.log('Extracted orderId:', orderId, 'Type:', typeof orderId);
     
     // Validate orderId format
-    const mongoose = require('mongoose');
     if (!mongoose.Types.ObjectId.isValid(orderId)) {
       console.log('Invalid orderId format:', orderId);
       return res.status(400).send(`
@@ -240,7 +240,6 @@ const cancelOrderItems = async (req, res) => {
     const { items, reason } = req.body;
     
     // Validate orderId format
-    const mongoose = require('mongoose');
     if (!mongoose.Types.ObjectId.isValid(orderId)) {
       console.log('Invalid orderId format in cancel items:', orderId);
       return res.status(400).json({
@@ -604,7 +603,10 @@ const returnOrderItem = async (req, res) => {
   }
 };
 
-module.exports = {
+export { getOrders, getOrderDetails, cancelOrder, cancelOrderItems, returnOrder, returnOrderItem, downloadInvoice };
+
+// Default export for compatibility
+export default {
   getOrders,
   getOrderDetails,
   cancelOrder,

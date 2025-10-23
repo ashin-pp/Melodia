@@ -1,8 +1,9 @@
-const Cart = require('../../model/cartSchema');
-const Variant = require('../../model/variantSchema');
-const Product = require('../../model/productSchema');
-const Category = require('../../model/categorySchema');
-const mongoose = require('mongoose');
+import Cart from '../../model/cartSchema.js';
+import Variant from '../../model/variantSchema.js';
+import Product from '../../model/productSchema.js';
+import Category from '../../model/categorySchema.js';
+import mongoose from 'mongoose';
+import User from '../../model/userSchema.js';
 
 // Maximum quantity per product
 const MAX_QUANTITY_PER_PRODUCT = 5;
@@ -170,7 +171,7 @@ const getCart = async (req, res) => {
     const userId = req.session.user.id;
 
     // Get full user data including avatar
-    const User = require('../../model/userSchema');
+    // User is now imported at the top
     const fullUser = await User.findById(userId);
 
     const cart = await Cart.findOne({ userId })
@@ -214,6 +215,7 @@ const getCart = async (req, res) => {
     if (validItems.length !== cart.items.length) {
       cart.items = validItems;
       await cart.save();
+      
     }
 
     const totalPrice = await cart.getTotalPrice();
@@ -426,7 +428,7 @@ const getCartCount = async (req, res) => {
   }
 };
 
-module.exports = {
+export default {
   addToCart,
   getCart,
   updateCartQuantity,

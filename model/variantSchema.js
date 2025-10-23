@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const variantSchema = new mongoose.Schema({
   productId: { 
@@ -69,4 +69,4 @@ variantSchema.pre('save', async function(next) {
 variantSchema.index({ productId: 1, color: 1 }, { unique: true });
 
 const Variant = mongoose.model('Variant', variantSchema);
-module.exports = Variant;
+export default Variant;

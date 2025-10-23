@@ -1,11 +1,11 @@
-const mongoose = require('mongoose');
-const User = require('../../model/userSchema');
-const bcrypt = require('bcryptjs');
-const sendMail = require('../../helper/mailer');
-const cloudinary = require('../../config/cloudinary');
-const Address = require('../../model/addressSchema');
+import mongoose from 'mongoose';
+import User from '../../model/userSchema.js';
+import bcrypt from 'bcryptjs';
+import sendMail from '../../helper/mailer.js';
+import cloudinary from '../../config/cloudinary.js';
+import Address from '../../model/addressSchema.js';
 
-exports.getProfile = async (req, res) => {
+export const getProfile = async (req, res) => {
   if (!req.session) return res.redirect('/login');
   const userId = req.session.user.id;
   if (!userId) return res.redirect('/login');
@@ -19,7 +19,7 @@ exports.getProfile = async (req, res) => {
   res.render('user/profile', { user });
 };
 
-exports.logout = (req, res) => {
+export const logout = (req, res) => {
   if (!req.session.user) return res.redirect('/login');
 
   req.session.user = null;
@@ -37,7 +37,7 @@ exports.logout = (req, res) => {
   });
 };
 
-exports.getEditProfile = async (req, res) => {
+export const getEditProfile = async (req, res) => {
   if (!req.session) return res.redirect('/login');
   const userId = req.session.user.id;
   if (!userId) return res.redirect('/login');
@@ -51,7 +51,7 @@ exports.getEditProfile = async (req, res) => {
   res.render('user/edit-profile', { user });
 };
 
-exports.postEditProfile = async (req, res) => {
+export const postEditProfile = async (req, res) => {
   if (!req.session) return res.redirect('/login');
   const userId = req.session.user.id;
   if (!userId) return res.redirect('/login');
@@ -73,7 +73,7 @@ exports.postEditProfile = async (req, res) => {
   res.redirect('/profile?success=Profile updated successfully');
 };
 
-exports.uploadAvatar = async (req, res) => {
+export const uploadAvatar = async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({
@@ -122,7 +122,7 @@ exports.uploadAvatar = async (req, res) => {
   }
 };
 
-exports.deleteAvatar = async (req, res) => {
+export const deleteAvatar = async (req, res) => {
   try {
     const user = await User.findById(req.session.user.id);
     if (!user) return res.json({ success: false, message: 'User not found' });
@@ -156,7 +156,7 @@ exports.deleteAvatar = async (req, res) => {
   }
 };
 
-exports.sendEmailOTP = async (req, res) => {
+export const sendEmailOTP = async (req, res) => {
   try {
     if (!req.session) return res.json({ success: false, message: 'Session not found' });
 
@@ -216,7 +216,7 @@ exports.sendEmailOTP = async (req, res) => {
   }
 };
 
-exports.verifyEmailOTP = async (req, res) => {
+export const verifyEmailOTP = async (req, res) => {
   try {
     if (!req.session) return res.json({ success: false, message: 'Session not found' });
 
@@ -261,7 +261,7 @@ exports.verifyEmailOTP = async (req, res) => {
   }
 };
 
-exports.resendEmailOTP = async (req, res) => {
+export const resendEmailOTP = async (req, res) => {
   try {
     if (!req.session) return res.json({ success: false, message: 'Session not found' });
 
@@ -322,7 +322,7 @@ exports.resendEmailOTP = async (req, res) => {
   }
 };
 
-exports.getChangePassword = async (req, res) => {
+export const getChangePassword = async (req, res) => {
   if (!req.session) {
     return res.redirect('/login');
   }
@@ -338,7 +338,7 @@ exports.getChangePassword = async (req, res) => {
 };
 
 
-exports.ChangePassword = async (req, res) => {
+export const ChangePassword = async (req, res) => {
   try {
     if (!req.session) return res.json({ success: false, message: "session not found" });
 
@@ -376,7 +376,7 @@ exports.ChangePassword = async (req, res) => {
 }
 
 
-exports.getAddresses = async (req, res) => {
+export const getAddresses = async (req, res) => {
   if (!req.session) return res.redirect('/login');
   const userId = req.session.user.id;
   if (!userId) return res.redirect('/login');
@@ -389,7 +389,7 @@ exports.getAddresses = async (req, res) => {
   res.render('user/addresses', { user, addresses });
 }
 
-exports.addAddress = async (req, res) => {
+export const addAddress = async (req, res) => {
   try {
     if (!req.session) return res.json({ success: false, message: 'Session not found' });
 
@@ -421,7 +421,7 @@ exports.addAddress = async (req, res) => {
   }
 };
 
-exports.editAddress = async (req, res) => {
+export const editAddress = async (req, res) => {
   try {
     if (!req.session) return res.json({ success: false, message: 'Session not found' });
 
@@ -456,7 +456,7 @@ exports.editAddress = async (req, res) => {
   }
 };
 
-exports.deleteAddress = async (req, res) => {
+export const deleteAddress = async (req, res) => {
   try {
     if (!req.session) return res.json({ success: false, message: 'Session not found' });
 
@@ -478,3 +478,21 @@ exports.deleteAddress = async (req, res) => {
 
 
 
+// Default export for compatibility
+export default {
+  getProfile,
+  logout,
+  getEditProfile,
+  postEditProfile,
+  uploadAvatar,
+  deleteAvatar,
+  sendEmailOTP,
+  verifyEmailOTP,
+  resendEmailOTP,
+  getChangePassword,
+  ChangePassword,
+  getAddresses,
+  addAddress,
+  editAddress,
+  deleteAddress
+};

@@ -1,10 +1,12 @@
-require('dotenv').config();
-const bcrypt = require('bcryptjs');
-const nodemailer = require('nodemailer');
-const crypto = require('crypto');
-const User = require('../../model/userSchema')
-const sendMail = require('../../helper/mailer');
-require('dotenv').config(); 
+import dotenv from 'dotenv';
+import bcrypt from 'bcryptjs';
+import nodemailer from 'nodemailer';
+import crypto from 'crypto';
+import User from '../../model/userSchema.js';
+import sendMail from '../../helper/mailer.js';
+import Cart from '../../model/cartSchema.js';
+
+dotenv.config(); 
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',
@@ -14,7 +16,7 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-exports.loadHomePage = async (req, res) => {
+export const loadHomePage = async (req, res) => {
   try {
     // Additional session validation
     if (!req.session?.user) {
@@ -77,7 +79,7 @@ exports.loadHomePage = async (req, res) => {
 
 
 
-exports.loadLandingPage=(req,res)=>{
+export const loadLandingPage = (req,res) => {
     try{
       res.render('user/landing')
     }catch(err){
@@ -88,7 +90,7 @@ exports.loadLandingPage=(req,res)=>{
 }
 
 // Render login page
-exports.getLogin = (req, res) => {
+export const getLogin = (req, res) => {
 
   console.log('Rendering login page');
   const justRegistered = req.session.justRegistered ? req.session.justRegistered : false;
@@ -144,7 +146,7 @@ exports.getLogin = (req, res) => {
 };
 
 // Handle login POST - UPDATED FOR NAME FIELD
-exports.postLogin = async (req, res) => {
+export const postLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -254,7 +256,7 @@ exports.postLogin = async (req, res) => {
 
 
 // Render signup page
-exports.getSignup = (req, res) => {
+export const getSignup = (req, res) => {
     console.log('Rendering signup page');
   res.render('user/signUp', {
     message: null,
@@ -264,7 +266,7 @@ exports.getSignup = (req, res) => {
 };
 
 
-exports.postSignup = async (req, res) => {
+export const postSignup = async (req, res) => {
     console.log('Email config check:', {
         email: process.env.NODEMAILER_EMAIL,
         pass: process.env.NODEMAILER_PASS ? 'SET' : 'NOT SET'
@@ -402,7 +404,7 @@ exports.postSignup = async (req, res) => {
 };
 
 // Handle OTP verification - UPDATED FOR NAME FIELD
-exports.verifyOtp = async (req, res) => {
+export const verifyOtp = async (req, res) => {
   try {
 
     let { email, otp } = req.body;
@@ -567,7 +569,7 @@ exports.verifyOtp = async (req, res) => {
 };
 
 // Handle OTP resend - NO CHANGES NEEDED
-exports.resendOtp = async (req, res) => {
+export const resendOtp = async (req, res) => {
   try {
 
     const { email } = req.body;
@@ -641,7 +643,7 @@ exports.resendOtp = async (req, res) => {
   }
 };
 
-exports.googleCallback = async (req, res) => {
+export const googleCallback = async (req, res) => {
   try {
     console.log('Google callback handler called');
     console.log('Authenticated user:', req.user);
@@ -704,7 +706,7 @@ exports.googleCallback = async (req, res) => {
 
 
 // Render forgot password page
-exports.getForgotPassword = (req, res) => {
+export const getForgotPassword = (req, res) => {
   res.render('user/forgot-password', {
     message: null,
     isError: false,
@@ -713,7 +715,7 @@ exports.getForgotPassword = (req, res) => {
 };
 
 // Handle forgot password POST
-exports.postForgotPassword = async (req, res) => {
+export const postForgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
 
@@ -862,7 +864,7 @@ exports.postForgotPassword = async (req, res) => {
 };
 
 // Render reset password page
-exports.getResetPassword = (req, res) => {
+export const getResetPassword = (req, res) => {
   try {
     const { token } = req.params;
     
@@ -919,7 +921,7 @@ exports.getResetPassword = (req, res) => {
 
 
 // Handle reset password POST
-exports.postResetPassword = async (req, res) => {
+export const postResetPassword = async (req, res) => {
   try {
     const { token } = req.params;
     const { password, confirmPassword } = req.body;
@@ -1002,14 +1004,14 @@ exports.postResetPassword = async (req, res) => {
 };
 
 // Load About Page
-exports.loadAboutPage = async (req, res) => {
+export const loadAboutPage = async (req, res) => {
   try {
     let user = null;
     let cartCount = 0;
 
     // If user is logged in, fetch full user data from database
     if (req.session?.user?.id) {
-      const Cart = require('../../model/cartSchema');
+      // Cart is now imported at the top
 
       user = await User.findById(req.session.user.id);
 
@@ -1041,4 +1043,22 @@ exports.loadAboutPage = async (req, res) => {
       cartCount: 0
     });
   }
+};
+
+// Default export for compatibility
+export default {
+  loadHomePage,
+  loadLandingPage,
+  getLogin,
+  postLogin,
+  getSignup,
+  postSignup,
+  verifyOtp,
+  resendOtp,
+  googleCallback,
+  getForgotPassword,
+  postForgotPassword,
+  getResetPassword,
+  postResetPassword,
+  loadAboutPage
 };

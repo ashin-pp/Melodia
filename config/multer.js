@@ -1,5 +1,5 @@
 // middlewares/upload.js
-const multer = require('multer');
+import multer from 'multer';
 
 // ✅ Use memory storage so files are kept in RAM buffers
 const uploadProductImages = multer({
@@ -29,7 +29,4 @@ const avatarUpload = multer({
     isValid ? cb(null, true) : cb(new Error('Only JPEG/PNG/WEBP images are allowed'));
   }
 }).single('avatar');
-module.exports = {
-  uploadProductImages,
-  avatarUpload
-};
+export { uploadProductImages, avatarUpload };

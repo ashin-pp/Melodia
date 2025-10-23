@@ -1,17 +1,18 @@
-const express = require('express');
-const path = require('path');
-const dotenv = require('dotenv');
-const session = require('express-session');
-const flash = require('connect-flash');
-const MongoStore = require('connect-mongo');
+import express from 'express';
+import path from 'path';
+import dotenv from 'dotenv';
+import session from 'express-session';
+import flash from 'connect-flash';
+import MongoStore from 'connect-mongo';
+import userRoutes from './routes/userRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
+import { getImageUrl } from './helper/imageHandler.js';
+import connectDB from './config/mongo.js';
+import './config/passport.js';
+import passport from 'passport';
+
 const app = express();
-const userRoutes = require('./routes/userRoutes');
-const adminRoutes = require('./routes/adminRoutes');
-const { getImageUrl } = require('./helper/imageHandler');
-const connectDB = require('./config/mongo')
 dotenv.config();
-require('./config/passport');
-const passport = require('passport');
 
 connectDB();
 

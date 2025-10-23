@@ -6,4 +6,4 @@ function getImageUrl(img, placeholder = '/assets/placeholder.jpg') {
   return placeholder;
 }
 
-module.exports = { getImageUrl };
+export { getImageUrl };
