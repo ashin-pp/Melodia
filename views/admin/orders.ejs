@@ -488,7 +488,7 @@
             <li><a href="/admin/category"><i class="fas fa-folder"></i> Category</a></li>
             <li><a href="/admin/banners"><i class="fas fa-flag"></i> Banners</a></li>
             <li><a href="/admin/settings"><i class="fas fa-cog"></i> Settings</a></li>
-            <li><a href="/admin/logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            <li><a href="#" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
           </ul>
         </nav>
       </div>
@@ -796,10 +796,84 @@
       window.location.href = `/admin/orders/${orderId}`;
     }
 
+    // Fast logout modal with debug and fallback
+    function showLogoutModal() {
+      console.log('showLogoutModal called');
+      
+      // Try SweetAlert2 first
+      if (typeof Swal !== 'undefined') {
+        console.log('SweetAlert2 is available, showing modal');
+        
+        try {
+          Swal.fire({
+            title: 'Logout Confirmation',
+            text: 'Are you sure you want to logout from admin panel?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, Logout',
+            cancelButtonText: 'Cancel',
+            reverseButtons: true,
+            focusConfirm: false,
+            focusCancel: true,
+            allowOutsideClick: false
+          }).then((result) => {
+            console.log('Modal result:', result);
+            if (result.isConfirmed) {
+              console.log('User confirmed logout');
+              // Show quick loading
+              Swal.fire({
+                title: 'Logging out...',
+                text: 'Please wait',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                showConfirmButton: false,
+                timer: 1000,
+                didOpen: () => {
+                  Swal.showLoading();
+                }
+              }).then(() => {
+                window.location.href = '/admin/logout';
+              });
+            }
+          }).catch((error) => {
+            console.error('SweetAlert2 error:', error);
+            // Fallback to native confirm
+            if (confirm('Are you sure you want to logout from admin panel?')) {
+              window.location.href = '/admin/logout';
+            }
+          });
+        } catch (error) {
+          console.error('SweetAlert2 execution error:', error);
+          // Fallback to native confirm
+          if (confirm('Are you sure you want to logout from admin panel?')) {
+            window.location.href = '/admin/logout';
+          }
+        }
+      } else {
+        console.error('SweetAlert2 not loaded, using fallback');
+        // Fallback to native confirm
+        if (confirm('Are you sure you want to logout from admin panel?')) {
+          window.location.href = '/admin/logout';
+        }
+      }
+    }
+
     // Initialize when page loads
     document.addEventListener('DOMContentLoaded', function() {
       console.log('DOM loaded, initializing OrderManager');
       window.orderManager = new OrderManager();
+      
+      // Bind logout button event
+      const logoutBtn = document.getElementById('logoutBtn');
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          console.log('Logout button clicked via event listener');
+          showLogoutModal();
+        });
+      }
     });
   </script>
 </body>

@@ -2,6 +2,7 @@ const Order = require('../../model/orderSchema');
 const User = require('../../model/userSchema');
 const Variant = require('../../model/variantSchema');
 const Product = require('../../model/productSchema');
+const puppeteer = require('puppeteer');
 
 exports.listOrder = async (req, res) => {
     try {
@@ -449,5 +450,189 @@ exports.updateStock = async (req, res) => {
 };
 
 
+
+// Global browser instance for reuse
+let globalBrowser = null;
+
+const getBrowser = async () => {
+  if (!globalBrowser || !globalBrowser.isConnected()) {
+    globalBrowser = await puppeteer.launch({
+      headless: true,
+      args: [
+        '--no-sandbox', 
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-accelerated-2d-canvas',
+        '--no-first-run',
+        '--no-zygote',
+        '--disable-gpu',
+        '--disable-background-timer-throttling',
+        '--disable-backgrounding-occluded-windows',
+        '--disable-renderer-backgrounding'
+      ]
+    });
+  }
+  return globalBrowser;
+};
+
+exports.downloadInvoice = async (req, res) => {
+  try {
+    const orderId = req.params.orderId;
+    
+    // Set response headers for PDF download
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="Invoice-${orderId}.pdf"`);
+    res.setHeader('Cache-Control', 'no-cache');
+    
+    // Fetch order details with minimal fields for faster query
+    const order = await Order.findById(orderId)
+      .populate('userId', 'name email phone')
+      .populate({
+        path: 'items.variantId',
+        select: 'color',
+        populate: {
+          path: 'productId',
+          select: 'productName brand'
+        }
+      })
+      .lean(); // Use lean() for faster queries
+
+    if (!order) {
+      return res.status(404).json({ success: false, error: 'Order not found' });
+    }
+
+    // Generate optimized HTML for invoice (removed heavy styling for speed)
+    const invoiceHTML = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <title>Invoice - ${order.orderId}</title>
+      <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
+        .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #000; padding-bottom: 20px; }
+        .company-name { font-size: 28px; font-weight: bold; color: #000; }
+        .invoice-title { font-size: 24px; margin: 20px 0; }
+        .order-info { display: flex; justify-content: space-between; margin: 20px 0; }
+        .customer-info { margin: 20px 0; }
+        .items-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        .items-table th, .items-table td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        .items-table th { background-color: #f8f9fa; font-weight: bold; }
+        .total-section { margin-top: 30px; text-align: right; }
+        .total-row { margin: 5px 0; }
+        .grand-total { font-size: 18px; font-weight: bold; border-top: 2px solid #000; padding-top: 10px; }
+        .footer { margin-top: 50px; text-align: center; font-size: 12px; color: #666; }
+      </style>
+    </head>
+    <body>
+      <div class="header">
+        <div class="company-name">MELODIA</div>
+        <div>Premium Audio Store</div>
+      </div>
+      
+      <div class="invoice-title">INVOICE</div>
+      
+      <div class="order-info">
+        <div>
+          <strong>Invoice No:</strong> INV-${order.orderId}<br>
+          <strong>Order Date:</strong> ${new Date(order.orderDate).toLocaleDateString()}<br>
+          <strong>Payment Method:</strong> ${order.paymentMethod}
+        </div>
+        <div>
+          <strong>Bill To:</strong><br>
+          ${order.userId?.name || order.shippingAddress?.fullName}<br>
+          ${order.userId?.email || ''}<br>
+          ${order.userId?.phone || order.shippingAddress?.phoneNumber || ''}
+        </div>
+      </div>
+      
+      ${order.shippingAddress ? `
+      <div class="customer-info">
+        <strong>Shipping Address:</strong><br>
+        ${order.shippingAddress.fullName}<br>
+        ${order.shippingAddress.address}<br>
+        ${order.shippingAddress.city}, ${order.shippingAddress.state} - ${order.shippingAddress.pincode}
+      </div>
+      ` : ''}
+      
+      <table class="items-table">
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Quantity</th>
+            <th>Unit Price</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${order.items.map(item => `
+            <tr>
+              <td>
+                ${item.variantId?.productId?.productName || item.productName || 'Product'}<br>
+                <small>Color: ${item.variantId?.color || item.color || 'N/A'}</small>
+              </td>
+              <td>${item.quantity}</td>
+              <td>₹${item.price.toLocaleString()}</td>
+              <td>₹${(item.quantity * item.price).toLocaleString()}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+      
+      <div class="total-section">
+        <div class="total-row">Subtotal: ₹${(order.totalAmount - (order.deliveryCharge || 0)).toLocaleString()}</div>
+        <div class="total-row">Delivery Charge: ₹${(order.deliveryCharge || 0).toLocaleString()}</div>
+        <div class="total-row grand-total">Grand Total: ₹${order.totalAmount.toLocaleString()}</div>
+      </div>
+      
+      <div class="footer">
+        <p>Thank you for shopping with Melodia!</p>
+        <p>For any queries, contact us at support@melodia.com</p>
+      </div>
+    </body>
+    </html>
+    `;
+
+    // Generate PDF using optimized browser instance
+    const browser = await getBrowser();
+    const page = await browser.newPage();
+    
+    // Optimize page settings for speed
+    await page.setViewport({ width: 794, height: 1123 }); // A4 size
+    await page.setContent(invoiceHTML, { 
+      waitUntil: 'domcontentloaded', // Faster than networkidle0
+      timeout: 10000 
+    });
+    
+    const pdfBuffer = await page.pdf({
+      format: 'A4',
+      printBackground: true,
+      margin: { top: '15px', right: '15px', bottom: '15px', left: '15px' },
+      preferCSSPageSize: false
+    });
+    
+    await page.close(); // Close page but keep browser open for reuse
+
+    // Send PDF buffer to client
+    res.setHeader('Content-Length', pdfBuffer.length);
+    res.end(pdfBuffer);
+
+  } catch (error) {
+    console.error('Invoice generation error:', error.message);
+    
+    // Provide appropriate error response
+    if (error.message.includes('puppeteer') || error.message.includes('browser')) {
+      res.status(500).json({ 
+        success: false, 
+        error: 'PDF generation service is temporarily unavailable. Please try again later.' 
+      });
+    } else {
+      res.status(500).json({ 
+        success: false, 
+        error: 'Failed to generate invoice. Please try again later.' 
+      });
+    }
+  }
+};
 
 module.exports = exports;

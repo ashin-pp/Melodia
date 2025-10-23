@@ -27,6 +27,7 @@
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "pdfkit": "^0.17.2",
+    "puppeteer": "^24.26.0",
     "sharp": "^0.34.4",
     "streamifier": "^0.1.1",
     "util": "^0.12.5"

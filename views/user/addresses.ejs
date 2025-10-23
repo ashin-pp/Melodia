@@ -510,8 +510,8 @@
                                 <input type="text" id="fullName" name="fullName" required style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px;">
                             </div>
                             <div style="margin-bottom: 15px;">
-                                <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #374151;">Phone Number *</label>
-                                <input type="text" id="phoneNumber" name="phoneNumber" required style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px;">
+                                <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #374151;">Phone Number * <small style="color: #6b7280;">(10 digits)</small></label>
+                                <input type="text" id="phoneNumber" name="phoneNumber" placeholder="Enter 10-digit phone number" maxlength="10" required style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px;">
                             </div>
                             <div style="margin-bottom: 15px;">
                                 <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #374151;">Address Line 1 *</label>
@@ -532,8 +532,8 @@
                                 </div>
                             </div>
                             <div style="margin-bottom: 15px;">
-                                <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #374151;">Pincode *</label>
-                                <input type="text" id="pincode" name="pincode" required style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px;">
+                                <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #374151;">Pincode * <small style="color: #6b7280;">(6 digits)</small></label>
+                                <input type="text" id="pincode" name="pincode" placeholder="Enter 6-digit pincode" maxlength="6" required style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px;">
                             </div>
                             <div style="margin-bottom: 15px;">
                                 <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #374151;">Address Type *</label>
@@ -552,13 +552,173 @@
                         confirmButtonColor: '#3b82f6',
                         cancelButtonColor: '#6b7280',
                         width: 600,
+                        didOpen: () => {
+                            // Add real-time validation
+                            const phoneInput = document.getElementById('phoneNumber');
+                            const pincodeInput = document.getElementById('pincode');
+                            const nameInput = document.getElementById('fullName');
+                            const cityInput = document.getElementById('city');
+                            const stateInput = document.getElementById('state');
+                            
+                            // Phone number validation
+                            phoneInput.addEventListener('input', function() {
+                                const value = this.value.replace(/\D/g, ''); // Remove non-digits
+                                this.value = value;
+                                
+                                if (value.length > 10) {
+                                    this.value = value.substring(0, 10);
+                                }
+                                
+                                if (value.length === 10) {
+                                    this.style.borderColor = '#10b981';
+                                } else if (value.length > 0) {
+                                    this.style.borderColor = '#ef4444';
+                                } else {
+                                    this.style.borderColor = '#d1d5db';
+                                }
+                            });
+                            
+                            // Pincode validation
+                            pincodeInput.addEventListener('input', function() {
+                                const value = this.value.replace(/\D/g, ''); // Remove non-digits
+                                this.value = value;
+                                
+                                if (value.length > 6) {
+                                    this.value = value.substring(0, 6);
+                                }
+                                
+                                if (value.length === 6) {
+                                    this.style.borderColor = '#10b981';
+                                } else if (value.length > 0) {
+                                    this.style.borderColor = '#ef4444';
+                                } else {
+                                    this.style.borderColor = '#d1d5db';
+                                }
+                            });
+                            
+                            // Name validation (only letters and spaces)
+                            nameInput.addEventListener('input', function() {
+                                const value = this.value.replace(/[^a-zA-Z\s]/g, '');
+                                this.value = value;
+                                
+                                if (value.trim().length > 0) {
+                                    this.style.borderColor = '#10b981';
+                                } else {
+                                    this.style.borderColor = '#d1d5db';
+                                }
+                            });
+                            
+                            // City validation (only letters and spaces)
+                            cityInput.addEventListener('input', function() {
+                                const value = this.value.replace(/[^a-zA-Z\s]/g, '');
+                                this.value = value;
+                                
+                                if (value.trim().length > 0) {
+                                    this.style.borderColor = '#10b981';
+                                } else {
+                                    this.style.borderColor = '#d1d5db';
+                                }
+                            });
+                            
+                            // State validation (only letters and spaces)
+                            stateInput.addEventListener('input', function() {
+                                const value = this.value.replace(/[^a-zA-Z\s]/g, '');
+                                this.value = value;
+                                
+                                if (value.trim().length > 0) {
+                                    this.style.borderColor = '#10b981';
+                                } else {
+                                    this.style.borderColor = '#d1d5db';
+                                }
+                            });
+                        },
                         preConfirm: () => {
                             const form = document.getElementById('addressForm');
                             const formData = new FormData(form);
                             const data = Object.fromEntries(formData);
                             
-                            if (!data.fullName || !data.phoneNumber || !data.addressLine1 || !data.city || !data.state || !data.pincode) {
-                                Swal.showValidationMessage('Please fill all required fields');
+                            // Clear previous error styling
+                            document.querySelectorAll('#addressForm input, #addressForm select').forEach(field => {
+                                field.style.borderColor = '#d1d5db';
+                            });
+                            
+                            // Validate required fields
+                            if (!data.fullName || data.fullName.trim() === '') {
+                                document.getElementById('fullName').style.borderColor = '#ef4444';
+                                Swal.showValidationMessage('Full name is required');
+                                return false;
+                            }
+                            
+                            if (!data.phoneNumber || data.phoneNumber.trim() === '') {
+                                document.getElementById('phoneNumber').style.borderColor = '#ef4444';
+                                Swal.showValidationMessage('Phone number is required');
+                                return false;
+                            }
+                            
+                            // Validate phone number format (10 digits)
+                            const phoneRegex = /^[0-9]{10}$/;
+                            if (!phoneRegex.test(data.phoneNumber.replace(/\s/g, ''))) {
+                                document.getElementById('phoneNumber').style.borderColor = '#ef4444';
+                                Swal.showValidationMessage('Phone number must be exactly 10 digits');
+                                return false;
+                            }
+                            
+                            if (!data.addressLine1 || data.addressLine1.trim() === '') {
+                                document.getElementById('addressLine1').style.borderColor = '#ef4444';
+                                Swal.showValidationMessage('Address line 1 is required');
+                                return false;
+                            }
+                            
+                            if (!data.city || data.city.trim() === '') {
+                                document.getElementById('city').style.borderColor = '#ef4444';
+                                Swal.showValidationMessage('City is required');
+                                return false;
+                            }
+                            
+                            if (!data.state || data.state.trim() === '') {
+                                document.getElementById('state').style.borderColor = '#ef4444';
+                                Swal.showValidationMessage('State is required');
+                                return false;
+                            }
+                            
+                            if (!data.pincode || data.pincode.trim() === '') {
+                                document.getElementById('pincode').style.borderColor = '#ef4444';
+                                Swal.showValidationMessage('Pincode is required');
+                                return false;
+                            }
+                            
+                            // Validate pincode format (6 digits)
+                            const pincodeRegex = /^[0-9]{6}$/;
+                            if (!pincodeRegex.test(data.pincode.replace(/\s/g, ''))) {
+                                document.getElementById('pincode').style.borderColor = '#ef4444';
+                                Swal.showValidationMessage('Pincode must be exactly 6 digits');
+                                return false;
+                            }
+                            
+                            // Validate name (only letters and spaces)
+                            const nameRegex = /^[a-zA-Z\s]+$/;
+                            if (!nameRegex.test(data.fullName)) {
+                                document.getElementById('fullName').style.borderColor = '#ef4444';
+                                Swal.showValidationMessage('Full name should contain only letters and spaces');
+                                return false;
+                            }
+                            
+                            // Validate city and state (only letters and spaces)
+                            if (!nameRegex.test(data.city)) {
+                                document.getElementById('city').style.borderColor = '#ef4444';
+                                Swal.showValidationMessage('City should contain only letters and spaces');
+                                return false;
+                            }
+                            
+                            if (!nameRegex.test(data.state)) {
+                                document.getElementById('state').style.borderColor = '#ef4444';
+                                Swal.showValidationMessage('State should contain only letters and spaces');
+                                return false;
+                            }
+                            
+                            if (!data.addressType) {
+                                document.getElementById('addressType').style.borderColor = '#ef4444';
+                                Swal.showValidationMessage('Please select an address type');
                                 return false;
                             }
                             
@@ -635,8 +795,8 @@
                             <input type="text" id="editFullName" name="fullName" value="${addressData.fullName || ''}" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
                         </div>
                         <div style="margin-bottom: 15px;">
-                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Phone Number *</label>
-                            <input type="text" id="editPhoneNumber" name="phoneNumber" value="${addressData.phoneNumber || ''}" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Phone Number * <small style="color: #6b7280;">(10 digits)</small></label>
+                            <input type="text" id="editPhoneNumber" name="phoneNumber" value="${addressData.phoneNumber || ''}" placeholder="Enter 10-digit phone number" maxlength="10" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
                         </div>
                         <div style="margin-bottom: 15px;">
                             <label style="display: block; margin-bottom: 5px; font-weight: 600;">Address Line 1 *</label>
@@ -657,8 +817,8 @@
                             </div>
                         </div>
                         <div style="margin-bottom: 15px;">
-                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Pincode *</label>
-                            <input type="text" id="editPincode" name="pincode" value="${addressData.pincode || ''}" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Pincode * <small style="color: #6b7280;">(6 digits)</small></label>
+                            <input type="text" id="editPincode" name="pincode" value="${addressData.pincode || ''}" placeholder="Enter 6-digit pincode" maxlength="6" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
                         </div>
                         <div style="margin-bottom: 15px;">
                             <label style="display: block; margin-bottom: 5px; font-weight: 600;">Address Type *</label>
@@ -676,13 +836,173 @@
                         confirmButtonColor: '#ff6b6b',
                         cancelButtonColor: '#6c757d',
                         width: 600,
+                        didOpen: () => {
+                            // Add real-time validation for edit form
+                            const phoneInput = document.getElementById('editPhoneNumber');
+                            const pincodeInput = document.getElementById('editPincode');
+                            const nameInput = document.getElementById('editFullName');
+                            const cityInput = document.getElementById('editCity');
+                            const stateInput = document.getElementById('editState');
+                            
+                            // Phone number validation
+                            phoneInput.addEventListener('input', function() {
+                                const value = this.value.replace(/\D/g, ''); // Remove non-digits
+                                this.value = value;
+                                
+                                if (value.length > 10) {
+                                    this.value = value.substring(0, 10);
+                                }
+                                
+                                if (value.length === 10) {
+                                    this.style.borderColor = '#10b981';
+                                } else if (value.length > 0) {
+                                    this.style.borderColor = '#ef4444';
+                                } else {
+                                    this.style.borderColor = '#ddd';
+                                }
+                            });
+                            
+                            // Pincode validation
+                            pincodeInput.addEventListener('input', function() {
+                                const value = this.value.replace(/\D/g, ''); // Remove non-digits
+                                this.value = value;
+                                
+                                if (value.length > 6) {
+                                    this.value = value.substring(0, 6);
+                                }
+                                
+                                if (value.length === 6) {
+                                    this.style.borderColor = '#10b981';
+                                } else if (value.length > 0) {
+                                    this.style.borderColor = '#ef4444';
+                                } else {
+                                    this.style.borderColor = '#ddd';
+                                }
+                            });
+                            
+                            // Name validation (only letters and spaces)
+                            nameInput.addEventListener('input', function() {
+                                const value = this.value.replace(/[^a-zA-Z\s]/g, '');
+                                this.value = value;
+                                
+                                if (value.trim().length > 0) {
+                                    this.style.borderColor = '#10b981';
+                                } else {
+                                    this.style.borderColor = '#ddd';
+                                }
+                            });
+                            
+                            // City validation (only letters and spaces)
+                            cityInput.addEventListener('input', function() {
+                                const value = this.value.replace(/[^a-zA-Z\s]/g, '');
+                                this.value = value;
+                                
+                                if (value.trim().length > 0) {
+                                    this.style.borderColor = '#10b981';
+                                } else {
+                                    this.style.borderColor = '#ddd';
+                                }
+                            });
+                            
+                            // State validation (only letters and spaces)
+                            stateInput.addEventListener('input', function() {
+                                const value = this.value.replace(/[^a-zA-Z\s]/g, '');
+                                this.value = value;
+                                
+                                if (value.trim().length > 0) {
+                                    this.style.borderColor = '#10b981';
+                                } else {
+                                    this.style.borderColor = '#ddd';
+                                }
+                            });
+                        },
                         preConfirm: () => {
                             const form = document.getElementById('editAddressForm');
                             const formData = new FormData(form);
                             const data = Object.fromEntries(formData);
-
-                            if (!data.fullName || !data.phoneNumber || !data.addressLine1 || !data.city || !data.state || !data.pincode) {
-                                Swal.showValidationMessage('Please fill all required fields');
+                            
+                            // Clear previous error styling
+                            document.querySelectorAll('#editAddressForm input, #editAddressForm select').forEach(field => {
+                                field.style.borderColor = '#ddd';
+                            });
+                            
+                            // Validate required fields
+                            if (!data.fullName || data.fullName.trim() === '') {
+                                document.getElementById('editFullName').style.borderColor = '#ef4444';
+                                Swal.showValidationMessage('Full name is required');
+                                return false;
+                            }
+                            
+                            if (!data.phoneNumber || data.phoneNumber.trim() === '') {
+                                document.getElementById('editPhoneNumber').style.borderColor = '#ef4444';
+                                Swal.showValidationMessage('Phone number is required');
+                                return false;
+                            }
+                            
+                            // Validate phone number format (10 digits)
+                            const phoneRegex = /^[0-9]{10}$/;
+                            if (!phoneRegex.test(data.phoneNumber.replace(/\s/g, ''))) {
+                                document.getElementById('editPhoneNumber').style.borderColor = '#ef4444';
+                                Swal.showValidationMessage('Phone number must be exactly 10 digits');
+                                return false;
+                            }
+                            
+                            if (!data.addressLine1 || data.addressLine1.trim() === '') {
+                                document.getElementById('editAddressLine1').style.borderColor = '#ef4444';
+                                Swal.showValidationMessage('Address line 1 is required');
+                                return false;
+                            }
+                            
+                            if (!data.city || data.city.trim() === '') {
+                                document.getElementById('editCity').style.borderColor = '#ef4444';
+                                Swal.showValidationMessage('City is required');
+                                return false;
+                            }
+                            
+                            if (!data.state || data.state.trim() === '') {
+                                document.getElementById('editState').style.borderColor = '#ef4444';
+                                Swal.showValidationMessage('State is required');
+                                return false;
+                            }
+                            
+                            if (!data.pincode || data.pincode.trim() === '') {
+                                document.getElementById('editPincode').style.borderColor = '#ef4444';
+                                Swal.showValidationMessage('Pincode is required');
+                                return false;
+                            }
+                            
+                            // Validate pincode format (6 digits)
+                            const pincodeRegex = /^[0-9]{6}$/;
+                            if (!pincodeRegex.test(data.pincode.replace(/\s/g, ''))) {
+                                document.getElementById('editPincode').style.borderColor = '#ef4444';
+                                Swal.showValidationMessage('Pincode must be exactly 6 digits');
+                                return false;
+                            }
+                            
+                            // Validate name (only letters and spaces)
+                            const nameRegex = /^[a-zA-Z\s]+$/;
+                            if (!nameRegex.test(data.fullName)) {
+                                document.getElementById('editFullName').style.borderColor = '#ef4444';
+                                Swal.showValidationMessage('Full name should contain only letters and spaces');
+                                return false;
+                            }
+                            
+                            // Validate city and state (only letters and spaces)
+                            if (!nameRegex.test(data.city)) {
+                                document.getElementById('editCity').style.borderColor = '#ef4444';
+                                Swal.showValidationMessage('City should contain only letters and spaces');
+                                return false;
+                            }
+                            
+                            if (!nameRegex.test(data.state)) {
+                                document.getElementById('editState').style.borderColor = '#ef4444';
+                                Swal.showValidationMessage('State should contain only letters and spaces');
+                                return false;
+                            }
+                            
+                            if (!data.addressType) {
+                                document.getElementById('editAddressType').style.borderColor = '#ef4444';
+                                Swal.showValidationMessage('Please select an address type');
                                 return false;
                             }
 

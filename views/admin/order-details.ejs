@@ -566,7 +566,7 @@
             <li><a href="/admin/category"><i class="fas fa-folder"></i> Category</a></li>
             <li><a href="/admin/banners"><i class="fas fa-flag"></i> Banners</a></li>
             <li><a href="/admin/settings"><i class="fas fa-cog"></i> Settings</a></li>
-            <li><a href="/admin/logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            <li><a href="#" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
           </ul>
         </nav>
       </div>
@@ -579,10 +579,17 @@
             <h2>Order Details</h2>
             <p style="color: #6c757d; font-size: 14px;">View complete order information</p>
           </div>
-          <a href="/admin/orders" class="back-btn">
-            <i class="fas fa-arrow-left"></i>
-            Back to Orders
-          </a>
+          <div style="display: flex; gap: 10px;">
+            <button onclick="downloadInvoice()" class="btn btn-primary" style="background: #28a745; color: white; padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; gap: 8px; border: none; text-decoration: none; margin-right: 10px;" onmouseover="this.style.background='#218838'; this.style.transform='translateY(-1px)'" onmouseout="this.style.background='#28a745'; this.style.transform='translateY(0)'">
+              <i class="fas fa-download"></i>
+              Download Invoice
+            </button>
+
+            <a href="/admin/orders" class="back-btn">
+              <i class="fas fa-arrow-left"></i>
+              Back to Orders
+            </a>
+          </div>
         </div>
 
         <!-- Order Details Card -->
@@ -1056,9 +1063,155 @@
       }
     }
 
-    // Set current status as selected when modal opens
+    // Professional invoice download function
+    async function downloadInvoice() {
+      try {
+        // Show loading indicator
+        Swal.fire({
+          title: 'Generating Invoice...',
+          text: 'Please wait while we prepare your PDF',
+          allowOutsideClick: false,
+          showConfirmButton: false,
+          didOpen: () => {
+            Swal.showLoading();
+          }
+        });
+
+        const downloadUrl = `/admin/orders/<%= order._id %>/invoice`;
+        
+        // Primary method: Fetch and download
+        const response = await fetch(downloadUrl, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/pdf'
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Server error: ${response.status}`);
+        }
+        
+        // Verify content type
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/pdf')) {
+          throw new Error('Invalid response format');
+        }
+        
+        // Get PDF blob and create download
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Invoice-<%= order.orderId %>.pdf`;
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        
+        // Cleanup
+        setTimeout(() => {
+          window.URL.revokeObjectURL(url);
+          document.body.removeChild(a);
+        }, 100);
+        
+        // Show success message
+        Swal.fire({
+          title: 'Success!',
+          text: 'Invoice downloaded successfully',
+          icon: 'success',
+          timer: 2000,
+          showConfirmButton: false
+        });
+        
+      } catch (error) {
+        console.error('Invoice download failed:', error);
+        
+        // Fallback method: Direct link
+        try {
+          Swal.close();
+          
+          // Try iframe fallback
+          const iframe = document.createElement('iframe');
+          iframe.style.display = 'none';
+          iframe.src = `/admin/orders/<%= order._id %>/invoice`;
+          document.body.appendChild(iframe);
+          
+          // Show fallback success message
+          setTimeout(() => {
+            document.body.removeChild(iframe);
+            Swal.fire({
+              title: 'Download Started',
+              text: 'Invoice download initiated',
+              icon: 'info',
+              timer: 2000,
+              showConfirmButton: false
+            });
+          }, 2000);
+          
+        } catch (fallbackError) {
+          Swal.fire({
+            title: 'Download Failed',
+            text: 'Unable to download invoice. Please try again later.',
+            icon: 'error',
+            confirmButtonColor: '#dc3545'
+          });
+        }
+      }
+    }
+
+    // Logout confirmation modal
+    function showLogoutModal() {
+      if (typeof Swal !== 'undefined') {
+        Swal.fire({
+          title: 'Logout Confirmation',
+          text: 'Are you sure you want to logout from admin panel?',
+          icon: 'question',
+          showCancelButton: true,
+          confirmButtonColor: '#dc3545',
+          cancelButtonColor: '#6c757d',
+          confirmButtonText: 'Yes, Logout',
+          cancelButtonText: 'Cancel',
+          reverseButtons: true,
+          focusConfirm: false,
+          focusCancel: true,
+          allowOutsideClick: false
+        }).then((result) => {
+          if (result.isConfirmed) {
+            // Show loading and redirect
+            Swal.fire({
+              title: 'Logging out...',
+              text: 'Please wait',
+              allowOutsideClick: false,
+              allowEscapeKey: false,
+              showConfirmButton: false,
+              timer: 800,
+              didOpen: () => {
+                Swal.showLoading();
+              }
+            }).then(() => {
+              window.location.href = '/admin/logout';
+            });
+          }
+        });
+      } else {
+        // Fallback for browsers without SweetAlert2
+        if (confirm('Are you sure you want to logout from admin panel?')) {
+          window.location.href = '/admin/logout';
+        }
+      }
+    }
+
+
+
+    // Initialize page functionality
     document.addEventListener('DOMContentLoaded', function() {
-      console.log('Order details page loaded for order:', orderId);
+      // Bind logout button event
+      const logoutBtn = document.getElementById('logoutBtn');
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          showLogoutModal();
+        });
+      }
     });
   </script>
 </body>

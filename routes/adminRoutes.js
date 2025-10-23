@@ -43,6 +43,7 @@ router.get('/orders', adminAuth, adminOrderCtrl.renderOrdersPage);
 router.get('/api/orders', adminAuth, adminOrderCtrl.listOrder);
 router.put('/api/orders/items/:itemId/status', adminAuth, adminOrderCtrl.updateItemStatus);
 router.get('/orders/:orderId', adminAuth, adminOrderCtrl.getAdminOrderDetails);
+router.get('/orders/:orderId/invoice', adminAuth, adminOrderCtrl.downloadInvoice);
 
 
 module.exports = router;

@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><%= title || 'Melodia - Admin Panel' %></title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         * {
             margin: 0;
@@ -153,6 +154,30 @@
         .overlay.active {
             display: block;
         }
+
+        /* Fast Modal Styles */
+        .fast-modal {
+            animation: fastSlideIn 0.2s ease-out !important;
+        }
+
+        .fast-confirm-btn {
+            transition: all 0.2s ease !important;
+        }
+
+        .fast-cancel-btn {
+            transition: all 0.2s ease !important;
+        }
+
+        @keyframes fastSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
     </style>
 </head>
 <body>
@@ -168,9 +193,9 @@
                     Melodia Admin
                 </div>
                 <div class="header-actions">
-                    <a href="/admin/logout" style="color: white; text-decoration: none; padding: 8px 16px; background: rgba(255,255,255,0.1); border-radius: 4px;">
+                    <button onclick="showLogoutModal()" style="color: white; background: rgba(255,255,255,0.1); border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">
                         <i class="fas fa-sign-out-alt"></i> Logout
-                    </a>
+                    </button>
                 </div>
             </div>
         </div>
@@ -234,8 +259,7 @@
         <!-- Main Content -->
         <div class="main-content">
             <div class="content-wrapper">
-    <scri
-pt>
+    <script>
         // Mobile sidebar toggle
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
@@ -243,6 +267,63 @@ pt>
             
             sidebar.classList.toggle('active');
             overlay.classList.toggle('active');
+        }
+
+        // Fast logout modal with debug
+        function showLogoutModal() {
+            console.log('showLogoutModal called from header');
+            
+            // Check if Swal is available
+            if (typeof Swal === 'undefined') {
+                console.error('SweetAlert2 not loaded in header');
+                if (confirm('Are you sure you want to logout from admin panel?')) {
+                    window.location.href = '/admin/logout';
+                }
+                return;
+            }
+
+            console.log('SweetAlert2 is available in header, showing modal');
+            
+            Swal.fire({
+                title: 'Logout Confirmation',
+                text: 'Are you sure you want to logout from admin panel?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, Logout',
+                cancelButtonText: 'Cancel',
+                reverseButtons: true,
+                focusConfirm: false,
+                focusCancel: true,
+                allowOutsideClick: false,
+                customClass: {
+                    popup: 'fast-modal',
+                    confirmButton: 'fast-confirm-btn',
+                    cancelButton: 'fast-cancel-btn'
+                }
+            }).then((result) => {
+                console.log('Header modal result:', result);
+                if (result.isConfirmed) {
+                    console.log('User confirmed logout from header');
+                    // Show quick loading
+                    Swal.fire({
+                        title: 'Logging out...',
+                        text: 'Please wait',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        showConfirmButton: false,
+                        timer: 1000,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    }).then(() => {
+                        window.location.href = '/admin/logout';
+                    });
+                }
+            }).catch((error) => {
+                console.error('SweetAlert2 error in header:', error);
+            });
         }
 
         // Close sidebar when clicking outside on mobile

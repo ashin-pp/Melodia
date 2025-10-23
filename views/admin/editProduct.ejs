@@ -439,10 +439,21 @@
       }
     }
 
-    function removeExistingImage(button, variantId, imageIndex) {
+    async function removeExistingImage(button, variantId, imageIndex) {
       console.log('Removing image:', variantId, imageIndex);
       
-      if (confirm('Are you sure you want to remove this image?')) {
+      const result = await Swal.fire({
+        title: 'Remove Image?',
+        text: 'Are you sure you want to remove this image?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Yes, Remove',
+        cancelButtonText: 'Cancel'
+      });
+
+      if (result.isConfirmed) {
         // Add to deleted images list
         deletedImages.push({
           variantId: variantId,
@@ -551,8 +562,19 @@
       variantCount++;
     }
 
-    function removeVariant(btn) {
-      if (confirm('Are you sure you want to remove this variant?')) {
+    async function removeVariant(btn) {
+      const result = await Swal.fire({
+        title: 'Remove Variant?',
+        text: 'Are you sure you want to remove this variant?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Yes, Remove',
+        cancelButtonText: 'Cancel'
+      });
+
+      if (result.isConfirmed) {
         btn.closest('.variant-card').remove();
       }
     }
@@ -562,7 +584,12 @@
       previewContainer.innerHTML = '';
       
       if (input.files.length < 2) {
-        alert('Please select at least 2 images for this variant');
+        Swal.fire({
+          title: 'Insufficient Images',
+          text: 'Please select at least 2 images for this variant',
+          icon: 'warning',
+          confirmButtonColor: '#ffc107'
+        });
         return;
       }
       
@@ -630,14 +657,30 @@
         const result = await response.json();
         
         if (result.success) {
-          alert('Product updated successfully!');
-          window.location.href = '/admin/products';
+          Swal.fire({
+            title: 'Success!',
+            text: 'Product updated successfully!',
+            icon: 'success',
+            confirmButtonColor: '#28a745'
+          }).then(() => {
+            window.location.href = '/admin/products';
+          });
         } else {
-          alert('Error: ' + result.message);
+          Swal.fire({
+            title: 'Error!',
+            text: result.message,
+            icon: 'error',
+            confirmButtonColor: '#dc3545'
+          });
         }
       } catch (error) {
         console.error('Error:', error);
-        alert('An error occurred while updating the product');
+        Swal.fire({
+          title: 'Error!',
+          text: 'An error occurred while updating the product',
+          icon: 'error',
+          confirmButtonColor: '#dc3545'
+        });
       }
     });
   </script>

@@ -477,6 +477,47 @@
             font-weight: 500;
         }
 
+        /* Resend OTP Button Styles */
+        #resendOtpBtn {
+            background: none !important;
+            border: none !important;
+            color: #3b82f6 !important;
+            text-decoration: underline !important;
+            cursor: pointer !important;
+            font-size: 13px !important;
+            padding: 5px 10px !important;
+            border-radius: 4px !important;
+            transition: all 0.2s ease !important;
+        }
+
+        #resendOtpBtn:hover:not(:disabled) {
+            background: #f0f9ff !important;
+            color: #2563eb !important;
+        }
+
+        #resendOtpBtn:disabled {
+            color: #6b7280 !important;
+            cursor: not-allowed !important;
+            text-decoration: none !important;
+            background: #f9fafb !important;
+        }
+
+        /* OTP Timer Styles */
+        #otpTimer {
+            font-weight: 600;
+            color: #ef4444;
+            font-size: 14px;
+        }
+
+        /* OTP Input Styles */
+        #otpCode {
+            font-family: 'Courier New', monospace !important;
+            font-size: 18px !important;
+            font-weight: 600 !important;
+            letter-spacing: 3px !important;
+            text-align: center !important;
+        }
+
         @media (max-width: 768px) {
             .profile-grid {
                 grid-template-columns: 1fr;
@@ -1319,12 +1360,34 @@
                     }
                 }
 
-                async function resendEmailOTP(newEmail) {
+                // Email OTP resend timer variables
+                let emailResendTimer = null;
+                let emailResendTimeLeft = 0;
+                const EMAIL_RESEND_COOLDOWN = 60; // 60 seconds cooldown
+
+                // Test function to verify JavaScript is working
+                function testEmailChange() {
+                    console.log('Email change functions are loaded!');
+                    showChangeEmailModal();
+                }
+
+                // FIXED: Resend function that doesn't close the modal
+                async function resendEmailOTPWithoutClosingModal(newEmail) {
                     try {
+                        console.log('resendEmailOTPWithoutClosingModal called with:', newEmail);
                         const resendBtn = document.getElementById('resendOtpBtn');
+                        
+                        // Check if still in cooldown
+                        if (emailResendTimeLeft > 0) {
+                            // Show simple alert instead of Swal to avoid modal conflicts
+                            alert(`Please wait ${emailResendTimeLeft} seconds before requesting another OTP`);
+                            return;
+                        }
+
                         if (resendBtn) {
                             resendBtn.disabled = true;
                             resendBtn.textContent = 'Sending...';
+                            resendBtn.style.color = '#6b7280';
                         }
 
                         const response = await fetch('/profile/resend-email-otp', {
@@ -1338,53 +1401,533 @@
                         const data = await response.json();
 
                         if (data.success) {
-                            // Show success message briefly
-                            const resendBtn = document.getElementById('resendOtpBtn');
-                            if (resendBtn) {
-                                resendBtn.textContent = 'Code sent!';
-                                resendBtn.style.color = '#10b981';
+                            // Show simple alert for success
+                            alert('New verification code sent to your email!');
+                            
+                            // Start cooldown timer
+                            startEmailResendTimer();
 
-                                setTimeout(() => {
-                                    resendBtn.disabled = false;
-                                    resendBtn.textContent = "Didn't receive the code? Resend";
-                                    resendBtn.style.color = '#3b82f6';
-                                }, 3000);
-                            }
                         } else {
-                            const resendBtn = document.getElementById('resendOtpBtn');
-                            if (resendBtn) {
-                                resendBtn.disabled = false;
-                                resendBtn.textContent = "Didn't receive the code? Resend";
+                            // Handle server-side cooldown message
+                            if (data.message && data.message.includes('wait')) {
+                                const waitTime = data.message.match(/\d+/);
+                                if (waitTime) {
+                                    emailResendTimeLeft = parseInt(waitTime[0]);
+                                    startEmailResendTimer();
+                                }
                             }
 
-                            // Show error in a small toast
+                            alert(data.message || 'Failed to resend verification code');
+                        }
+
+                    } catch (error) {
+                        console.error('Resend OTP error:', error);
+                        alert('Network error occurred. Please try again.');
+                    } finally {
+                        // Reset button state if not starting timer
+                        const resendBtn = document.getElementById('resendOtpBtn');
+                        if (emailResendTimeLeft === 0 && resendBtn) {
+                            resendBtn.disabled = false;
+                            resendBtn.textContent = "Didn't receive the code? Resend";
+                            resendBtn.style.color = '#3b82f6';
+                        }
+                    }
+                }
+
+                async function resendEmailOTP(newEmail) {
+                    try {
+                        const resendBtn = document.getElementById('resendOtpBtn');
+                        
+                        // Check if still in cooldown
+                        if (emailResendTimeLeft > 0) {
                             Swal.fire({
-                                title: 'Error',
-                                text: data.message || 'Failed to resend code',
+                                title: 'Please Wait',
+                                text: `You can request a new code in ${emailResendTimeLeft} seconds`,
+                                icon: 'info',
+                                toast: true,
+                                position: 'top-end',
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                            return;
+                        }
+
+                        if (resendBtn) {
+                            resendBtn.disabled = true;
+                            resendBtn.textContent = 'Sending...';
+                            resendBtn.style.color = '#6b7280';
+                        }
+
+                        const response = await fetch('/profile/resend-email-otp', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ newEmail })
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            // Show success message
+                            Swal.fire({
+                                title: 'Code Sent!',
+                                text: 'A new verification code has been sent to your email',
+                                icon: 'success',
+                                toast: true,
+                                position: 'top-end',
+                                timer: 3000,
+                                showConfirmButton: false
+                            });
+
+                            // Start cooldown timer
+                            startEmailResendTimer();
+
+                        } else {
+                            // Handle server-side cooldown message
+                            Swal.fire({
+                                title: 'Error!',
+                                text: data.message || 'Failed to resend verification code',
                                 icon: 'error',
                                 toast: true,
                                 position: 'top-end',
-                                showConfirmButton: false,
-                                timer: 3000
+                                timer: 3000,
+                                showConfirmButton: false
                             });
                         }
-                    } catch (error) {
-                        const resendBtn = document.getElementById('resendOtpBtn');
-                        if (resendBtn) {
-                            resendBtn.disabled = false;
-                            resendBtn.textContent = "Didn't receive the code? Resend";
-                        }
 
+                    } catch (error) {
+                        console.error('Resend OTP error:', error);
                         Swal.fire({
-                            title: 'Error',
-                            text: 'Network error occurred',
+                            title: 'Error!',
+                            text: 'Network error occurred. Please try again.',
                             icon: 'error',
                             toast: true,
                             position: 'top-end',
-                            showConfirmButton: false,
-                            timer: 3000
+                            timer: 3000,
+                            showConfirmButton: false
+                        });
+                    } finally {
+                        // Reset button state if not starting timer
+                        if (emailResendTimeLeft === 0 && resendBtn) {
+                            resendBtn.disabled = false;
+                            resendBtn.textContent = "Didn't receive the code? Resend";
+                            resendBtn.style.color = '#3b82f6';
+                        }
+                    }
+                }
+
+                // Email change modal function
+                function showChangeEmailModal() {
+                    console.log('showChangeEmailModal called'); // Debug log
+                    
+                    // Check if Swal is available
+                    if (typeof Swal === 'undefined') {
+                        alert('SweetAlert2 is not loaded. Please refresh the page.');
+                        return;
+                    }
+                    Swal.fire({
+                        title: 'Change Email Address',
+                        html: `
+                    <div style="text-align: left;">
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #374151;">Current Email</label>
+                            <input type="email" value="<%= user && user.email ? user.email : '' %>" readonly 
+                                style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; background: #f9fafb; color: #6b7280;">
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #374151;">New Email Address *</label>
+                            <input type="email" id="newEmail" placeholder="Enter new email address" required 
+                                style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px;">
+                        </div>
+                        <div style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 12px; margin-top: 15px;">
+                            <p style="margin: 0; font-size: 13px; color: #0369a1;">
+                                <i class="fas fa-info-circle" style="margin-right: 5px;"></i>
+                                We'll send a verification code to your new email address to confirm the change.
+                            </p>
+                        </div>
+                    </div>
+                `,
+                        showCancelButton: true,
+                        confirmButtonText: 'Send Verification Code',
+                        cancelButtonText: 'Cancel',
+                        confirmButtonColor: '#3b82f6',
+                        cancelButtonColor: '#6b7280',
+                        width: 500,
+                        preConfirm: () => {
+                            const newEmail = document.getElementById('newEmail').value.trim();
+
+                            if (!newEmail) {
+                                Swal.showValidationMessage('Please enter a new email address');
+                                return false;
+                            }
+
+                            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                            if (!emailRegex.test(newEmail)) {
+                                Swal.showValidationMessage('Please enter a valid email address');
+                                return false;
+                            }
+
+                            const currentEmail = '<%= user && user.email ? user.email : "" %>';
+                            if (newEmail === currentEmail) {
+                                Swal.showValidationMessage('This is already your current email address');
+                                return false;
+                            }
+
+                            return newEmail;
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            sendEmailOTP(result.value);
+                        }
+                    });
+                }
+
+                async function sendEmailOTP(newEmail) {
+                    try {
+                        Swal.fire({
+                            title: 'Sending Verification Code...',
+                            text: 'Please wait while we send the verification code to your new email address.',
+                            allowOutsideClick: false,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            }
+                        });
+
+                        const response = await fetch('/profile/send-email-otp', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ newEmail })
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            showOTPVerificationModal(newEmail);
+                        } else {
+                            Swal.fire({
+                                title: 'Error!',
+                                text: data.message || 'Failed to send verification code',
+                                icon: 'error',
+                                confirmButtonColor: '#3b82f6'
+                            });
+                        }
+                    } catch (error) {
+                        Swal.fire({
+                            title: 'Error!',
+                            text: 'Network error occurred. Please try again.',
+                            icon: 'error',
+                            confirmButtonColor: '#3b82f6'
                         });
                     }
+                }
+
+                function showOTPVerificationModal(newEmail) {
+                    let countdown = 300; // 5 minutes
+                    let countdownInterval;
+
+                    const updateCountdown = () => {
+                        const minutes = Math.floor(countdown / 60);
+                        const seconds = countdown % 60;
+                        const timeString = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+                        const timerElement = document.getElementById('otpTimer');
+                        if (timerElement) {
+                            timerElement.textContent = timeString;
+                        }
+
+                        countdown--;
+
+                        if (countdown < 0) {
+                            clearInterval(countdownInterval);
+                            const timerElement = document.getElementById('otpTimer');
+                            if (timerElement) {
+                                timerElement.textContent = 'Expired';
+                                timerElement.style.color = '#ef4444';
+                            }
+                        }
+                    };
+
+                    Swal.fire({
+                        title: 'Enter Verification Code',
+                        html: `
+                    <div style="text-align: left;">
+                        <div style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+                            <p style="margin: 0; font-size: 14px; color: #0369a1; text-align: center;">
+                                <i class="fas fa-envelope" style="margin-right: 5px;"></i>
+                                We've sent a 6-digit verification code to:<br>
+                                <strong>${newEmail}</strong>
+                            </p>
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #374151;">Verification Code *</label>
+                            <input type="text" id="otpCode" placeholder="Enter 6-digit code" maxlength="6" required 
+                                style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 16px; text-align: center; letter-spacing: 2px;">
+                        </div>
+                        <div style="text-align: center; margin-bottom: 15px;">
+                            <p style="margin: 0; font-size: 13px; color: #6b7280;">
+                                Code expires in: <span id="otpTimer" style="font-weight: 600; color: #ef4444;">5:00</span>
+                            </p>
+                        </div>
+                        <div style="text-align: center;">
+                            <button type="button" id="resendOtpBtn" onclick="resendEmailOTP('${newEmail}')" 
+                                style="background: none; border: none; color: #3b82f6; text-decoration: underline; cursor: pointer; font-size: 13px;">
+                                Didn't receive the code? Resend
+                            </button>
+                        </div>
+                    </div>
+                `,
+                        showCancelButton: true,
+                        confirmButtonText: 'Verify & Update Email',
+                        cancelButtonText: 'Cancel',
+                        confirmButtonColor: '#3b82f6',
+                        cancelButtonColor: '#6b7280',
+                        width: 500,
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            countdownInterval = setInterval(updateCountdown, 1000);
+                            updateCountdown();
+
+                            // Focus on OTP input
+                            const otpInput = document.getElementById('otpCode');
+                            if (otpInput) {
+                                otpInput.focus();
+
+                                // Auto-format OTP input
+                                otpInput.addEventListener('input', function (e) {
+                                    this.value = this.value.replace(/[^0-9]/g, '');
+                                });
+                            }
+                        },
+                        willClose: () => {
+                            if (countdownInterval) {
+                                clearInterval(countdownInterval);
+                            }
+                        },
+                        preConfirm: () => {
+                            const otpCode = document.getElementById('otpCode').value.trim();
+
+                            if (!otpCode) {
+                                Swal.showValidationMessage('Please enter the verification code');
+                                return false;
+                            }
+
+                            if (otpCode.length !== 6) {
+                                Swal.showValidationMessage('Please enter a valid 6-digit code');
+                                return false;
+                            }
+
+                            return { newEmail, otp: otpCode };
+                        }
+                    }).then((result) => {
+                        if (countdownInterval) {
+                            clearInterval(countdownInterval);
+                        }
+
+                        if (result.isConfirmed) {
+                            verifyEmailOTP(result.value.newEmail, result.value.otp);
+                        }
+                    });
+                }
+
+                async function verifyEmailOTP(newEmail, otp) {
+                    try {
+                        Swal.fire({
+                            title: 'Verifying...',
+                            text: 'Please wait while we verify your code and update your email address.',
+                            allowOutsideClick: false,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            }
+                        });
+
+                        const response = await fetch('/profile/verify-email-otp', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ newEmail, otp })
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            // Update the email field in the form first
+                            const emailInput = document.getElementById('email');
+                            if (emailInput) {
+                                emailInput.value = newEmail;
+                            }
+
+                            // Show success toast
+                            Swal.fire({
+                                title: 'Email Updated!',
+                                text: 'Your email address has been updated successfully!',
+                                icon: 'success',
+                                toast: true,
+                                position: 'top-end',
+                                showConfirmButton: false,
+                                timer: 4000,
+                                timerProgressBar: true,
+                                customClass: {
+                                    popup: 'custom-toast'
+                                },
+                                didOpen: (toast) => {
+                                    toast.addEventListener('mouseenter', Swal.stopTimer);
+                                    toast.addEventListener('mouseleave', Swal.resumeTimer);
+                                }
+                            });
+
+                            // Reload the page after a short delay to reflect changes
+                            setTimeout(() => {
+                                location.reload();
+                            }, 1000);
+                        } else {
+                            Swal.fire({
+                                title: 'Verification Failed',
+                                text: data.message || 'Invalid verification code',
+                                icon: 'error',
+                                confirmButtonColor: '#3b82f6'
+                            }).then(() => {
+                                // Show the OTP modal again
+                                showOTPVerificationModal(newEmail);
+                            });
+                        }
+                    } catch (error) {
+                        Swal.fire({
+                            title: 'Error!',
+                            text: 'Network error occurred. Please try again.',
+                            icon: 'error',
+                            confirmButtonColor: '#3b82f6'
+                        });
+                    }
+                }
+
+                async function resendEmailOTP(newEmail) {
+                    try {
+                        const resendBtn = document.getElementById('resendOtpBtn');
+                        
+                        // Check if still in cooldown
+                        if (emailResendTimeLeft > 0) {
+                            Swal.fire({
+                                title: 'Please Wait',
+                                text: `You can request a new code in ${emailResendTimeLeft} seconds`,
+                                icon: 'info',
+                                toast: true,
+                                position: 'top-end',
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                            return;
+                        }
+
+                        if (resendBtn) {
+                            resendBtn.disabled = true;
+                            resendBtn.textContent = 'Sending...';
+                            resendBtn.style.color = '#6b7280';
+                        }
+
+                        const response = await fetch('/profile/resend-email-otp', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ newEmail })
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            // Show success message
+                            Swal.fire({
+                                title: 'Code Sent!',
+                                text: 'A new verification code has been sent to your email',
+                                icon: 'success',
+                                toast: true,
+                                position: 'top-end',
+                                timer: 3000,
+                                showConfirmButton: false
+                            });
+
+                            // Start cooldown timer
+                            startEmailResendTimer();
+
+                        } else {
+                            // Handle server-side cooldown message
+                            if (data.message && data.message.includes('wait')) {
+                                const waitTime = data.message.match(/\d+/);
+                                if (waitTime) {
+                                    emailResendTimeLeft = parseInt(waitTime[0]);
+                                    startEmailResendTimer();
+                                }
+                            }
+
+                            Swal.fire({
+                                title: 'Error!',
+                                text: data.message || 'Failed to resend verification code',
+                                icon: 'error',
+                                toast: true,
+                                position: 'top-end',
+                                timer: 3000,
+                                showConfirmButton: false
+                            });
+                        }
+
+                    } catch (error) {
+                        console.error('Resend OTP error:', error);
+                        Swal.fire({
+                            title: 'Error!',
+                            text: 'Network error occurred. Please try again.',
+                            icon: 'error',
+                            toast: true,
+                            position: 'top-end',
+                            timer: 3000,
+                            showConfirmButton: false
+                        });
+                    } finally {
+                        // Reset button state if not starting timer
+                        const resendBtn = document.getElementById('resendOtpBtn');
+                        if (emailResendTimeLeft === 0 && resendBtn) {
+                            resendBtn.disabled = false;
+                            resendBtn.textContent = "Didn't receive the code? Resend";
+                            resendBtn.style.color = '#3b82f6';
+                        }
+                    }
+                }
+
+                function startEmailResendTimer() {
+                    const resendBtn = document.getElementById('resendOtpBtn');
+                    if (!resendBtn) return;
+
+                    emailResendTimeLeft = EMAIL_RESEND_COOLDOWN;
+                    
+                    const updateResendButton = () => {
+                        if (emailResendTimeLeft > 0) {
+                            resendBtn.disabled = true;
+                            resendBtn.textContent = `Resend in ${emailResendTimeLeft}s`;
+                            resendBtn.style.color = '#6b7280';
+                            resendBtn.style.cursor = 'not-allowed';
+                            emailResendTimeLeft--;
+                        } else {
+                            // Timer finished, enable button
+                            resendBtn.disabled = false;
+                            resendBtn.textContent = "Didn't receive the code? Resend";
+                            resendBtn.style.color = '#3b82f6';
+                            resendBtn.style.cursor = 'pointer';
+                            
+                            if (emailResendTimer) {
+                                clearInterval(emailResendTimer);
+                                emailResendTimer = null;
+                            }
+                        }
+                    };
+
+                    // Update immediately
+                    updateResendButton();
+                    
+                    // Start interval
+                    emailResendTimer = setInterval(updateResendButton, 1000);
                 }
 
                 function validateProfileForm(event) {
@@ -1480,6 +2023,234 @@
                         }
                     });
                 }
+
+                // FIXED: Resend function that doesn't close modal
+                async function handleResendOTP(newEmail) {
+                    try {
+                        const resendBtn = document.getElementById('resendOtpBtn');
+                        const messageDiv = document.getElementById('resendMessage');
+                        
+                        // Check cooldown
+                        if (emailResendTimeLeft > 0) {
+                            if (messageDiv) {
+                                messageDiv.textContent = `Wait ${emailResendTimeLeft}s`;
+                                messageDiv.style.color = '#ef4444';
+                                messageDiv.style.display = 'block';
+                                setTimeout(() => messageDiv.style.display = 'none', 3000);
+                            }
+                            return;
+                        }
+
+                        // Update button
+                        if (resendBtn) {
+                            resendBtn.disabled = true;
+                            resendBtn.textContent = 'Sending...';
+                            resendBtn.style.color = '#6b7280';
+                        }
+
+                        // Send request
+                        const response = await fetch('/profile/resend-email-otp', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ newEmail })
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            if (messageDiv) {
+                                messageDiv.textContent = 'New code sent!';
+                                messageDiv.style.color = '#10b981';
+                                messageDiv.style.display = 'block';
+                                setTimeout(() => messageDiv.style.display = 'none', 5000);
+                            }
+                            startEmailResendTimer();
+                        } else {
+                            if (messageDiv) {
+                                messageDiv.textContent = data.message || 'Failed to resend';
+                                messageDiv.style.color = '#ef4444';
+                                messageDiv.style.display = 'block';
+                                setTimeout(() => messageDiv.style.display = 'none', 5000);
+                            }
+                        }
+
+                    } catch (error) {
+                        const messageDiv = document.getElementById('resendMessage');
+                        if (messageDiv) {
+                            messageDiv.textContent = 'Network error';
+                            messageDiv.style.color = '#ef4444';
+                            messageDiv.style.display = 'block';
+                            setTimeout(() => messageDiv.style.display = 'none', 5000);
+                        }
+                    } finally {
+                        // Reset button
+                        const resendBtn = document.getElementById('resendOtpBtn');
+                        if (emailResendTimeLeft === 0 && resendBtn) {
+                            resendBtn.disabled = false;
+                            resendBtn.textContent = "Didn't receive the code? Resend";
+                            resendBtn.style.color = '#3b82f6';
+                        }
+                    }
+                }
+
+                // OVERRIDE: Fix the resend button issue
+                window.resendEmailOTP = handleResendOTP;
+
+                // OVERRIDE: Fix the OTP modal to add message div and fix verification
+                const originalShowOTPVerificationModal = showOTPVerificationModal;
+                window.showOTPVerificationModal = function(newEmail) {
+                    let countdown = 300;
+                    let countdownInterval;
+
+                    const updateCountdown = () => {
+                        const minutes = Math.floor(countdown / 60);
+                        const seconds = countdown % 60;
+                        const timeString = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+                        const timerElement = document.getElementById('otpTimer');
+                        if (timerElement) {
+                            timerElement.textContent = timeString;
+                        }
+
+                        countdown--;
+
+                        if (countdown < 0) {
+                            clearInterval(countdownInterval);
+                            const timerElement = document.getElementById('otpTimer');
+                            if (timerElement) {
+                                timerElement.textContent = 'Expired';
+                                timerElement.style.color = '#ef4444';
+                            }
+                        }
+                    };
+
+                    Swal.fire({
+                        title: 'Enter Verification Code',
+                        html: `
+                        <div style="text-align: left;">
+                            <div style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+                                <p style="margin: 0; font-size: 14px; color: #0369a1; text-align: center;">
+                                    <i class="fas fa-envelope" style="margin-right: 5px;"></i>
+                                    We've sent a 6-digit verification code to:<br>
+                                    <strong>${newEmail}</strong>
+                                </p>
+                            </div>
+                            <div style="margin-bottom: 15px;">
+                                <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #374151;">Verification Code *</label>
+                                <input type="text" id="otpCode" placeholder="Enter 6-digit code" maxlength="6" required 
+                                    style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 16px; text-align: center; letter-spacing: 2px;">
+                            </div>
+                            <div style="text-align: center; margin-bottom: 15px;">
+                                <p style="margin: 0; font-size: 13px; color: #6b7280;">
+                                    Code expires in: <span id="otpTimer" style="font-weight: 600; color: #ef4444;">5:00</span>
+                                </p>
+                            </div>
+                            <div style="text-align: center;">
+                                <button type="button" id="resendOtpBtn" onclick="handleResendOTP('${newEmail}')" 
+                                    style="background: none; border: none; color: #3b82f6; text-decoration: underline; cursor: pointer; font-size: 13px;">
+                                    Didn't receive the code? Resend
+                                </button>
+                                <div id="resendMessage" style="margin-top: 10px; font-size: 12px; display: none;"></div>
+                            </div>
+                        </div>
+                    `,
+                        showCancelButton: true,
+                        confirmButtonText: 'Verify & Update Email',
+                        cancelButtonText: 'Cancel',
+                        confirmButtonColor: '#3b82f6',
+                        cancelButtonColor: '#6b7280',
+                        width: 500,
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            countdownInterval = setInterval(updateCountdown, 1000);
+                            updateCountdown();
+
+                            const otpInput = document.getElementById('otpCode');
+                            if (otpInput) {
+                                otpInput.focus();
+                                otpInput.addEventListener('input', function (e) {
+                                    this.value = this.value.replace(/[^0-9]/g, '');
+                                });
+                            }
+                        },
+                        willClose: () => {
+                            if (countdownInterval) {
+                                clearInterval(countdownInterval);
+                            }
+                        },
+                        preConfirm: async () => {
+                            const otpCode = document.getElementById('otpCode').value.trim();
+
+                            if (!otpCode) {
+                                Swal.showValidationMessage('Please enter the verification code');
+                                return false;
+                            }
+
+                            if (otpCode.length !== 6) {
+                                Swal.showValidationMessage('Please enter a valid 6-digit code');
+                                return false;
+                            }
+
+                            // FIXED: Verify OTP without closing modal on error
+                            try {
+                                const response = await fetch('/profile/verify-email-otp', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                    },
+                                    body: JSON.stringify({ newEmail, otp: otpCode })
+                                });
+
+                                const data = await response.json();
+
+                                if (data.success) {
+                                    return { newEmail, otp: otpCode, success: true };
+                                } else {
+                                    // FIXED: Show error but keep modal open with current timer
+                                    Swal.showValidationMessage(data.message || 'Invalid verification code. Please try again.');
+                                    return false;
+                                }
+                            } catch (error) {
+                                Swal.showValidationMessage('Network error occurred. Please try again.');
+                                return false;
+                            }
+                        }
+                    }).then((result) => {
+                        if (countdownInterval) {
+                            clearInterval(countdownInterval);
+                        }
+
+                        if (result.isConfirmed && result.value && result.value.success) {
+                            // Update the email field
+                            const emailInput = document.getElementById('email');
+                            if (emailInput) {
+                                emailInput.value = result.value.newEmail;
+                            }
+
+                            // Show success toast
+                            Swal.fire({
+                                title: 'Email Updated!',
+                                text: 'Your email address has been updated successfully!',
+                                icon: 'success',
+                                toast: true,
+                                position: 'top-end',
+                                showConfirmButton: false,
+                                timer: 4000,
+                                timerProgressBar: true,
+                                customClass: {
+                                    popup: 'custom-toast'
+                                },
+                                didOpen: (toast) => {
+                                    toast.addEventListener('mouseenter', Swal.stopTimer);
+                                    toast.addEventListener('mouseleave', Swal.resumeTimer);
+                                }
+                            });
+
+                            // Reload page
+                            setTimeout(() => location.reload(), 1000);
+                        }
+                    });
+                };
             </script>
     </body>
 

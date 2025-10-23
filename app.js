@@ -10,7 +10,6 @@ const adminRoutes = require('./routes/adminRoutes');
 const { getImageUrl } = require('./helper/imageHandler');
 const connectDB = require('./config/mongo')
 dotenv.config();
-
 require('./config/passport');
 const passport = require('passport');
 

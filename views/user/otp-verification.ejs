@@ -202,6 +202,35 @@
             color: #ccc;
             cursor: not-allowed;
             pointer-events: none;
+            position: relative;
+        }
+        
+        /* Resend timer styles */
+        .resend-container {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .resend-progress {
+            position: absolute;
+            bottom: -3px;
+            left: 0;
+            height: 2px;
+            background: #333;
+            border-radius: 1px;
+            transition: width 1s linear;
+            opacity: 0;
+        }
+        
+        .resend-link.disabled .resend-progress {
+            opacity: 1;
+        }
+        
+        .resend-timer-info {
+            font-size: 12px;
+            color: #999;
+            margin-top: 8px;
+            font-style: italic;
         }
 
         /* Loading spinner */
@@ -328,7 +357,14 @@
             <% } %>
             
             <div class="resend-text">
-                Didn't receive the code? <a href="#" class="resend-link" id="resendLink" onclick="resendOTP(event)">Resend</a>
+                Didn't receive the code? 
+                <div class="resend-container">
+                    <a href="#" class="resend-link" id="resendLink" onclick="resendOTP(event)">Resend</a>
+                    <div class="resend-progress" id="resendProgress"></div>
+                </div>
+            </div>
+            <div class="resend-timer-info" id="resendTimerInfo" style="display: none;">
+                You can request a new OTP every 60 seconds to prevent spam
             </div>
             
             <div class="back-to-login">
@@ -473,14 +509,26 @@
             this.submit();
         });
         
-        // Resend OTP function
+        // Resend timer variables
+        let resendTimer = null;
+        let resendTimeLeft = 0;
+        const RESEND_COOLDOWN = 60; // 60 seconds cooldown
+        
+        // Resend OTP function with timer
         function resendOTP(event) {
             event.preventDefault();
             
             const resendLink = document.getElementById('resendLink');
+            
+            // Check if still in cooldown
+            if (resendTimeLeft > 0) {
+                showInfo(`Please wait ${resendTimeLeft} seconds before requesting another OTP`);
+                return;
+            }
+            
             const originalText = resendLink.textContent;
             
-            // Disable the link
+            // Disable the link and show loading
             resendLink.classList.add('disabled');
             resendLink.textContent = 'Sending...';
             
@@ -499,7 +547,10 @@
                 if (data.success) {
                     showSuccess('OTP has been resent to your email!');
                     
-                    // Reset timer if available
+                    // Start resend cooldown timer
+                    startResendTimer();
+                    
+                    // Reset OTP timer if available
                     <% if (typeof otpExpires !== 'undefined') { %>
                         otpExpiresAt = Date.now() + (5 * 60 * 1000); // 5 minutes from now
                         document.getElementById('timerDisplay').classList.remove('expired');
@@ -518,19 +569,77 @@
                     
                 } else {
                     showError(data.message || 'Failed to resend OTP. Please try again.');
+                    // Re-enable link immediately on error
+                    resendLink.classList.remove('disabled');
+                    resendLink.textContent = originalText;
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
                 showError('Network error. Please check your connection and try again.');
-            })
-            .finally(() => {
-                // Re-enable the link after 10 seconds
-                setTimeout(() => {
-                    resendLink.classList.remove('disabled');
-                    resendLink.textContent = originalText;
-                }, 10000);
+                // Re-enable link immediately on error
+                resendLink.classList.remove('disabled');
+                resendLink.textContent = originalText;
             });
+        }
+        
+        // Start resend cooldown timer
+        function startResendTimer() {
+            const resendLink = document.getElementById('resendLink');
+            
+            // Set initial time if not already set
+            if (resendTimeLeft <= 0) {
+                resendTimeLeft = RESEND_COOLDOWN;
+            }
+            
+            // Store cooldown in session
+            storeResendCooldown();
+            
+            // Clear any existing timer
+            if (resendTimer) {
+                clearInterval(resendTimer);
+            }
+            
+            // Update display immediately
+            updateResendDisplay();
+            
+            // Start countdown
+            resendTimer = setInterval(() => {
+                resendTimeLeft--;
+                updateResendDisplay();
+                
+                if (resendTimeLeft <= 0) {
+                    clearInterval(resendTimer);
+                    resendTimer = null;
+                    clearResendCooldown();
+                    resendLink.classList.remove('disabled');
+                    resendLink.textContent = 'Resend';
+                }
+            }, 1000);
+        }
+        
+        // Update resend button display
+        function updateResendDisplay() {
+            const resendLink = document.getElementById('resendLink');
+            const resendProgress = document.getElementById('resendProgress');
+            const resendTimerInfo = document.getElementById('resendTimerInfo');
+            
+            if (resendTimeLeft > 0) {
+                resendLink.classList.add('disabled');
+                resendLink.textContent = `Resend in ${resendTimeLeft}s`;
+                
+                // Update progress bar
+                const progressPercent = ((RESEND_COOLDOWN - resendTimeLeft) / RESEND_COOLDOWN) * 100;
+                resendProgress.style.width = `${progressPercent}%`;
+                
+                // Show timer info
+                resendTimerInfo.style.display = 'block';
+            } else {
+                resendLink.classList.remove('disabled');
+                resendLink.textContent = 'Resend';
+                resendProgress.style.width = '0%';
+                resendTimerInfo.style.display = 'none';
+            }
         }
         
         // SweetAlert functions
@@ -579,10 +688,34 @@
             });
         }
         
-        // Auto-focus first input on page load
+        // Initialize page
         document.addEventListener('DOMContentLoaded', function() {
             otpInputs[0].focus();
+            
+            // Check if there's a stored resend cooldown (optional enhancement)
+            const storedCooldown = sessionStorage.getItem('otpResendCooldown');
+            if (storedCooldown) {
+                const cooldownEnd = parseInt(storedCooldown);
+                const now = Date.now();
+                const timeLeft = Math.max(0, Math.ceil((cooldownEnd - now) / 1000));
+                
+                if (timeLeft > 0) {
+                    resendTimeLeft = timeLeft;
+                    startResendTimer();
+                }
+            }
         });
+        
+        // Store cooldown in session storage (optional enhancement)
+        function storeResendCooldown() {
+            const cooldownEnd = Date.now() + (RESEND_COOLDOWN * 1000);
+            sessionStorage.setItem('otpResendCooldown', cooldownEnd.toString());
+        }
+        
+        // Clear stored cooldown
+        function clearResendCooldown() {
+            sessionStorage.removeItem('otpResendCooldown');
+        }
     </script>
 
     <!-- Enhanced flash message handling with SweetAlert2 -->
