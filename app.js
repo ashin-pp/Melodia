@@ -16,7 +16,6 @@ dotenv.config();
 
 connectDB();
 
-// Express middleware setup
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
@@ -67,7 +66,6 @@ app.set('views', 'views');
 // Prevent admin users from accessing user routes
 app.use((req, res, next) => {
   if (req.session && req.session.admin) {
-    // If admin is trying to access user routes, redirect to admin dashboard
     if (req.originalUrl.startsWith('/user') || req.originalUrl === '/' || req.originalUrl === '/login' || req.originalUrl === '/signUp') {
       return res.redirect('/admin/dashboard');
     }
@@ -75,12 +73,9 @@ app.use((req, res, next) => {
   next();
 });
 
-// app.use('/user', userRoutes);
+
 app.use('/admin', adminRoutes);
 app.use('/', userRoutes);
-
-
-
 
 
 // Error handling

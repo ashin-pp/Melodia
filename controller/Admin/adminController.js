@@ -81,12 +81,124 @@ export const getDashboard = async (req, res) => {
       'Expires': '0'
     });
 
-    const admin=req.session.admin;
+    const admin = req.session.admin;
     console.log('Rendering dashboard for admin:', admin.email || 'Unknown');
-    res.render('admin/dashboard');
+    
+    // Get dashboard statistics
+    const stats = await getDashboardStats();
+    
+    res.render('admin/dashboard', { stats });
   } catch (err) {
     console.error('Dashboard render error:', err);
     res.render('error/500', { title: 'Server Error' });
+  }
+};
+
+// Function to get dashboard statistics
+const getDashboardStats = async () => {
+  try {
+    // Import models
+    const Order = (await import('../../model/orderSchema.js')).default;
+    const User = (await import('../../model/userSchema.js')).default;
+    
+    // Get total users count
+    const totalUsers = await User.countDocuments({ isBlocked: false });
+    
+    // Get total orders count
+    const totalOrders = await Order.countDocuments();
+    
+    // Get delivered orders count
+    const deliveredOrders = await Order.countDocuments({ orderStatus: 'Delivered' });
+    
+    // Get pending orders count
+    const pendingOrders = await Order.countDocuments({ 
+      orderStatus: { $in: ['Pending', 'Confirmed', 'Processing'] } 
+    });
+    
+    // Get cancelled orders count
+    const cancelledOrders = await Order.countDocuments({ orderStatus: 'Cancelled' });
+    
+    // Get total sales (sum of delivered orders)
+    const totalSalesResult = await Order.aggregate([
+      { $match: { orderStatus: 'Delivered' } },
+      { $group: { _id: null, totalSales: { $sum: '$totalAmount' } } }
+    ]);
+    const totalSales = totalSalesResult.length > 0 ? totalSalesResult[0].totalSales : 0;
+    
+    // Get this month's statistics for comparison
+    const currentDate = new Date();
+    const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+    const lastMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
+    const firstDayOfLastMonth = new Date(lastMonth.getFullYear(), lastMonth.getMonth(), 1);
+    
+    // This month's orders
+    const thisMonthOrders = await Order.countDocuments({
+      orderDate: { $gte: firstDayOfMonth }
+    });
+    
+    // Last month's orders
+    const lastMonthOrders = await Order.countDocuments({
+      orderDate: { $gte: firstDayOfLastMonth, $lt: firstDayOfMonth }
+    });
+    
+    // Calculate percentage change for orders
+    const orderChange = lastMonthOrders > 0 
+      ? ((thisMonthOrders - lastMonthOrders) / lastMonthOrders * 100).toFixed(1)
+      : 0;
+    
+    // This month's sales
+    const thisMonthSalesResult = await Order.aggregate([
+      { $match: { 
+        orderStatus: 'Delivered',
+        orderDate: { $gte: firstDayOfMonth }
+      }},
+      { $group: { _id: null, totalSales: { $sum: '$totalAmount' } } }
+    ]);
+    const thisMonthSales = thisMonthSalesResult.length > 0 ? thisMonthSalesResult[0].totalSales : 0;
+    
+    // Last month's sales
+    const lastMonthSalesResult = await Order.aggregate([
+      { $match: { 
+        orderStatus: 'Delivered',
+        orderDate: { $gte: firstDayOfLastMonth, $lt: firstDayOfMonth }
+      }},
+      { $group: { _id: null, totalSales: { $sum: '$totalAmount' } } }
+    ]);
+    const lastMonthSales = lastMonthSalesResult.length > 0 ? lastMonthSalesResult[0].totalSales : 0;
+    
+    // Calculate percentage change for sales
+    const salesChange = lastMonthSales > 0 
+      ? ((thisMonthSales - lastMonthSales) / lastMonthSales * 100).toFixed(1)
+      : 0;
+    
+    return {
+      totalUsers,
+      totalOrders,
+      deliveredOrders,
+      pendingOrders,
+      cancelledOrders,
+      totalSales,
+      orderChange: {
+        value: orderChange,
+        isPositive: orderChange >= 0
+      },
+      salesChange: {
+        value: Math.abs(salesChange),
+        isPositive: salesChange >= 0
+      }
+    };
+  } catch (error) {
+    console.error('Error getting dashboard stats:', error);
+    return {
+      totalUsers: 0,
+      totalOrders: 0,
+      deliveredOrders: 0,
+      pendingOrders: 0,
+      cancelledOrders: 0,
+      totalSales: 0,
+      orderChange: { value: 0, isPositive: true },
+      salesChange: { value: 0, isPositive: true }
+    };
   }
 };
 

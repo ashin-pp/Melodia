@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -143,7 +144,7 @@
       background: white;
       padding: 20px;
       border-radius: 12px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
       border: 1px solid #f0f0f0;
       text-align: center;
     }
@@ -161,10 +162,21 @@
       letter-spacing: 0.5px;
     }
 
-    .stat-total { color: #007bff; }
-    .stat-pending { color: #ffc107; }
-    .stat-delivered { color: #28a745; }
-    .stat-cancelled { color: #dc3545; }
+    .stat-total {
+      color: #007bff;
+    }
+
+    .stat-pending {
+      color: #ffc107;
+    }
+
+    .stat-delivered {
+      color: #28a745;
+    }
+
+    .stat-cancelled {
+      color: #dc3545;
+    }
 
     /* Search Section */
     .search-section {
@@ -172,7 +184,7 @@
       border-radius: 12px;
       padding: 25px;
       margin-bottom: 30px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
       border: 1px solid #f0f0f0;
     }
 
@@ -248,7 +260,7 @@
       background: white;
       border-radius: 12px;
       overflow: hidden;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
       border: 1px solid #f0f0f0;
     }
 
@@ -277,7 +289,8 @@
       border-collapse: collapse;
     }
 
-    th, td {
+    th,
+    td {
       padding: 15px 20px;
       text-align: left;
       border-bottom: 1px solid #f0f0f0;
@@ -327,13 +340,36 @@
       letter-spacing: 0.5px;
     }
 
-    .status-pending { background: #fff3cd; color: #856404; }
-    .status-confirmed { background: #cce7ff; color: #004085; }
-    .status-processing { background: #e2e3ff; color: #383d41; }
-    .status-shipped { background: #d4edda; color: #155724; }
-    .status-delivered { background: #d4edda; color: #155724; }
-    .status-cancelled { background: #f8d7da; color: #721c24; }
-    
+    .status-pending {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    .status-confirmed {
+      background: #cce7ff;
+      color: #004085;
+    }
+
+    .status-processing {
+      background: #e2e3ff;
+      color: #383d41;
+    }
+
+    .status-shipped {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .status-delivered {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .status-cancelled {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
 
 
     .amount {
@@ -420,8 +456,13 @@
     }
 
     @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
     }
 
     /* Mobile Responsive */
@@ -429,38 +470,39 @@
       .main-content {
         flex-direction: column;
       }
-      
+
       .sidebar {
         width: 100%;
         min-height: auto;
       }
-      
+
       .sidebar nav ul {
         display: flex;
         overflow-x: auto;
         padding: 10px;
       }
-      
+
       .sidebar nav li {
         margin: 0 5px;
         white-space: nowrap;
       }
-      
+
       .orders-content {
         padding: 15px;
       }
-      
+
       .search-form {
         grid-template-columns: 1fr;
         gap: 10px;
       }
-      
+
       .stats-grid {
         grid-template-columns: repeat(2, 1fr);
       }
     }
   </style>
 </head>
+
 <body>
   <div class="admin-container">
     <!-- Header -->
@@ -606,7 +648,7 @@
 
   <script>
     console.log('Order Management page loaded');
-    
+
     class OrderManager {
       constructor() {
         this.currentFilters = {
@@ -650,22 +692,35 @@
       async loadOrders() {
         try {
           console.log('Loading orders with filters:', this.currentFilters);
-          
+
           this.showLoading();
-          
+
           const params = new URLSearchParams(this.currentFilters);
           console.log('API URL:', `/admin/api/orders?${params}`);
-          
+
           const response = await fetch(`/admin/api/orders?${params}`);
           console.log('Response status:', response.status);
-          
+
           const result = await response.json();
           console.log('API Result:', result);
 
           if (result.success) {
             this.renderOrders(result.data.orders);
             this.renderPagination(result.data.pagination);
-            this.updateStats(result.data.orders);
+            
+            // Handle stats with fallback
+            if (result.data.stats) {
+              this.updateStats(result.data.stats);
+            } else {
+              console.warn('No stats in API response, using fallback');
+              this.updateStats({
+                totalOrders: 0,
+                pendingOrders: 0,
+                deliveredOrders: 0,
+                cancelledOrders: 0
+              });
+            }
+            
             this.updateOrdersCount(result.data.pagination.totalOrders);
           } else {
             console.error('API Error:', result.error);
@@ -694,7 +749,7 @@
         const tbody = document.getElementById('orders-table-body');
         const table = document.getElementById('orders-table');
         const emptyState = document.getElementById('empty-state');
-        
+
         if (!orders || orders.length === 0) {
           table.style.display = 'none';
           emptyState.style.display = 'block';
@@ -734,11 +789,11 @@
         }
 
         let html = '';
-        
+
         if (pagination.hasPrev) {
           html += `<a href="#" onclick="orderManager.changePage(${pagination.currentPage - 1}); return false;">Previous</a>`;
         }
-        
+
         for (let i = Math.max(1, pagination.currentPage - 2); i <= Math.min(pagination.totalPages, pagination.currentPage + 2); i++) {
           if (i === pagination.currentPage) {
             html += `<span class="current">${i}</span>`;
@@ -746,24 +801,25 @@
             html += `<a href="#" onclick="orderManager.changePage(${i}); return false;">${i}</a>`;
           }
         }
-        
+
         if (pagination.hasNext) {
           html += `<a href="#" onclick="orderManager.changePage(${pagination.currentPage + 1}); return false;">Next</a>`;
         }
-        
+
         container.innerHTML = html;
       }
 
-      updateStats(orders) {
-        const totalOrders = orders.length;
-        const pendingOrders = orders.filter(o => ['Pending', 'Confirmed'].includes(o.status)).length;
-        const deliveredOrders = orders.filter(o => o.status === 'Delivered').length;
-        const cancelledOrders = orders.filter(o => o.status === 'Cancelled').length;
-
-        document.getElementById('total-orders').textContent = totalOrders;
-        document.getElementById('pending-orders').textContent = pendingOrders;
-        document.getElementById('delivered-orders').textContent = deliveredOrders;
-        document.getElementById('cancelled-orders').textContent = cancelledOrders;
+      updateStats(stats) {
+        // Use the statistics from the API response instead of calculating from current page
+        const totalElement = document.getElementById('total-orders');
+        const pendingElement = document.getElementById('pending-orders');
+        const deliveredElement = document.getElementById('delivered-orders');
+        const cancelledElement = document.getElementById('cancelled-orders');
+        
+        if (totalElement) totalElement.textContent = stats.totalOrders || 0;
+        if (pendingElement) pendingElement.textContent = stats.pendingOrders || 0;
+        if (deliveredElement) deliveredElement.textContent = stats.deliveredOrders || 0;
+        if (cancelledElement) cancelledElement.textContent = stats.cancelledOrders || 0;
       }
 
       updateOrdersCount(total) {
@@ -799,11 +855,11 @@
     // Fast logout modal with debug and fallback
     function showLogoutModal() {
       console.log('showLogoutModal called');
-      
+
       // Try SweetAlert2 first
       if (typeof Swal !== 'undefined') {
         console.log('SweetAlert2 is available, showing modal');
-        
+
         try {
           Swal.fire({
             title: 'Logout Confirmation',
@@ -861,14 +917,14 @@
     }
 
     // Initialize when page loads
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
       console.log('DOM loaded, initializing OrderManager');
       window.orderManager = new OrderManager();
-      
+
       // Bind logout button event
       const logoutBtn = document.getElementById('logoutBtn');
       if (logoutBtn) {
-        logoutBtn.addEventListener('click', function(e) {
+        logoutBtn.addEventListener('click', function (e) {
           e.preventDefault();
           console.log('Logout button clicked via event listener');
           showLogoutModal();
@@ -877,4 +933,5 @@
     });
   </script>
 </body>
+
 </html>

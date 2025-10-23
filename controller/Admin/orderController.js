@@ -11,6 +11,8 @@ export const listOrder = async (req, res) => {
         const skip = (page - 1) * limit;
 
         let query = {};
+        let searchConditions = [];
+        let statusConditions = [];
 
         if (search) {
             const user = await User.find({
@@ -21,19 +23,39 @@ export const listOrder = async (req, res) => {
                 ]
             }).select('_id');
 
-            query = {
-                $or: [
-                    { orderId: { $regex: search, $options: 'i' } },
-                    { userId: { $in: user.map(u => u._id) } }
-                ]
-            };
+            searchConditions = [
+                { orderId: { $regex: search, $options: 'i' } },
+                { userId: { $in: user.map(u => u._id) } }
+            ];
         }
 
         if (status && status !== 'all') {
-            query.orderStatus = status;
+            console.log(`=== Filtering by status: ${status} ===`);
+            // Check both order-level status and item-level status
+            statusConditions = [
+                { orderStatus: status },
+                { 'items.status': status }
+            ];
+            console.log('Status conditions:', statusConditions);
         }
 
+        // Combine search and status conditions
+        if (searchConditions.length > 0 && statusConditions.length > 0) {
+            query = {
+                $and: [
+                    { $or: searchConditions },
+                    { $or: statusConditions }
+                ]
+            };
+        } else if (searchConditions.length > 0) {
+            query = { $or: searchConditions };
+        } else if (statusConditions.length > 0) {
+            query = { $or: statusConditions };
+        }
+
+        console.log('Final query:', JSON.stringify(query, null, 2));
         const total = await Order.countDocuments(query);
+        console.log(`Total orders matching query: ${total}`);
         const totalPages = Math.ceil(total / limit);
 
         const orders = await Order.find(query)
@@ -60,6 +82,9 @@ export const listOrder = async (req, res) => {
             updatedAt: order.updatedAt
         }));
 
+        // Get overall statistics (not just current page)
+        const stats = await getOrderStatistics();
+
         return res.json({
             success: true,
             data: {
@@ -77,7 +102,8 @@ export const listOrder = async (req, res) => {
                     status,
                     sortBy,
                     order
-                }
+                },
+                stats: stats
             }
         });
     } catch (error) {
@@ -98,7 +124,94 @@ export const renderOrdersPage = async (req, res) => {
     }
 };
 
+// Function to get order statistics
+const getOrderStatistics = async () => {
+    try {
+        console.log('=== Getting Order Statistics ===');
 
+        // First, let's see what order statuses exist in the database
+        const allStatuses = await Order.distinct('orderStatus');
+        console.log('All order statuses in database:', allStatuses);
+
+        // Check item-level statuses
+        const allItemStatuses = await Order.distinct('items.status');
+        console.log('All item statuses in database:', allItemStatuses);
+
+        // Find orders with delivered items
+        const ordersWithDeliveredItems = await Order.find({ 'items.status': 'Delivered' })
+            .select('orderId orderStatus items.status')
+            .limit(5);
+        console.log('Sample orders with delivered items:', ordersWithDeliveredItems.map(o => ({
+            orderId: o.orderId,
+            orderStatus: o.orderStatus,
+            itemStatuses: o.items.map(item => item.status)
+        })));
+
+        // Get total orders count
+        const totalOrders = await Order.countDocuments();
+        console.log('Total orders:', totalOrders);
+
+        // Get delivered orders count (both order-level and item-level)
+        const deliveredOrdersByOrderStatus = await Order.countDocuments({ orderStatus: 'Delivered' });
+        console.log('Delivered orders (order status):', deliveredOrdersByOrderStatus);
+
+        // Count orders that have at least one delivered item
+        const deliveredOrdersByItemStatus = await Order.countDocuments({
+            'items.status': 'Delivered'
+        });
+        console.log('Orders with delivered items:', deliveredOrdersByItemStatus);
+
+        // Let's also check for case-sensitive issues
+        const deliveredOrdersInsensitive = await Order.countDocuments({
+            orderStatus: { $regex: /^delivered$/i }
+        });
+        console.log('Delivered orders (case insensitive):', deliveredOrdersInsensitive);
+
+        // Use the maximum of both counts
+        const deliveredOrders = Math.max(deliveredOrdersByOrderStatus, deliveredOrdersByItemStatus, deliveredOrdersInsensitive);
+        console.log('Final delivered orders count:', deliveredOrders);
+
+        // Get pending orders count (including Confirmed and Processing)
+        const pendingOrders = await Order.countDocuments({
+            orderStatus: { $in: ['Pending', 'Confirmed', 'Processing'] }
+        });
+        console.log('Pending orders:', pendingOrders);
+
+        // Get cancelled orders count
+        const cancelledOrders = await Order.countDocuments({ orderStatus: 'Cancelled' });
+        console.log('Cancelled orders:', cancelledOrders);
+
+        // Get shipped orders count
+        const shippedOrders = await Order.countDocuments({ orderStatus: 'Shipped' });
+        console.log('Shipped orders:', shippedOrders);
+
+        // Get out for delivery orders count
+        const outForDeliveryOrders = await Order.countDocuments({ orderStatus: 'Out for Delivery' });
+        console.log('Out for delivery orders:', outForDeliveryOrders);
+
+        const stats = {
+            totalOrders,
+            deliveredOrders,
+            pendingOrders,
+            cancelledOrders,
+            shippedOrders,
+            outForDeliveryOrders
+        };
+
+        console.log('Final stats:', stats);
+        return stats;
+    } catch (error) {
+        console.error('Error getting order statistics:', error);
+        return {
+            totalOrders: 0,
+            deliveredOrders: 0,
+            pendingOrders: 0,
+            cancelledOrders: 0,
+            shippedOrders: 0,
+            outForDeliveryOrders: 0
+        };
+    }
+};
 
 export const getAdminOrderDetails = async (req, res) => {
     console.log('🔍 ===== ADMIN ORDER DETAILS DEBUG START =====');

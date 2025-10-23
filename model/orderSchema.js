@@ -212,7 +212,12 @@ orderSchema.methods.returnOrder = async function (reason) {
 
 // Method to cancel specific items
 orderSchema.methods.cancelItems = async function (itemsToCancel, reason) {
+  console.log('=== cancelItems method called ===');
+  console.log('Items to cancel:', itemsToCancel);
+  
   itemsToCancel.forEach(item => {
+    console.log(`Processing cancellation for variant ${item.variantId}, quantity: ${item.quantity}`);
+    
     // Add to cancelled items
     this.cancelledItems.push({
       variantId: item.variantId,
@@ -224,31 +229,56 @@ orderSchema.methods.cancelItems = async function (itemsToCancel, reason) {
     const originalItem = this.items.find(orderItem => 
       orderItem.variantId.toString() === item.variantId.toString()
     );
+    
     if (originalItem) {
-      originalItem.status = 'Cancelled';
-      originalItem.cancelledAt = new Date();
+      console.log(`Found original item - Current quantity: ${originalItem.quantity}, Cancelling: ${item.quantity}`);
+      
+      // Check if the entire quantity is being cancelled
+      if (item.quantity >= originalItem.quantity) {
+        // Full cancellation - mark item as cancelled
+        console.log('Full cancellation - setting status to Cancelled and quantity to 0');
+        originalItem.status = 'Cancelled';
+        originalItem.cancelledAt = new Date();
+        originalItem.cancellationReason = reason;
+        originalItem.quantity = 0; // Set quantity to 0 to ensure it's filtered out
+        originalItem.totalPrice = 0; // Set total price to 0
+      } else {
+        // Partial cancellation - reduce quantity
+        console.log('Partial cancellation - reducing quantity');
+        originalItem.quantity -= item.quantity;
+        originalItem.totalPrice = originalItem.quantity * originalItem.price;
+      }
       
       // Add to status history
       if (!originalItem.statusHistory) {
         originalItem.statusHistory = [];
       }
       originalItem.statusHistory.push({
-        status: 'Cancelled',
+        status: originalItem.quantity <= 0 ? 'Cancelled' : 'Partially Cancelled',
         updatedAt: new Date(),
         reason: reason
       });
+      
+      console.log(`Updated item - Status: ${originalItem.status}, Quantity: ${originalItem.quantity}`);
+    } else {
+      console.log('Original item not found!');
     }
   });
 
-  // Check if all items are cancelled
-  const totalCancelled = this.cancelledItems.reduce((sum, item) => sum + item.quantity, 0);
-  const totalOrdered = this.items.reduce((sum, item) => sum + item.quantity, 0);
+  // Recalculate total amount
+  this.calculateTotal();
 
-  if (totalCancelled >= totalOrdered) {
+  // Check if all items are cancelled
+  const activeItems = this.items.filter(item => item.status !== 'Cancelled' && item.quantity > 0);
+  console.log(`Active items remaining: ${activeItems.length}`);
+  
+  if (activeItems.length === 0) {
+    console.log('All items cancelled - marking order as cancelled');
     this.orderStatus = 'Cancelled';
     this.cancelledAt = new Date();
   }
 
+  console.log('=== Saving order ===');
   return await this.save();
 };
 

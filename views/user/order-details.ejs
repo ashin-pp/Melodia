@@ -339,7 +339,12 @@
 
                     <div class="meta-item">
                         <span class="meta-label">Items Count</span>
-                        <span class="meta-value"><%= order.items.length %> items</span>
+                        <% 
+                            const totalActiveItems = order.items.filter(item => 
+                                item.status !== 'Cancelled' && item.status !== 'Returned' && item.quantity > 0
+                            ).length;
+                        %>
+                        <span class="meta-value"><%= totalActiveItems %> active items</span>
                     </div>
                 </div>
             </div>
@@ -349,37 +354,40 @@
                 <% 
                     // Check if any items can be cancelled
                     const canCancelAnyItem = order.items.some(item => 
-                        ['Pending', 'Confirmed', 'Processing'].includes(item.status || 'Pending')
+                        ['Pending', 'Confirmed', 'Processing'].includes(item.status || 'Pending') && 
+                        item.quantity > 0
                     );
                 %>
                 
-                <% if (canCancelAnyItem) { %>
-                    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-                        <% if (canCancelAnyItem) { %>
-                            <button onclick="cancelOrder('<%= order._id %>')" style="padding: 0.75rem 1.5rem; background: #ef4444; color: white; border: none; border-radius: 8px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem;">
-                                <i class="fas fa-times"></i>
-                                Cancel Available Items
-                            </button>
-                        <% } %>
-                        
-                        <a href="/orders/<%= order._id %>/invoice" style="padding: 0.75rem 1.5rem; background: #6b7280; color: white; text-decoration: none; border-radius: 8px; font-weight: 500; display: inline-flex; align-items: center; gap: 0.5rem;">
-                            <i class="fas fa-download"></i>
-                            Download Invoice
-                        </a>
-                    </div>
-                <% } %>
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <% if (canCancelAnyItem) { %>
+                        <button onclick="cancelOrder('<%= order._id %>')" style="padding: 0.75rem 1.5rem; background: #ef4444; color: white; border: none; border-radius: 8px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem;">
+                            <i class="fas fa-times"></i>
+                            Cancel Available Items
+                        </button>
+                    <% } %>
+                    
+                    <a href="/orders/<%= order._id %>/invoice" style="padding: 0.75rem 1.5rem; background: #6b7280; color: white; text-decoration: none; border-radius: 8px; font-weight: 500; display: inline-flex; align-items: center; gap: 0.5rem;">
+                        <i class="fas fa-download"></i>
+                        Download Invoice
+                    </a>
+                </div>
             </div>
 
             <!-- Active Order Items -->
             <% 
-                // Filter active items (non-cancelled and non-returned)
+                // Filter active items - exclude items that are cancelled or have zero quantity
                 const activeItems = order.items.filter(item => {
-                    const isCancelled = order.cancelledItems && order.cancelledItems.some(cancelled => 
-                        cancelled.variantId.toString() === item.variantId._id.toString()
+                    // Check if this item is in the cancelled items list
+                    const isCancelledInList = order.cancelledItems && order.cancelledItems.some(cancelled => 
+                        cancelled.variantId._id.toString() === item.variantId._id.toString()
                     );
-                    const isReturned = item.status === 'Returned';
-                    const isCancelledStatus = item.status === 'Cancelled';
-                    return !isCancelled && !isReturned && !isCancelledStatus;
+                    
+                    // Item is active if it's not cancelled, not returned, has quantity > 0, and not in cancelled list
+                    return item.status !== 'Cancelled' && 
+                           item.status !== 'Returned' && 
+                           item.quantity > 0 && 
+                           !isCancelledInList;
                 });
             %>
             
@@ -468,6 +476,17 @@
                         </div>
                     <% }); %>
                 </div>
+            <% } else if (order.items.length > 0) { %>
+                <!-- Message when all items are cancelled -->
+                <div style="background: #fef2f2; border-radius: 8px; padding: 2rem; margin-bottom: 2rem; text-align: center; border: 2px dashed #fecaca;">
+                    <div style="color: #dc2626; font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem;">
+                        <i class="fas fa-times-circle" style="margin-right: 0.5rem;"></i>
+                        All Items Cancelled
+                    </div> 
+                    <!-- <p style="color: #64748b; margin: 0;">
+                        All items in this order have been cancelled. You can view the cancelled items below.
+                    </p> -->
+                </div>
             <% } %>
 
             <!-- Cancelled Items Section -->
@@ -480,18 +499,18 @@
                     
                     <% order.cancelledItems.forEach((cancelledItem, index) => { %>
                         <% 
-                            // Find the original item details
+                            // Find the original item details for price information
                             const originalItem = order.items.find(item => 
-                                item.variantId._id.toString() === cancelledItem.variantId.toString()
+                                item.variantId._id.toString() === cancelledItem.variantId._id.toString()
                             );
                         %>
                         
                         <div style="border: 1px solid #fecaca; border-radius: 8px; padding: 1.5rem; margin-bottom: 1rem; background: white; opacity: 0.8; display: flex; gap: 1rem;">
                             <!-- Product Image -->
                             <div style="width: 80px; height: 80px; border-radius: 8px; background: #fee2e2; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                                <% if (originalItem && originalItem.variantId && originalItem.variantId.images && originalItem.variantId.images.length > 0) { %>
-                                    <img src="<%= originalItem.variantId.images[0].url || originalItem.variantId.images[0] %>" 
-                                         alt="<%= originalItem.variantId.productId ? originalItem.variantId.productId.productName : 'Product' %>" 
+                                <% if (cancelledItem.variantId && cancelledItem.variantId.images && cancelledItem.variantId.images.length > 0) { %>
+                                    <img src="<%= cancelledItem.variantId.images[0].url || cancelledItem.variantId.images[0] %>" 
+                                         alt="<%= cancelledItem.variantId.productId ? cancelledItem.variantId.productId.productName : 'Product' %>" 
                                          style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px; opacity: 0.6;"
                                          onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=\'fas fa-times\' style=\'color: #dc2626;\'></i>';">
                                 <% } else { %>
@@ -502,23 +521,23 @@
                             <!-- Product Details -->
                             <div style="flex: 1;">
                                 <div style="font-weight: 600; color: #dc2626; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
-                                    <% if (originalItem && originalItem.variantId && originalItem.variantId.productId) { %>
-                                        <%= originalItem.variantId.productId.productName %>
+                                    <% if (cancelledItem.variantId && cancelledItem.variantId.productId) { %>
+                                        <%= cancelledItem.variantId.productId.productName %>
                                     <% } else { %>
                                         Product
                                     <% } %>
                                     <span style="background: #ef4444; color: white; font-size: 0.625rem; font-weight: 600; padding: 0.125rem 0.375rem; border-radius: 4px; text-transform: uppercase;">CANCELLED</span>
                                 </div>
                                 
-                                <% if (originalItem && originalItem.variantId && originalItem.variantId.productId && originalItem.variantId.productId.brand) { %>
+                                <% if (cancelledItem.variantId && cancelledItem.variantId.productId && cancelledItem.variantId.productId.brand) { %>
                                     <div style="color: #64748b; font-size: 0.875rem; margin-bottom: 0.25rem;">
-                                        Brand: <%= originalItem.variantId.productId.brand %>
+                                        Brand: <%= cancelledItem.variantId.productId.brand %>
                                     </div>
                                 <% } %>
                                 
-                                <% if (originalItem && originalItem.variantId && originalItem.variantId.color) { %>
+                                <% if (cancelledItem.variantId && cancelledItem.variantId.color) { %>
                                     <div style="color: #64748b; font-size: 0.875rem; margin-bottom: 0.5rem;">
-                                        Color: <%= originalItem.variantId.color %>
+                                        Color: <%= cancelledItem.variantId.color %>
                                     </div>
                                 <% } %>
                                 

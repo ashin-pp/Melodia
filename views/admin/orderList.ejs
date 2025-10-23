@@ -263,7 +263,7 @@
                     if (result.success) {
                         this.renderOrders(result.data.orders);
                         this.renderPagination(result.data.pagination);
-                        this.updateStats(result.data.orders);
+                        this.updateStats(result.data.stats);
                     } else {
                         this.showToast('error', result.error || 'Failed to load orders');
                     }
@@ -395,26 +395,12 @@
                 container.innerHTML = paginationHTML;
             }
 
-            updateStats(orders) {
-                // Get all orders count from server for accurate stats
-                fetch('/admin/api/orders?limit=1000', { credentials: 'include' })
-                    .then(response => response.json())
-                    .then(result => {
-                        if (result.success) {
-                            const allOrders = result.data.orders;
-                            const stats = {
-                                total: allOrders.length,
-                                pending: allOrders.filter(o => ['Pending', 'Confirmed'].includes(o.status)).length,
-                                delivered: allOrders.filter(o => o.status === 'Delivered').length,
-                                cancelled: allOrders.filter(o => o.status === 'Cancelled').length
-                            };
-
-                            document.getElementById('total-orders').textContent = stats.total;
-                            document.getElementById('pending-orders').textContent = stats.pending;
-                            document.getElementById('delivered-orders').textContent = stats.delivered;
-                            document.getElementById('cancelled-orders').textContent = stats.cancelled;
-                        }
-                    });
+            updateStats(stats) {
+                // Use the statistics from the API response instead of making a separate call
+                document.getElementById('total-orders').textContent = stats.totalOrders || 0;
+                document.getElementById('pending-orders').textContent = stats.pendingOrders || 0;
+                document.getElementById('delivered-orders').textContent = stats.deliveredOrders || 0;
+                document.getElementById('cancelled-orders').textContent = stats.cancelledOrders || 0;
             }
 
             changePage(page) {
