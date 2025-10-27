@@ -20,6 +20,14 @@ const wishlistSchema = new mongoose.Schema({
     unique: true
   },
   items: [wishlistItemSchema],
+  wishlistName: {
+    type: String,
+    default: 'My Wishlist'
+  },
+  description: {
+    type: String,
+    default: ''
+  },
   updatedAt: {
     type: Date,
     default: Date.now
@@ -47,6 +55,8 @@ wishlistSchema.methods.removeItem = async function(variantId) {
 wishlistSchema.methods.getTotalItems = function() {
   return this.items.length;
 };
+
+
 
 const Wishlist = mongoose.model('Wishlist', wishlistSchema);
 export default Wishlist;

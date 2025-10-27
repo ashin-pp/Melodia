@@ -5,8 +5,9 @@ import crypto from 'crypto';
 import User from '../../model/userSchema.js';
 import sendMail from '../../helper/mailer.js';
 import Cart from '../../model/cartSchema.js';
+import referralService from '../../services/referralService.js';
 
-dotenv.config(); 
+dotenv.config();
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',
@@ -23,8 +24,8 @@ export const loadHomePage = async (req, res) => {
       return res.redirect('/login');
     }
 
-    const userId=req.session.user.id;
-    const user= await User.findById(userId);
+    const userId = req.session.user.id;
+    const user = await User.findById(userId);
 
 
     // Set cache control headers to prevent back button issues
@@ -66,27 +67,27 @@ export const loadHomePage = async (req, res) => {
         </script>
       `
     });
-    
+
     // Clear welcome message flag
     delete req.session.justLoggedIn;
-    
-  } catch(err) {
+
+  } catch (err) {
     console.log("error is loading home page", err);
-    res.status(500).render('error/500', {title: 'server error'});
+    res.status(500).render('error/500', { title: 'server error' });
   }
 };
 
 
 
 
-export const loadLandingPage = (req,res) => {
-    try{
-      res.render('user/landing')
-    }catch(err){
-        console.log("error in loading landing page",err);
-        res.render('error/500',{title:'server error'});
-    }
-    console.log("landing page loaded")
+export const loadLandingPage = (req, res) => {
+  try {
+    res.render('user/landing')
+  } catch (err) {
+    console.log("error in loading landing page", err);
+    res.render('error/500', { title: 'server error' });
+  }
+  console.log("landing page loaded")
 }
 
 // Render login page
@@ -96,11 +97,11 @@ export const getLogin = (req, res) => {
   const justRegistered = req.session.justRegistered ? req.session.justRegistered : false;
   console.log(justRegistered);
   delete req.session.justRegistered;
-  
+
   // Handle different error scenarios from URL parameters
   let errorMessage = null;
   let successMessage = null;
-  
+
   if (req.query.error) {
     switch (req.query.error) {
       case 'account_blocked':
@@ -122,7 +123,7 @@ export const getLogin = (req, res) => {
         errorMessage = 'An error occurred. Please try again.';
     }
   }
-  
+
   if (req.query.success) {
     switch (req.query.success) {
       case 'password_reset':
@@ -133,7 +134,7 @@ export const getLogin = (req, res) => {
         break;
     }
   }
-  
+
   res.render('user/login', {
     message: null,
     isError: false,
@@ -197,7 +198,7 @@ export const postLogin = async (req, res) => {
       });
     }
 
-    
+
     req.session.user = {
       id: user._id,
       name: user.name,
@@ -206,9 +207,9 @@ export const postLogin = async (req, res) => {
       isAdmin: user.isAdmin || false,
       loginTime: new Date()
     };
-   
+
     req.session.justLoggedIn = true;
-    
+
     req.session.save((err) => {
       if (err) {
         console.error('Session save error in login:', err);
@@ -220,17 +221,17 @@ export const postLogin = async (req, res) => {
           justRegistered: false,
         });
       }
-      
+
       console.log('User logged in successfully:', user.email);
       console.log('Session saved, redirecting to home...');
-      
+
       // Set cache control headers to prevent back button issues
       res.set({
         'Cache-Control': 'no-store, no-cache, must-revalidate, private',
         'Pragma': 'no-cache',
         'Expires': '0'
       });
-      
+
       // Use client-side redirect with history replacement to prevent back button
       res.send(`
         <script>
@@ -257,150 +258,178 @@ export const postLogin = async (req, res) => {
 
 // Render signup page
 export const getSignup = (req, res) => {
-    console.log('Rendering signup page');
+  // Get referral code from URL parameter 'ref' or 'referral'
+  const referralCode = req.query.ref || req.query.referral || '';
+
   res.render('user/signUp', {
     message: null,
     isError: false,
     oldInput: {},
+    referralCode: referralCode
   });
 };
 
 
+
+
 export const postSignup = async (req, res) => {
-    console.log('Email config check:', {
-        email: process.env.NODEMAILER_EMAIL,
-        pass: process.env.NODEMAILER_PASS ? 'SET' : 'NOT SET'
-    });
-    console.log('postSignup called with:', req.body);
+  console.log('Email config check:', {
+    email: process.env.NODEMAILER_EMAIL,
+    pass: process.env.NODEMAILER_PASS ? 'SET' : 'NOT SET'
+  });
+  console.log('postSignup called with:', req.body);
 
-    try {
-        const { firstName, lastName, email, phone, password, confirmPass } = req.body;
+  try {
+    const { firstName, lastName, email, phone, password, confirmPass, referralCode } = req.body;
 
-        // Enhanced validation
-        if (!firstName || !lastName || !email || !phone || !password || !confirmPass) {
-            return res.render('user/signUp', {
-                message: 'All fields are required.',
-                isError: true,
-                oldInput: { firstName, lastName, email, phone },
-            });
-        }
 
-        if (password.length < 6) {
-            return res.render('user/signUp', {
-                message: 'Password must be at least 6 characters long.',
-                isError: true,
-                oldInput: { firstName, lastName, email, phone },
-            });
-        }
 
-        if (password !== confirmPass) {
-            return res.render('user/signUp', {
-                message: 'Passwords do not match.',
-                isError: true,
-                oldInput: { firstName, lastName, email, phone },
-            });
-        }
-
-        // Email format validation
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
-            return res.render('user/signUp', {
-                message: 'Please enter a valid email address.',
-                isError: true,
-                oldInput: { firstName, lastName, email, phone },
-            });
-        }
-
-        // Phone validation
-        const phoneRegex = /^[0-9]{10}$/;
-        if (!phoneRegex.test(phone.replace(/\s/g, ''))) {
-            return res.render('user/signUp', {
-                message: 'Please enter a valid 10-digit phone number.',
-                isError: true,
-                oldInput: { firstName, lastName, email, phone },
-            });
-        }
-
-        const existingUser = await User.findOne({
-            $or: [{ email }, { phone }],
-        });
-
-        if (existingUser) {
-          console.log('Existing user found:', existingUser);
-          let errorMessage = 'Email already exists.';
-          if (existingUser.phone === phone) {
-              errorMessage = 'Phone number already exists.';
-          }
-          return res.render('user/signUp', {
-              message: errorMessage,
-              isError: true,
-              oldInput: { firstName, lastName, email, phone },
-          });
-        }
-
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        // Generate OTP
-        const otp = Math.floor(100000 + Math.random() * 900000).toString();
-
-        // Combine firstName and lastName into name field
-        req.session.signupData = {
-            name: `${firstName.trim()} ${lastName.trim()}`, // Combined name field
-            email,
-            phone,
-            password: hashedPassword,
-            role: 'user',
-            isBlocked: false,
-        };
-        
-        req.session.otp = {
-            code: otp,
-            email,
-            expires: Date.now() + 5 * 60 * 1000,
-        };
-
-        // Save session
-        await new Promise((resolve, reject) => {
-            req.session.save((err) => {
-                if (err) {
-                    console.error('Session save error in signup:', err);
-                    return reject(err);
-                }
-                resolve();
-            });
-        });
-
-        console.log('OTP generated:', otp);
-
-        // Send OTP via email
-        await sendMail(
-            email,
-            'Your Melodia OTP',
-            `Your OTP is: ${otp}`,
-            `<p>Your OTP is: <b>${otp}</b></p><p>This OTP will expire in 5 minutes.</p>`
-        );
-
-        res.render('user/otp-verification', {
-            title: 'Verify OTP',
-            email,
-            message: 'OTP sent to your email.',
-            isError: false,
-            otpExpires: req.session.otp.expires,
-        });
-
-    } catch (err) {
-        console.error('Error in postSignup:', err);
-        res.render('user/signUp', {
-            message: 'Server error. Please try again later.',
-            isError: true,
-            oldInput: {
-                firstName: req.body.firstName || '',
-                lastName: req.body.lastName || '',
-                email: req.body.email || '',
-                phone: req.body.phone || '',
-            },
-        });
+    // Enhanced validation
+    if (!firstName || !lastName || !email || !phone || !password || !confirmPass) {
+      return res.render('user/signUp', {
+        message: 'All fields are required.',
+        isError: true,
+        oldInput: { firstName, lastName, email, phone },
+        referralCode: referralCode || ''
+      });
     }
+
+    if (password.length < 6) {
+      return res.render('user/signUp', {
+        message: 'Password must be at least 6 characters long.',
+        isError: true,
+        oldInput: { firstName, lastName, email, phone },
+        referralCode: referralCode || ''
+      });
+    }
+
+    if (password !== confirmPass) {
+      return res.render('user/signUp', {
+        message: 'Passwords do not match.',
+        isError: true,
+        oldInput: { firstName, lastName, email, phone },
+        referralCode: referralCode || ''
+      });
+    }
+
+    // Email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.render('user/signUp', {
+        message: 'Please enter a valid email address.',
+        isError: true,
+        oldInput: { firstName, lastName, email, phone },
+        referralCode: referralCode || ''
+      });
+    }
+
+    // Phone validation
+    const phoneRegex = /^[0-9]{10}$/;
+    if (!phoneRegex.test(phone.replace(/\s/g, ''))) {
+      return res.render('user/signUp', {
+        message: 'Please enter a valid 10-digit phone number.',
+        isError: true,
+        oldInput: { firstName, lastName, email, phone },
+        referralCode: referralCode || ''
+      });
+    }
+
+    const existingUser = await User.findOne({
+      $or: [{ email }, { phone }],
+    });
+
+    if (existingUser) {
+      console.log('Existing user found during signup:', {
+        existingEmail: existingUser.email,
+        existingPhone: existingUser.phone,
+        attemptedEmail: email,
+        attemptedPhone: phone,
+        existingUserId: existingUser._id,
+        isVerified: existingUser.isVerified
+      });
+
+      let errorMessage = 'An account with this email or phone already exists.';
+      if (existingUser.email === email && existingUser.phone === phone) {
+        errorMessage = 'An account with this email and phone number already exists.';
+      } else if (existingUser.email === email) {
+        errorMessage = 'An account with this email already exists.';
+      } else if (existingUser.phone === phone) {
+        errorMessage = 'An account with this phone number already exists.';
+      }
+
+      return res.render('user/signUp', {
+        message: errorMessage,
+        isError: true,
+        oldInput: { firstName, lastName, email, phone },
+        referralCode: referralCode || ''
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Generate OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // Combine firstName and lastName into name field
+    req.session.signupData = {
+      name: `${firstName.trim()} ${lastName.trim()}`, // Combined name field
+      email,
+      phone,
+      password: hashedPassword,
+      role: 'user',
+      isBlocked: false,
+      referralCode: referralCode || null, // Store referral code in session
+    };
+
+    req.session.otp = {
+      code: otp,
+      email,
+      expires: Date.now() + 5 * 60 * 1000,
+    };
+
+    // Save session
+    await new Promise((resolve, reject) => {
+      req.session.save((err) => {
+        if (err) {
+          console.error('Session save error in signup:', err);
+          return reject(err);
+        }
+        resolve();
+      });
+    });
+
+    console.log('OTP generated:', otp);
+
+    // Send OTP via email
+    await sendMail(
+      email,
+      'Your Melodia OTP',
+      `Your OTP is: ${otp}`,
+      `<p>Your OTP is: <b>${otp}</b></p><p>This OTP will expire in 5 minutes.</p>`
+    );
+
+    res.render('user/otp-verification', {
+      title: 'Verify OTP',
+      email,
+      message: 'OTP sent to your email.',
+      isError: false,
+      otpExpires: req.session.otp.expires,
+    });
+
+  } catch (err) {
+    console.error('Error in postSignup:', err);
+    return res.render('user/signUp', {
+      message: 'Server error. Please try again later.',
+      isError: true,
+      oldInput: {
+        firstName: req.body.firstName || '',
+        lastName: req.body.lastName || '',
+        email: req.body.email || '',
+        phone: req.body.phone || '',
+      },
+      referralCode: req.body.referralCode || ''
+    });
+  }
 };
 
 // Handle OTP verification - UPDATED FOR NAME FIELD
@@ -483,10 +512,10 @@ export const verifyOtp = async (req, res) => {
 
     console.log('All validations passed, creating user...');
 
-    // UPDATED: Extract signup data with name field
-    const { name, email: signupEmail, phone, password, role, isBlocked } = req.session.signupData;
+    // UPDATED: Extract signup data with name field and referral code
+    const { name, email: signupEmail, phone, password, role, isBlocked, referralCode } = req.session.signupData;
 
-    // UPDATED: Create userData with name field only
+    // UPDATED: Create userData with name field and wallet initialization
     const userData = {
       name: name?.trim(),
       email: signupEmail?.trim(),
@@ -494,6 +523,16 @@ export const verifyOtp = async (req, res) => {
       password,
       role: role || 'user',
       isBlocked: isBlocked || false,
+      wallet: {
+        balance: 0,
+        transactions: [],
+        isWalletActive: true
+      },
+      referralStats: {
+        totalReferrals: 0,
+        totalRewards: 0
+      },
+      referrals: []
     };
 
     console.log('Creating user with data:', { ...userData, password: '[HIDDEN]' });
@@ -504,7 +543,18 @@ export const verifyOtp = async (req, res) => {
     });
 
     if (existingUser) {
-      console.log('User already exists during verification:', existingUser.email);
+      console.log('User already exists during verification:', {
+        existingEmail: existingUser.email,
+        existingPhone: existingUser.phone,
+        attemptedEmail: userData.email,
+        attemptedPhone: userData.phone,
+        existingUserId: existingUser._id
+      });
+
+      // Clean up session data since signup failed
+      delete req.session.otp;
+      delete req.session.signupData;
+
       return res.render('user/otp-verification', {
         title: 'Verify OTP',
         email,
@@ -516,9 +566,26 @@ export const verifyOtp = async (req, res) => {
     // Create and save user
     const user = new User(userData);
     console.log('User object created, attempting to save...');
-    
+
     const savedUser = await user.save();
     console.log('User saved successfully:', savedUser._id);
+
+    // Process referral if provided
+    if (referralCode && referralCode.trim()) {
+      try {
+        const referralResult = await referralService.processReferral(savedUser._id, referralCode.trim());
+
+        if (referralResult.success) {
+          // Store referral success info for display
+          req.session.referralSuccess = {
+            message: referralResult.message,
+            reward: referralResult.reward
+          };
+        }
+      } catch (referralError) {
+        // Silently handle referral errors - don't block user registration
+      }
+    }
 
     // UPDATED: Set session data with name field
     req.session.user = {
@@ -526,9 +593,9 @@ export const verifyOtp = async (req, res) => {
       name: savedUser.name,
       role: savedUser.role,
       email: savedUser.email,
-     
+
     };
-    
+
     req.session.justRegistered = true;
 
     // Clean up temporary session data
@@ -555,8 +622,8 @@ export const verifyOtp = async (req, res) => {
 
   } catch (err) {
     console.error("ERROR in verifyOtp");
-    
-  
+
+
 
     // Generic server error
     res.render('user/otp-verification', {
@@ -647,7 +714,7 @@ export const googleCallback = async (req, res) => {
   try {
     console.log('Google callback handler called');
     console.log('Authenticated user:', req.user);
-    
+
     if (!req.user) {
       console.log('No user found after Google auth');
       return res.redirect('/login?error=auth_failed');
@@ -669,25 +736,25 @@ export const googleCallback = async (req, res) => {
       isAdmin: user.isAdmin || false,
       loginTime: new Date()
     };
-   
+
     req.session.justLoggedIn = true;
-    
+
     // Save session and redirect with proper cache control
     req.session.save((err) => {
       if (err) {
         console.error('Session save error in googleCallback:', err);
         return res.redirect('/login?error=session_error');
       }
-      
+
       console.log('Google OAuth successful, redirecting to home');
-      
+
       // Set cache control headers to prevent back button issues
       res.set({
         'Cache-Control': 'no-store, no-cache, must-revalidate, private',
         'Pragma': 'no-cache',
         'Expires': '0'
       });
-      
+
       // Use a client-side redirect with history replacement to prevent back button
       res.send(`
         <script>
@@ -742,7 +809,7 @@ export const postForgotPassword = async (req, res) => {
     req.session.resetToken = {
       token,
       email,
-      expires: Date.now() + 5 * 60 * 1000, 
+      expires: Date.now() + 5 * 60 * 1000,
     };
 
     if (!process.env.NODEMAILER_EMAIL || !process.env.NODEMAILER_PASS) {
@@ -754,7 +821,7 @@ export const postForgotPassword = async (req, res) => {
     }
 
     const resetUrl = `${process.env.APP_BASE_URL || 'http://localhost:3000'}/user/reset-password/${token}`;
-      
+
     await transporter.sendMail({
       to: email,
       subject: 'Melodia Password Reset',
@@ -867,7 +934,7 @@ export const postForgotPassword = async (req, res) => {
 export const getResetPassword = (req, res) => {
   try {
     const { token } = req.params;
-    
+
     if (req.session.resetToken) {
       console.log('Session token:', req.session.resetToken.token);
     }
@@ -927,9 +994,9 @@ export const postResetPassword = async (req, res) => {
     const { password, confirmPassword } = req.body;
 
     // Validate session and token
-    if (!req.session.resetToken || 
-        req.session.resetToken.token !== token || 
-        req.session.resetToken.expires < Date.now()) {
+    if (!req.session.resetToken ||
+      req.session.resetToken.token !== token ||
+      req.session.resetToken.expires < Date.now()) {
       return res.render('user/reset-password', {
         title: 'Reset Password',
         token,

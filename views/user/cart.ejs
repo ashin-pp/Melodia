@@ -421,87 +421,92 @@
 
                                     <div class="cart-item <%= isDisabled ? 'out-of-stock' : '' %>"
                                         data-variant-id="<%= variant._id %>">
-                                        <% if (variant.images && variant.images.length > 0) { %>
-                                            <% const imageUrl = typeof variant.images[0] === 'string' ? variant.images[0] : variant.images[0].url; %>
-                                            <img src="<%= imageUrl %>" 
-                                                 alt="<%= product.productName %>" 
-                                                 class="product-image"
-                                                 style="cursor: pointer;"
-                                                 onclick="window.location.href='/products/<%= product._id %>'"
-                                                 onerror="this.src='https://via.placeholder.com/400x400/f8fafc/64748b?text=No+Image'">
-                                        <% } else { %>
-                                            <div class="product-image" 
-                                                 style="background: #f1f5f9; display: flex; align-items: center; justify-content: center; cursor: pointer;"
-                                                 onclick="window.location.href='/products/<%= product._id %>'">
-                                                <i class="fas fa-image" style="color: #9ca3af; font-size: 2rem;"></i>
-                                            </div>
-                                        <% } %>
-
-                                                    <div class="product-info" style="cursor: pointer;"
+                                        <% if (variant.images && variant.images.length> 0) { %>
+                                            <% const imageUrl=typeof variant.images[0]==='string' ? variant.images[0] :
+                                                variant.images[0].url; %>
+                                                <img src="<%= imageUrl %>" alt="<%= product.productName %>"
+                                                    class="product-image" style="cursor: pointer;"
+                                                    onclick="window.location.href='/products/<%= product._id %>'"
+                                                    onerror="this.src='https://via.placeholder.com/400x400/f8fafc/64748b?text=No+Image'">
+                                                <% } else { %>
+                                                    <div class="product-image"
+                                                        style="background: #f1f5f9; display: flex; align-items: center; justify-content: center; cursor: pointer;"
                                                         onclick="window.location.href='/products/<%= product._id %>'">
-                                                        <h3 class="product-name">
-                                                            <%= product.productName %>
-                                                        </h3>
-                                                        <div class="product-details">
-                                                            Color: <%= variant.color %> • Brand: <%= product.brand %>
-                                                        </div>
+                                                        <i class="fas fa-image"
+                                                            style="color: #9ca3af; font-size: 2rem;"></i>
+                                                    </div>
+                                                    <% } %>
 
-                                                        <div class="product-status">
-                                                            <% if (isOutOfStock) { %>
-                                                                <span class="status-badge status-out-of-stock">Out of
-                                                                    Stock</span>
-                                                                <% } else if (isLowStock) { %>
-                                                                    <span class="status-badge status-low-stock">Only <%=
-                                                                            variant.stock %> left</span>
-                                                                    <% } else { %>
-                                                                        <span class="status-badge status-in-stock">
-                                                                            <%= variant.stock %> in stock
+                                                        <div class="product-info" style="cursor: pointer;"
+                                                            onclick="window.location.href='/products/<%= product._id %>'">
+                                                            <h3 class="product-name">
+                                                                <%= product.productName %>
+                                                            </h3>
+                                                            <div class="product-details">
+                                                                Color: <%= variant.color %> • Brand: <%= product.brand
+                                                                        %>
+                                                            </div>
+
+                                                            <div class="product-status">
+                                                                <% if (isOutOfStock) { %>
+                                                                    <span class="status-badge status-out-of-stock">Out
+                                                                        of
+                                                                        Stock</span>
+                                                                    <% } else if (isLowStock) { %>
+                                                                        <span class="status-badge status-low-stock">Only
+                                                                            <%= variant.stock %> left
                                                                         </span>
-                                                                        <% } %>
+                                                                        <% } else { %>
+                                                                            <span class="status-badge status-in-stock">
+                                                                                <%= variant.stock %> in stock
+                                                                            </span>
+                                                                            <% } %>
 
-                                                                            <% if (!product.isListed) { %>
-                                                                                <span
-                                                                                    class="status-badge status-unavailable">Product
-                                                                                    Unavailable</span>
-                                                                                <% } %>
+                                                                                <% if (!product.isListed) { %>
+                                                                                    <span
+                                                                                        class="status-badge status-unavailable">Product
+                                                                                        Unavailable</span>
+                                                                                    <% } %>
 
-                                                                                    <% if (!category.isListed) { %>
-                                                                                        <span
-                                                                                            class="status-badge status-unavailable">Category
-                                                                                            Unavailable</span>
-                                                                                        <% } %>
+                                                                                        <% if (!category.isListed) { %>
+                                                                                            <span
+                                                                                                class="status-badge status-unavailable">Category
+                                                                                                Unavailable</span>
+                                                                                            <% } %>
+                                                            </div>
                                                         </div>
-                                                    </div>
 
-                                                    <div class="quantity-controls">
-                                                        <button class="quantity-btn decrease-btn"
-                                                            data-variant-id="<%= variant._id %>" <%=isDisabled
-                                                            ? 'disabled' : '' %>>
-                                                            <i class="fas fa-minus"></i>
+                                                        <div class="quantity-controls">
+                                                            <button class="quantity-btn decrease-btn"
+                                                                data-variant-id="<%= variant._id %>" <%=isDisabled
+                                                                ? 'disabled' : '' %>>
+                                                                <i class="fas fa-minus"></i>
+                                                            </button>
+                                                            <input type="number" class="quantity-input"
+                                                                value="<%= item.quantity %>" min="1"
+                                                                max="<%= Math.min(variant.stock, 5) %>"
+                                                                data-variant-id="<%= variant._id %>" <%=isDisabled
+                                                                ? 'disabled' : '' %>>
+                                                            <button class="quantity-btn increase-btn"
+                                                                data-variant-id="<%= variant._id %>" <%=isDisabled
+                                                                ? 'disabled' : '' %>>
+                                                                <i class="fas fa-plus"></i>
+                                                            </button>
+                                                        </div>
+
+                                                        <div class="price-info">
+                                                            <div class="item-price">₹<span class="item-total">
+                                                                    <%= (variant.salePrice * item.quantity).toFixed(2)
+                                                                        %>
+                                                                </span></div>
+                                                            <div class="price-per-unit">₹<%= variant.salePrice %> each
+                                                            </div>
+                                                        </div>
+
+                                                        <button class="remove-btn remove-item-btn"
+                                                            data-variant-id="<%= variant._id %>">
+                                                            <i class="fas fa-trash"></i>
                                                         </button>
-                                                        <input type="number" class="quantity-input"
-                                                            value="<%= item.quantity %>" min="1"
-                                                            max="<%= Math.min(variant.stock, 5) %>"
-                                                            data-variant-id="<%= variant._id %>" <%=isDisabled
-                                                            ? 'disabled' : '' %>>
-                                                        <button class="quantity-btn increase-btn"
-                                                            data-variant-id="<%= variant._id %>" <%=isDisabled
-                                                            ? 'disabled' : '' %>>
-                                                            <i class="fas fa-plus"></i>
-                                                        </button>
-                                                    </div>
-
-                                                    <div class="price-info">
-                                                        <div class="item-price">₹<span class="item-total">
-                                                                <%= (variant.salePrice * item.quantity).toFixed(2) %>
-                                                            </span></div>
-                                                        <div class="price-per-unit">₹<%= variant.salePrice %> each</div>
-                                                    </div>
-
-                                                    <button class="remove-btn remove-item-btn"
-                                                        data-variant-id="<%= variant._id %>">
-                                                        <i class="fas fa-trash"></i>
-                                                    </button>
                                     </div>
                                     <% }); %>
                     </div>
@@ -536,38 +541,40 @@
                             const category = product.categoryId;
                             return variant.stock > 0 && product.isListed && category.isListed;
                             });
-                            
+
                             const outOfStockItems = cart.items.filter(item => {
-                                const variant = item.variantId;
-                                const product = variant.productId;
-                                const category = product.categoryId;
-                                return variant.stock === 0 || !product.isListed || !category.isListed;
+                            const variant = item.variantId;
+                            const product = variant.productId;
+                            const category = product.categoryId;
+                            return variant.stock === 0 || !product.isListed || !category.isListed;
                             });
                             %>
 
-                            <% if (outOfStockItems.length > 0) { %>
-                                <div style="background: #fee2e2; color: #991b1b; padding: 12px; border-radius: 8px; margin-bottom: 16px; font-size: 14px;">
+                            <% if (outOfStockItems.length> 0) { %>
+                                <div
+                                    style="background: #fee2e2; color: #991b1b; padding: 12px; border-radius: 8px; margin-bottom: 16px; font-size: 14px;">
                                     <i class="fas fa-exclamation-triangle"></i>
                                     Some items are out of stock or unavailable. Remove them to proceed.
                                 </div>
-                            <% } %>
+                                <% } %>
 
-                            <button class="btn-primary" id="checkout-btn" <%=!hasValidItems ? 'disabled' : '' %>>
-                                <i class="fas fa-credit-card"></i>
-                                <%= !hasValidItems ? 'Remove unavailable items' : 'Proceed to Checkout' %>
-                            </button>
+                                    <button class="btn-primary" id="checkout-btn" <%=!hasValidItems ? 'disabled' : ''
+                                        %>>
+                                        <i class="fas fa-credit-card"></i>
+                                        <%= !hasValidItems ? 'Remove unavailable items' : 'Proceed to Checkout' %>
+                                    </button>
 
-                            <button class="btn-secondary" id="clear-cart-btn">
-                                <i class="fas fa-trash"></i>
-                                Clear Cart
-                            </button>
+                                    <button class="btn-secondary" id="clear-cart-btn">
+                                        <i class="fas fa-trash"></i>
+                                        Clear Cart
+                                    </button>
 
-                            <div class="continue-shopping">
-                                <a href="/product/list">
-                                    <i class="fas fa-arrow-left"></i>
-                                    Continue Shopping
-                                </a>
-                            </div>
+                                    <div class="continue-shopping">
+                                        <a href="/product/list">
+                                            <i class="fas fa-arrow-left"></i>
+                                            Continue Shopping
+                                        </a>
+                                    </div>
                     </div>
                 </div>
                 <% } %>

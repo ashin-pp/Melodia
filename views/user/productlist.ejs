@@ -1,708 +1,750 @@
 <%- include('../partials/header-product', { title: 'Melodia - Choose Your Style' }) %>
 
-<style>
-    body {
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-        background: #0a0a0a;
-        color: #ffffff;
-        line-height: 1.5;
-        margin-top: 100px;
-    }
-
-    .hero-section {
-        background: #0a0a0a;
-        padding: 100px 60px 20px;
-        text-align: center;
-    }
-
-    .hero-title {
-        font-size: 64px;
-        font-weight: 800;
-        margin-bottom: 20px;
-        background: linear-gradient(135deg, #ffffff 0%, #cccccc 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        line-height: 1.1;
-    }
-
-    .hero-subtitle {
-        font-size: 20px;
-        color: rgba(255, 255, 255, 0.7);
-        margin-bottom: 40px;
-        max-width: 600px;
-        margin-left: auto;
-        margin-right: auto;
-    }
-
-    .main-container {
-        max-width: 1400px;
-        margin: 0 auto;
-        padding: 40px 60px;
-        display: grid;
-        grid-template-columns: 280px 1fr;
-        gap: 40px;
-    }
-
-    .filters-sidebar {
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 16px;
-        padding: 24px;
-        height: fit-content;
-        position: sticky;
-        top: 120px;
-    }
-
-    .filter-section {
-        margin-bottom: 32px;
-    }
-
-    .filter-title {
-        font-size: 16px;
-        font-weight: 600;
-        color: #ffffff;
-        margin-bottom: 16px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-    }
-
-    .filter-content {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-    }
-
-    .filter-input {
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 8px;
-        padding: 12px 16px;
-        color: #ffffff;
-        font-size: 14px;
-        outline: none;
-        transition: all 0.3s ease;
-    }
-
-    .filter-input:focus {
-        border-color: rgba(255, 107, 107, 0.5);
-        background: rgba(255, 255, 255, 0.08);
-    }
-
-    .filter-select {
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 8px;
-        padding: 12px 16px;
-        color: #ffffff;
-        font-size: 14px;
-        outline: none;
-        cursor: pointer;
-    }
-
-    .filter-select option {
-        background: #1a1a1a;
-        color: #ffffff;
-    }
-
-    .checkbox-group {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        max-height: 200px;
-        overflow-y: auto;
-    }
-
-    .checkbox-item {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 4px 0;
-    }
-
-    .checkbox-item input[type="checkbox"] {
-        width: 16px;
-        height: 16px;
-        accent-color: #ff6b6b;
-    }
-
-    .checkbox-item label {
-        font-size: 14px;
-        color: rgba(255, 255, 255, 0.8);
-        cursor: pointer;
-    }
-
-    .btn-primary {
-        background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
-        border: none;
-        border-radius: 8px;
-        padding: 12px 24px;
-        color: #ffffff;
-        font-size: 14px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        width: 100%;
-    }
-
-    .btn-primary:hover {
-        background: linear-gradient(135deg, #ff5252, #ff7979);
-        transform: translateY(-2px);
-    }
-
-    .btn-secondary {
-        background: rgba(255, 255, 255, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        border-radius: 8px;
-        padding: 10px 16px;
-        color: #ffffff;
-        font-size: 12px;
-        font-weight: 500;
-        cursor: pointer;
-        text-align: center;
-        text-decoration: none;
-        transition: all 0.3s ease;
-        flex: 1;
-    }
-
-    .btn-secondary:hover {
-        background: rgba(255, 255, 255, 0.15);
-        transform: translateY(-2px);
-    }
-
-    .products-section {
-        display: flex;
-        flex-direction: column;
-        gap: 24px;
-    }
-
-    .products-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 24px;
-    }
-
-    .products-count {
-        font-size: 16px;
-        color: rgba(255, 255, 255, 0.7);
-    }
-
-    .sort-select {
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 8px;
-        padding: 8px 12px;
-        color: #ffffff;
-        font-size: 14px;
-        outline: none;
-        cursor: pointer;
-    }
-
-    .sort-select option {
-        background: #1a1a1a;
-        color: #ffffff;
-    }
-
-    .products-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 24px;
-    }
-
-    .product-card {
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid rgba(255, 255, 255, 0.06);
-        border-radius: 16px;
-        padding: 20px;
-        transition: all 0.3s ease;
-        cursor: pointer;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .product-card:hover {
-        background: rgba(255, 255, 255, 0.06);
-        border-color: rgba(255, 255, 255, 0.12);
-        transform: translateY(-4px);
-        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
-    }
-
-    .product-image-container {
-        position: relative;
-        margin-bottom: 16px;
-        border-radius: 12px;
-        overflow: hidden;
-        background: rgba(255, 255, 255, 0.02);
-        aspect-ratio: 1;
-    }
-
-    .wishlist-icon {
-        position: absolute;
-        top: 12px;
-        left: 12px;
-        background: rgba(0, 0, 0, 0.7);
-        color: white;
-        border: none;
-        border-radius: 50%;
-        width: 36px;
-        height: 36px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        font-size: 16px;
-        z-index: 2;
-    }
-
-    .wishlist-icon:hover {
-        background: rgba(225, 29, 72, 0.9);
-        transform: scale(1.1);
-    }
-
-    .wishlist-icon.active {
-        background: rgba(225, 29, 72, 0.9);
-        color: white;
-    }
-
-    .wishlist-icon.active i {
-        color: white !important;
-    }
-
-    .product-image {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transition: transform 0.3s ease;
-    }
-
-    .product-card:hover .product-image {
-        transform: scale(1.08) rotate(-2deg);
-    }
-
-    .product-badge {
-        position: absolute;
-        top: 12px;
-        right: 12px;
-        background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
-        color: #ffffff;
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: 600;
-    }
-
-    .product-info {
-        text-align: center;
-    }
-
-    .product-name {
-        font-size: 18px;
-        font-weight: 600;
-        color: #ffffff;
-        margin-bottom: 8px;
-        line-height: 1.3;
-    }
-
-    .product-brand {
-        font-size: 14px;
-        color: rgba(255, 255, 255, 0.6);
-        margin-bottom: 12px;
-    }
-
-    .product-price {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        margin-bottom: 16px;
-    }
-
-    .current-price {
-        font-size: 20px;
-        font-weight: 700;
-        color: #ffffff;
-    }
-
-    .original-price {
-        font-size: 16px;
-        color: rgba(255, 255, 255, 0.4);
-        text-decoration: line-through;
-    }
-
-    .discount-percent {
-        background: rgba(255, 107, 107, 0.2);
-        color: #ff6b6b;
-        padding: 2px 8px;
-        border-radius: 12px;
-        font-size: 12px;
-        font-weight: 600;
-    }
-
-    .product-actions {
-        display: flex;
-        gap: 8px;
-        margin-top: 12px;
-        opacity: 0;
-        transform: translateY(10px);
-        transition: all 0.3s ease;
-    }
-
-    .product-card:hover .product-actions {
-        opacity: 1;
-        transform: translateY(0);
-    }
-
-    .btn-add-cart {
-        background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
-        border: none;
-        border-radius: 8px;
-        padding: 8px 16px;
-        color: #ffffff;
-        font-size: 12px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        flex: 1;
-    }
-
-    .btn-add-cart:hover:not(:disabled) {
-        background: linear-gradient(135deg, #ff5252, #ff7979);
-        transform: translateY(-2px);
-    }
-
-    .btn-add-cart:disabled {
-        background: #666666;
-        cursor: not-allowed;
-        transform: none;
-    }
-
-    .btn-view-details {
-        background: rgba(255, 255, 255, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        border-radius: 8px;
-        padding: 8px 16px;
-        color: #ffffff;
-        font-size: 12px;
-        font-weight: 500;
-        cursor: pointer;
-        text-align: center;
-        text-decoration: none;
-        transition: all 0.3s ease;
-        flex: 1;
-    }
-
-    .btn-view-details:hover {
-        background: rgba(255, 255, 255, 0.15);
-        transform: translateY(-2px);
-    }
-
-    .empty-state {
-        text-align: center;
-        padding: 80px 20px;
-        color: rgba(255, 255, 255, 0.6);
-    }
-
-    .empty-state i {
-        font-size: 64px;
-        margin-bottom: 24px;
-        opacity: 0.3;
-    }
-
-    .empty-state h3 {
-        font-size: 24px;
-        font-weight: 600;
-        margin-bottom: 12px;
-        color: rgba(255, 255, 255, 0.8);
-    }
-
-    .pagination {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 8px;
-        margin-top: 40px;
-    }
-
-    .pagination-btn {
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 8px;
-        padding: 8px 16px;
-        color: rgba(255, 255, 255, 0.8);
-        text-decoration: none;
-        font-size: 14px;
-        transition: all 0.3s ease;
-    }
-
-    .pagination-btn:hover {
-        background: rgba(255, 255, 255, 0.1);
-        color: #ffffff;
-    }
-
-    .pagination-btn.active {
-        background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
-        color: #ffffff;
-        border-color: transparent;
-    }
-
-    @media (max-width: 1024px) {
-        .main-container {
-            grid-template-columns: 1fr;
-            gap: 24px;
-            padding: 20px;
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            line-height: 1.5;
+            margin-top: 100px;
         }
-        
-        .filters-sidebar {
-            position: static;
-        }
-        
-        .hero-title {
-            font-size: 48px;
-        }
-        
-        .products-grid {
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        }
-    }
 
-    @media (max-width: 768px) {
         .hero-section {
-            padding: 60px 20px 20px;
+            background: #0a0a0a;
+            padding: 100px 60px 20px;
+            text-align: center;
         }
-        
+
         .hero-title {
-            font-size: 36px;
+            font-size: 64px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #ffffff 0%, #cccccc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.1;
         }
-        
-        .products-grid {
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 16px;
+
+        .hero-subtitle {
+            font-size: 20px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 40px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
         }
-        
+
         .main-container {
-            padding: 16px;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 60px;
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 40px;
         }
-    }
+
+        .filters-sidebar {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 24px;
+            height: fit-content;
+            position: sticky;
+            top: 120px;
+        }
+
+        .filter-section {
+            margin-bottom: 32px;
+        }
+
+        .filter-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .filter-content {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .filter-input {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 12px 16px;
+            color: #ffffff;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .filter-input:focus {
+            border-color: rgba(255, 107, 107, 0.5);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .filter-select {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 12px 16px;
+            color: #ffffff;
+            font-size: 14px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .filter-select option {
+            background: #1a1a1a;
+            color: #ffffff;
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 0;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: #ff6b6b;
+        }
+
+        .checkbox-item label {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #ff5252, #ff7979);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 10px 16px;
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            flex: 1;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .products-section {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .products-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .products-count {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .sort-select {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 8px 12px;
+            color: #ffffff;
+            font-size: 14px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .sort-select option {
+            background: #1a1a1a;
+            color: #ffffff;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 24px;
+        }
+
+        .product-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 16px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .product-card:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.12);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .product-image-container {
+            position: relative;
+            margin-bottom: 16px;
+            border-radius: 12px;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.02);
+            aspect-ratio: 1;
+        }
+
+        .wishlist-icon {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 16px;
+            z-index: 2;
+        }
+
+        .wishlist-icon:hover {
+            background: rgba(225, 29, 72, 0.9);
+            transform: scale(1.1);
+        }
+
+        .wishlist-icon.active {
+            background: rgba(225, 29, 72, 0.9);
+            color: white;
+        }
+
+        .wishlist-icon.active i {
+            color: white !important;
+        }
+
+        .product-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .product-card:hover .product-image {
+            transform: scale(1.08) rotate(-2deg);
+        }
+
+        .product-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+            color: #ffffff;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .product-info {
+            text-align: center;
+        }
+
+        .product-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 8px;
+            line-height: 1.3;
+        }
+
+        .product-brand {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 12px;
+        }
+
+        .product-price {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .current-price {
+            font-size: 20px;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .original-price {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.4);
+            text-decoration: line-through;
+        }
+
+        .discount-percent {
+            background: rgba(255, 107, 107, 0.2);
+            color: #ff6b6b;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .product-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+        }
+
+        .product-card:hover .product-actions {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .btn-add-cart {
+            background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+        }
+
+        .btn-add-cart:hover:not(:disabled) {
+            background: linear-gradient(135deg, #ff5252, #ff7979);
+            transform: translateY(-2px);
+        }
+
+        .btn-add-cart:disabled {
+            background: #666666;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-wishlist {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #e11d48;
+            border-radius: 8px;
+            padding: 8px 12px;
+            color: #e11d48;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 40px;
+        }
+
+        .btn-wishlist:hover {
+            background: #e11d48;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .btn-wishlist.in-wishlist {
+            background: #e11d48;
+            color: white;
+        }
+
+        .btn-wishlist.in-wishlist:hover {
+            background: #be185d;
+        }
+
+        .btn-view-details {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 8px 16px;
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            flex: 1;
+        }
+
+        .btn-view-details:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .empty-state i {
+            font-size: 64px;
+            margin-bottom: 24px;
+            opacity: 0.3;
+        }
+
+        .empty-state h3 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin-top: 40px;
+        }
+
+        .pagination-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 8px 16px;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .pagination-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+        }
+
+        .pagination-btn.active {
+            background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+            color: #ffffff;
+            border-color: transparent;
+        }
+
+        @media (max-width: 1024px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                gap: 24px;
+                padding: 20px;
+            }
+
+            .filters-sidebar {
+                position: static;
+            }
+
+            .hero-title {
+                font-size: 48px;
+            }
+
+            .products-grid {
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero-section {
+                padding: 60px 20px 20px;
+            }
+
+            .hero-title {
+                font-size: 36px;
+            }
+
+            .products-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                gap: 16px;
+            }
+
+            .main-container {
+                padding: 16px;
+            }
+        }
     </style>
 
-<!-- Hero Section -->
-<section class="hero-section">
-    <h1 class="hero-title">Choose Your Style</h1>
-    <p class="hero-subtitle">Discover premium headphones crafted for audiophiles and music lovers</p>
-</section>
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <h1 class="hero-title">Choose Your Style</h1>
+        <p class="hero-subtitle">Discover premium headphones crafted for audiophiles and music lovers</p>
+    </section>
 
-<!-- Main Content -->
-<div class="main-container">
-    <!-- Filters Sidebar -->
-    <aside class="filters-sidebar">
-        <form id="filterForm" method="GET" action="/product/list">
-            <!-- Search Query (hidden, handled by header) -->
-            <input type="hidden" name="q" value="<%= q || '' %>">
-            <input type="hidden" name="brands" id="selectedBrands" value="<%= brands ? brands.join(',') : '' %>">
+    <!-- Main Content -->
+    <div class="main-container">
+        <!-- Filters Sidebar -->
+        <aside class="filters-sidebar">
+            <form id="filterForm" method="GET" action="/product/list">
+                <!-- Search Query (hidden, handled by header) -->
+                <input type="hidden" name="q" value="<%= q || '' %>">
+                <input type="hidden" name="brands" id="selectedBrands" value="<%= brands ? brands.join(',') : '' %>">
 
-            <!-- Category Filter -->
-            <div class="filter-section">
-                <h3 class="filter-title">Category</h3>
-                <select name="category" class="filter-select">
-                    <option value="">All Categories</option>
-                    <% categories.forEach(cat => { %>
-                        <option value="<%= cat._id %>" <%= category === cat._id.toString() ? 'selected' : '' %>>
-                            <%= cat.name %> (<%= cat.productCount || 0 %>)
-                        </option>
-                    <% }) %>
-                </select>
-            </div>
+                <!-- Category Filter -->
+                <div class="filter-section">
+                    <h3 class="filter-title">Category</h3>
+                    <select name="category" class="filter-select">
+                        <option value="">All Categories</option>
+                        <% categories.forEach(cat=> { %>
+                            <option value="<%= cat._id %>" <%=category===cat._id.toString() ? 'selected' : '' %>>
+                                <%= cat.name %> (<%= cat.productCount || 0 %>)
+                            </option>
+                            <% }) %>
+                    </select>
+                </div>
 
-            <!-- Price Range Filter -->
-            <div class="filter-section">
-                <h3 class="filter-title">Price Range</h3>
-                <div class="filter-content">
-                    <input type="number" name="priceMin" class="filter-input" placeholder="Min Price" 
-                           value="<%= priceMin || '' %>">
-                    <input type="number" name="priceMax" class="filter-input" placeholder="Max Price" 
-                           value="<%= priceMax || '' %>">
+                <!-- Price Range Filter -->
+                <div class="filter-section">
+                    <h3 class="filter-title">Price Range</h3>
+                    <div class="filter-content">
+                        <input type="number" name="priceMin" class="filter-input" placeholder="Min Price"
+                            value="<%= priceMin || '' %>">
+                        <input type="number" name="priceMax" class="filter-input" placeholder="Max Price"
+                            value="<%= priceMax || '' %>">
+                    </div>
+                </div>
+
+                <!-- Brand Filter -->
+                <div class="filter-section">
+                    <h3 class="filter-title">
+                        Brand
+                        <span id="selectedBrandCount" style="display: none; color: #ff6b6b;"></span>
+                    </h3>
+                    <div class="checkbox-group">
+                        <% allBrands.forEach(brand=> { %>
+                            <div class="checkbox-item">
+                                <input type="checkbox" name="brandFilter" value="<%= brand %>"
+                                    id="brand-<%= brand.replace(/\s+/g, '-') %>" <%=brands && brands.includes(brand)
+                                    ? 'checked' : '' %>>
+                                <label for="brand-<%= brand.replace(/\s+/g, '-') %>">
+                                    <%= brand %>
+                                </label>
+                            </div>
+                            <% }) %>
+                    </div>
+                </div>
+
+                <!-- Sort -->
+                <div class="filter-section">
+                    <h3 class="filter-title">Sort By</h3>
+                    <select name="sort" class="filter-select">
+                        <option value="newest" <%=sort==='newest' ? 'selected' : '' %>>Newest First</option>
+                        <option value="priceAsc" <%=sort==='priceAsc' ? 'selected' : '' %>>Price: Low to High</option>
+                        <option value="priceDesc" <%=sort==='priceDesc' ? 'selected' : '' %>>Price: High to Low</option>
+                        <option value="nameAsc" <%=sort==='nameAsc' ? 'selected' : '' %>>Name: A to Z</option>
+                        <option value="nameDesc" <%=sort==='nameDesc' ? 'selected' : '' %>>Name: Z to A</option>
+                    </select>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button type="submit" class="btn-primary" style="flex: 1;">Apply Filters</button>
+                    <button type="button" id="clearFilters" class="btn-secondary" style="flex: 1;">Clear</button>
+                </div>
+            </form>
+        </aside>
+
+        <!-- Products Section -->
+        <main class="products-section">
+            <!-- Products Header -->
+            <div class="products-header">
+                <div class="products-count">
+                    <span id="activeFiltersCount"
+                        style="display: none; background: #ff6b6b; color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px; margin-right: 8px;"></span>
+                    Showing <%= products.length %> of <%= totalProducts %> products
                 </div>
             </div>
 
-            <!-- Brand Filter -->
-            <div class="filter-section">
-                <h3 class="filter-title">
-                    Brand 
-                    <span id="selectedBrandCount" style="display: none; color: #ff6b6b;"></span>
-                </h3>
-                <div class="checkbox-group">
-                    <% allBrands.forEach(brand => { %>
-                        <div class="checkbox-item">
-                            <input type="checkbox" name="brandFilter" value="<%= brand %>" 
-                                   id="brand-<%= brand.replace(/\s+/g, '-') %>"
-                                   <%= brands && brands.includes(brand) ? 'checked' : '' %>>
-                            <label for="brand-<%= brand.replace(/\s+/g, '-') %>"><%= brand %></label>
-                        </div>
-                    <% }) %>
-                </div>
-            </div>
+            <!-- Products Grid -->
+            <div class="products-grid">
+                <% if (products && products.length> 0) { %>
+                    <% products.forEach(product=> { %>
+                        <% // Get first variant and image with fallbacks let firstVariant=null; let
+                            firstImage='https://via.placeholder.com/400x400/f8fafc/64748b?text=No+Image' ; let
+                            lowestPrice=0; let lowestSalePrice=0; if (product.variantDocs && product.variantDocs.length>
+                            0)
+                            {
+                            firstVariant = product.variantDocs[0];
+                            if (firstVariant.images && firstVariant.images.length > 0) {
+                            firstImage = typeof firstVariant.images[0] === 'string' ? firstVariant.images[0] :
+                            firstVariant.images[0].url;
+                            }
+                            lowestPrice = product.lowestPrice || firstVariant.regularPrice || 0;
+                            lowestSalePrice = product.lowestSalePrice || firstVariant.salePrice ||
+                            firstVariant.regularPrice
+                            || 0;
+                            }
+                            %>
 
-            <!-- Sort -->
-            <div class="filter-section">
-                <h3 class="filter-title">Sort By</h3>
-                <select name="sort" class="filter-select">
-                    <option value="newest" <%= sort === 'newest' ? 'selected' : '' %>>Newest First</option>
-                    <option value="priceAsc" <%= sort === 'priceAsc' ? 'selected' : '' %>>Price: Low to High</option>
-                    <option value="priceDesc" <%= sort === 'priceDesc' ? 'selected' : '' %>>Price: High to Low</option>
-                    <option value="nameAsc" <%= sort === 'nameAsc' ? 'selected' : '' %>>Name: A to Z</option>
-                    <option value="nameDesc" <%= sort === 'nameDesc' ? 'selected' : '' %>>Name: Z to A</option>
-                </select>
-            </div>
+                            <div class="product-card" onclick="window.location.href='/products/<%= product._id %>'">
+                                <div class="product-image-container">
+                                    <img src="<%= firstImage %>" alt="<%= product.productName %>" class="product-image"
+                                        onerror="this.src='https://via.placeholder.com/400x400/f8fafc/64748b?text=No+Image'">
 
-            <div style="display: flex; gap: 10px; margin-top: 20px;">
-                <button type="submit" class="btn-primary" style="flex: 1;">Apply Filters</button>
-                <button type="button" id="clearFilters" class="btn-secondary" style="flex: 1;">Clear</button>
-            </div>
-        </form>
-    </aside>
+                                    <% if (typeof user !=='undefined' && user) { %>
+                                        <% const isInWishlist=firstVariant && userWishlistItems &&
+                                            userWishlistItems.includes(firstVariant._id.toString()); %>
+                                            <button
+                                                class="wishlist-icon add-to-wishlist-btn <%= isInWishlist ? 'active' : '' %>"
+                                                data-variant-id="<%= firstVariant ? firstVariant._id : '' %>"
+                                                data-product-name="<%= product.productName %>"
+                                                onclick="event.stopPropagation(); addToWishlistFromList(this)">
+                                                <i class="<%= isInWishlist ? 'fas' : 'far' %> fa-heart"></i>
+                                            </button>
+                                            <% } %>
 
-    <!-- Products Section -->
-    <main class="products-section">
-        <!-- Products Header -->
-        <div class="products-header">
-            <div class="products-count">
-                <span id="activeFiltersCount" style="display: none; background: #ff6b6b; color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px; margin-right: 8px;"></span>
-                Showing <%= products.length %> of <%= totalProducts %> products
-            </div>
-        </div>
+                                                <% if (product.bestOffer> 0) { %>
+                                                    <div class="product-badge">
+                                                        <%= Math.round(product.bestOffer) %>% OFF
+                    
+                                                    </div>
+                                                    <% } %>
+                                </div>
 
-        <!-- Products Grid -->
-        <div class="products-grid">
-            <% if (products && products.length> 0) { %>
-                <% products.forEach(product=> { %>
-                    <% // Get first variant and image with fallbacks let firstVariant=null; let
-                        firstImage='https://via.placeholder.com/400x400/f8fafc/64748b?text=No+Image' ; let
-                        lowestPrice=0; let lowestSalePrice=0; if (product.variantDocs && product.variantDocs.length> 0)
-                        {
-                        firstVariant = product.variantDocs[0];
-                        if (firstVariant.images && firstVariant.images.length > 0) {
-                        firstImage = typeof firstVariant.images[0] === 'string' ? firstVariant.images[0] :
-                        firstVariant.images[0].url;
-                        }
-                        lowestPrice = product.lowestPrice || firstVariant.regularPrice || 0;
-                        lowestSalePrice = product.lowestSalePrice || firstVariant.salePrice || firstVariant.regularPrice
-                        || 0;
-                        }
-                        %>
+                                <div class="product-info">
+                                    <h3 class="product-name">
+                                        <%= product.productName %>
+                                    </h3>
+                                    <p class="product-brand">
+                                        <%= product.brand %>
+                                    </p>
 
-                        <div class="product-card" onclick="window.location.href='/products/<%= product._id %>'">
-                            <div class="product-image-container">
-                                <img src="<%= firstImage %>" alt="<%= product.productName %>" class="product-image"
-                                    onerror="this.src='https://via.placeholder.com/400x400/f8fafc/64748b?text=No+Image'">
-                                
-                                <% if (typeof user !== 'undefined' && user) { %>
-                                    <% 
-                                    const isInWishlist = firstVariant && userWishlistItems && userWishlistItems.includes(firstVariant._id.toString());
-                                    %>
-                                    <button class="wishlist-icon add-to-wishlist-btn <%= isInWishlist ? 'active' : '' %>"
-                                        data-variant-id="<%= firstVariant ? firstVariant._id : '' %>"
-                                        data-product-name="<%= product.productName %>"
-                                        onclick="event.stopPropagation(); addToWishlistFromList(this)">
-                                        <i class="<%= isInWishlist ? 'fas' : 'far' %> fa-heart"></i>
-                                    </button>
-                                <% } %>
-                                
-                                <% if (product.bestOffer> 0) { %>
-                                    <div class="product-badge">
-                                        <%= Math.round(product.bestOffer) %>% OFF
+                                    <div class="product-price">
+                                        <span class="current-price">₹<%= lowestSalePrice %></span>
+                                        <% if (lowestPrice> lowestSalePrice) { %>
+                                            <span class="original-price">₹<%= lowestPrice %></span>
+                                            <!-- Removed duplicate discount display - using bestOffer badge instead -->
+                                        <% } %>
+                                    </div>
+
+                                    <div class="product-actions">
+                                        <% const isOutOfStock=!firstVariant || firstVariant.stock===0; %>
+                                            <% if (typeof user !=='undefined' && user) { %>
+                                                <button class="btn-add-cart add-to-cart-btn"
+                                                    data-variant-id="<%= firstVariant ? firstVariant._id : '' %>"
+                                                    data-product-name="<%= product.productName %>" <%=isOutOfStock
+                                                    ? 'disabled' : '' %>
+                                                    onclick="event.stopPropagation(); addToCartFromList(this)">
+                                                    <i class="fas fa-shopping-cart"></i>
+                                                    <%= isOutOfStock ? 'Out of Stock' : 'Add to Cart' %>
+                                                </button>
+                                                <!-- <button class="btn-wishlist wishlist-btn"
+                                                data-variant-id="<%= firstVariant ? firstVariant._id : '' %>"
+                                                data-product-name="<%= product.productName %>"
+                                                onclick="event.stopPropagation(); toggleWishlistFromList(this)">
+                                                <!-- <i class="fas fa-heart"></i> -->
+                                                </button>
+                                                <% } else { %>
+                                                    <button class="btn-add-cart"
+                                                        onclick="event.stopPropagation(); window.location.href='/login'">
+                                                        <i class="fas fa-sign-in-alt"></i>
+                                                        Login to Buy
+                                                    </button>
+                                                    <button class="btn-wishlist"
+                                                        onclick="event.stopPropagation(); window.location.href='/login'">
+                                                        <i class="fas fa-heart"></i>
+                                                    </button>
+                                                    <% } %>
+                                                        <a href="/products/<%= product._id %>" class="btn-view-details"
+                                                            onclick="event.stopPropagation();">
+                                                            View Details
+                                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            <% }); %>
+                                <% } else { %>
+                                    <div class="empty-state">
+                                        <i class="fas fa-search"></i>
+                                        <h3>No products found</h3>
+                                        <p>Try adjusting your search or filter criteria</p>
+                                        <a href="/product/list" class="btn btn-primary">View All Products</a>
                                     </div>
                                     <% } %>
-                            </div>
-
-                            <div class="product-info">
-                                <h3 class="product-name">
-                                    <%= product.productName %>
-                                </h3>
-                                <p class="product-brand">
-                                    <%= product.brand %>
-                                </p>
-
-                                <div class="product-price">
-                                    <span class="current-price">₹<%= lowestSalePrice %></span>
-                                    <% if (lowestPrice> lowestSalePrice) { %>
-                                        <span class="original-price">₹<%= lowestPrice %></span>
-                                        <% const discount=Math.round(((lowestPrice - lowestSalePrice) / lowestPrice) *
-                                            100); %>
-                                            <span class="discount-percent">
-                                                <%= discount %>% OFF
-                                            </span>
-                                            <% } %>
-                                </div>
-
-                                <div class="product-actions">
-                                    <% const isOutOfStock=!firstVariant || firstVariant.stock===0; %>
-                                        <% if (typeof user !=='undefined' && user) { %>
-                                            <button class="btn-add-cart add-to-cart-btn"
-                                                data-variant-id="<%= firstVariant ? firstVariant._id : '' %>"
-                                                data-product-name="<%= product.productName %>" <%=isOutOfStock
-                                                ? 'disabled' : '' %>
-                                                onclick="event.stopPropagation(); addToCartFromList(this)">
-                                                <i class="fas fa-shopping-cart"></i>
-                                                <%= isOutOfStock ? 'Out of Stock' : 'Add to Cart' %>
-                                            </button>
-                                            <% } else { %>
-                                                <button class="btn-add-cart"
-                                                    onclick="event.stopPropagation(); window.location.href='/login'">
-                                                    <i class="fas fa-sign-in-alt"></i>
-                                                    Login to Buy
-                                                </button>
-                                                <% } %>
-                                                    <a href="/products/<%= product._id %>" class="btn-view-details"
-                                                        onclick="event.stopPropagation();">
-                                                        View Details
-                                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                        <% }); %>
-                            <% } else { %>
-                                <div class="empty-state">
-                                    <i class="fas fa-search"></i>
-                                    <h3>No products found</h3>
-                                    <p>Try adjusting your search or filter criteria</p>
-                                    <a href="/product/list" class="btn btn-primary">View All Products</a>
-                                </div>
-                                <% } %>
-        </div>
-
-        <!-- Pagination -->
-        <% if (totalPages> 1) { %>
-            <div class="pagination">
-                <% if (currentPage> 1) { %>
-                    <a href="?page=<%= currentPage - 1 %>&q=<%= q || '' %>&category=<%= category || '' %>&sort=<%= sort || '' %>&priceMin=<%= priceMin || '' %>&priceMax=<%= priceMax || '' %>&brands=<%= brands ? brands.join(',') : '' %>"
-                        class="pagination-btn">Previous</a>
-                    <% } %>
-
-                        <% for (let i=1; i <=totalPages; i++) { %>
-                            <% if (i===currentPage) { %>
-                                <span class="pagination-btn active">
-                                    <%= i %>
-                                </span>
-                                <% } else if (i===1 || i===totalPages || (i>= currentPage - 2 && i <= currentPage + 2))
-                                        { %>
-                                        <a href="?page=<%= i %>&q=<%= q || '' %>&category=<%= category || '' %>&sort=<%= sort || '' %>&priceMin=<%= priceMin || '' %>&priceMax=<%= priceMax || '' %>&brands=<%= brands ? brands.join(',') : '' %>"
-                                            class="pagination-btn">
-                                            <%= i %>
-                                        </a>
-                                        <% } else if (i===currentPage - 3 || i===currentPage + 3) { %>
-                                            <span class="pagination-btn">...</span>
-                                            <% } %>
-                                                <% } %>
-
-                                                    <% if (currentPage < totalPages) { %>
-                                                        <a href="?page=<%= currentPage + 1 %>&q=<%= q || '' %>&category=<%= category || '' %>&sort=<%= sort || '' %>&priceMin=<%= priceMin || '' %>&priceMax=<%= priceMax || '' %>&brands=<%= brands ? brands.join(',') : '' %>"
-                                                            class="pagination-btn">Next</a>
-                                                        <% } %>
             </div>
-            <% } %>
+
+            <!-- Pagination -->
+            <% if (totalPages> 1) { %>
+                <div class="pagination">
+                    <% if (currentPage> 1) { %>
+                        <a href="?page=<%= currentPage - 1 %>&q=<%= q || '' %>&category=<%= category || '' %>&sort=<%= sort || '' %>&priceMin=<%= priceMin || '' %>&priceMax=<%= priceMax || '' %>&brands=<%= brands ? brands.join(',') : '' %>"
+                            class="pagination-btn">Previous</a>
+                        <% } %>
+
+                            <% for (let i=1; i <=totalPages; i++) { %>
+                                <% if (i===currentPage) { %>
+                                    <span class="pagination-btn active">
+                                        <%= i %>
+                                    </span>
+                                    <% } else if (i===1 || i===totalPages || (i>= currentPage - 2 && i <= currentPage +
+                                            2)) { %>
+                                            <a href="?page=<%= i %>&q=<%= q || '' %>&category=<%= category || '' %>&sort=<%= sort || '' %>&priceMin=<%= priceMin || '' %>&priceMax=<%= priceMax || '' %>&brands=<%= brands ? brands.join(',') : '' %>"
+                                                class="pagination-btn">
+                                                <%= i %>
+                                            </a>
+                                            <% } else if (i===currentPage - 3 || i===currentPage + 3) { %>
+                                                <span class="pagination-btn">...</span>
+                                                <% } %>
+                                                    <% } %>
+
+                                                        <% if (currentPage < totalPages) { %>
+                                                            <a href="?page=<%= currentPage + 1 %>&q=<%= q || '' %>&category=<%= category || '' %>&sort=<%= sort || '' %>&priceMin=<%= priceMin || '' %>&priceMax=<%= priceMax || '' %>&brands=<%= brands ? brands.join(',') : '' %>"
+                                                                class="pagination-btn">Next</a>
+                                                            <% } %>
+                </div>
+                <% } %>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
@@ -811,7 +853,7 @@
                     quantity: 1
                 }),
                 dataType: 'json',
-                success: function(response) {
+                success: function (response) {
                     if (response && response.success) {
                         showToast(`${productName} added to cart!`, 'success');
                         if (response.cartCount) {
@@ -829,7 +871,7 @@
                         button.disabled = false;
                     }
                 },
-                error: function(xhr, status, error) {
+                error: function (xhr, status, error) {
                     let errorMessage = 'Failed to add item to cart';
                     if (xhr.responseJSON && xhr.responseJSON.message) {
                         errorMessage = xhr.responseJSON.message;
@@ -889,10 +931,10 @@
                     url: '/wishlist/remove',
                     type: 'DELETE',
                     data: { variantId: variantId },
-                    success: function(response) {
+                    success: function (response) {
                         if (response && response.success) {
                             showToast(`${productName} removed from wishlist!`, 'success');
-                            
+
                             button.innerHTML = '<i class="far fa-heart"></i>';
                             button.classList.remove('active');
                             button.disabled = false;
@@ -902,7 +944,7 @@
                             button.disabled = false;
                         }
                     },
-                    error: function(xhr, status, error) {
+                    error: function (xhr, status, error) {
                         let errorMessage = 'Failed to remove item from wishlist';
                         if (xhr.responseJSON && xhr.responseJSON.message) {
                             errorMessage = xhr.responseJSON.message;
@@ -922,10 +964,10 @@
                         variantId: variantId
                     }),
                     dataType: 'json',
-                    success: function(response) {
+                    success: function (response) {
                         if (response && response.success) {
                             showToast(`${productName} added to wishlist!`, 'success');
-                            
+
                             button.innerHTML = '<i class="fas fa-heart"></i>';
                             button.classList.add('active');
                             button.disabled = false;
@@ -935,7 +977,7 @@
                             button.disabled = false;
                         }
                     },
-                    error: function(xhr, status, error) {
+                    error: function (xhr, status, error) {
                         let errorMessage = 'Failed to add item to wishlist';
                         if (xhr.responseJSON && xhr.responseJSON.message) {
                             errorMessage = xhr.responseJSON.message;
@@ -1000,6 +1042,129 @@
                 }
             }, 4000);
         }
+
+        // Wishlist functionality (for logged-in users)
+        <% if (typeof user !== 'undefined' && user) { %>
+
+            // Initialize wishlist status for all products on page load
+            document.addEventListener('DOMContentLoaded', function () {
+                checkAllWishlistStatus();
+            });
+
+            // Check wishlist status for all products
+            function checkAllWishlistStatus() {
+                const wishlistBtns = document.querySelectorAll('.wishlist-btn');
+                wishlistBtns.forEach(btn => {
+                    const variantId = btn.dataset.variantId;
+                    if (variantId) {
+                        checkWishlistStatusForProduct(variantId, btn);
+                    }
+                });
+            }
+
+            // Check wishlist status for a specific product
+            function checkWishlistStatusForProduct(variantId, button) {
+                fetch(`/wishlist/check/${variantId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.inWishlist) {
+                            button.classList.add('in-wishlist');
+                        } else {
+                            button.classList.remove('in-wishlist');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error checking wishlist status:', error);
+                    });
+            }
+
+            // Toggle wishlist from product list
+            function toggleWishlistFromList(button) {
+                const variantId = button.dataset.variantId;
+                const productName = button.dataset.productName;
+                const isInWishlist = button.classList.contains('in-wishlist');
+
+                if (isInWishlist) {
+                    removeFromWishlistList(variantId, button, productName);
+                } else {
+                    addToWishlistList(variantId, button, productName);
+                }
+            }
+
+            // Add to wishlist from product list
+            function addToWishlistList(variantId, button, productName) {
+                button.disabled = true;
+
+                fetch('/wishlist/add', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `variantId=${variantId}`
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            button.classList.add('in-wishlist');
+                            updateWishlistCount(data.wishlistCount);
+                            showToast(`${productName} added to wishlist!`, 'success');
+                        } else {
+                            showToast(data.message || 'Failed to add to wishlist', 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error adding to wishlist:', error);
+                        showToast('Failed to add to wishlist', 'error');
+                    })
+                    .finally(() => {
+                        button.disabled = false;
+                    });
+            }
+
+            // Remove from wishlist from product list
+            function removeFromWishlistList(variantId, button, productName) {
+                button.disabled = true;
+
+                fetch('/wishlist/remove', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `variantId=${variantId}`
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            button.classList.remove('in-wishlist');
+                            updateWishlistCount(data.wishlistCount);
+                            showToast(`${productName} removed from wishlist`, 'success');
+                        } else {
+                            showToast(data.message || 'Failed to remove from wishlist', 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error removing from wishlist:', error);
+                        showToast('Failed to remove from wishlist', 'error');
+                    })
+                    .finally(() => {
+                        button.disabled = false;
+                    });
+            }
+
+            // Update wishlist count in header
+            function updateWishlistCount(count) {
+                const wishlistCountElements = document.querySelectorAll('.wishlist-count');
+                wishlistCountElements.forEach(element => {
+                    element.textContent = count;
+                    if (count > 0) {
+                        element.style.display = 'flex';
+                    } else {
+                        element.style.display = 'none';
+                    }
+                });
+            }
+
+        <% } // End user check for wishlist functions %>
     </script>
 
     </body>

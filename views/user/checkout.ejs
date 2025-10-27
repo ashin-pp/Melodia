@@ -702,16 +702,76 @@
             <span class="summary-value">₹<%= pricing.taxAmount.toFixed(2) %></span>
         </div>
         
-        <% if (pricing.discountAmount > 0) { %>
+        <% if (pricing.offerDiscount > 0) { %>
             <div class="summary-row">
-                <span>Discount</span>
-                <span class="summary-value" style="color: #16a34a;">-₹<%= pricing.discountAmount.toFixed(2) %></span>
+                <span>Offer Discount</span>
+                <span class="summary-value" style="color: #16a34a;">-₹<%= pricing.offerDiscount.toFixed(2) %></span>
             </div>
+        <% } %>
+        
+        <% if (pricing.couponDiscount > 0) { %>
+            <div class="summary-row">
+                <span>Coupon Discount</span>
+                <span class="summary-value" style="color: #16a34a;">-₹<%= pricing.couponDiscount.toFixed(2) %></span>
+            </div>
+        <% } %>
+        
+        <!-- Coupon Section -->
+        <div style="margin: 1rem 0; padding: 1rem; background: #f8fafc; border-radius: 8px; border: 1px solid #e5e7eb;">
+            <div id="couponInputSection" style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+                <input type="text" id="couponCode" placeholder="Enter coupon code" 
+                       style="flex: 1; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 4px; font-size: 0.875rem;">
+                <button type="button" id="applyCouponBtn" onclick="applyCoupon()" 
+                        style="padding: 0.5rem 1rem; background: #3b82f6; color: white; border: none; border-radius: 4px; font-size: 0.875rem; cursor: pointer;">
+                    Apply
+                </button>
+            </div>
+            
+            <!-- Applied Coupon Display -->
+            <div id="appliedCouponSection" style="display: none; background: #dcfce7; border: 1px solid #16a34a; border-radius: 6px; padding: 0.75rem; margin-bottom: 0.5rem;">
+                <div style="display: flex; justify-content: between; align-items: center;">
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; color: #166534; font-size: 0.875rem;">
+                            <i class="fas fa-check-circle" style="color: #16a34a; margin-right: 0.5rem;"></i>
+                            Coupon Applied: <span id="appliedCouponCode"></span>
+                        </div>
+                        <div style="font-size: 0.75rem; color: #166534; margin-top: 0.25rem;" id="appliedCouponDetails">
+                            You saved ₹<span id="couponSavings">0</span>
+                        </div>
+                    </div>
+                    <button type="button" onclick="removeCoupon()" 
+                            style="background: #dc2626; color: white; border: none; border-radius: 4px; padding: 0.25rem 0.5rem; font-size: 0.75rem; cursor: pointer;">
+                        <i class="fas fa-times"></i> Remove
+                    </button>
+                </div>
+            </div>
+            
+            <% if (availableCoupons && availableCoupons.length > 0) { %>
+            <div style="margin-top: 0.5rem;" id="viewCouponsSection">
+                <button type="button" onclick="showAvailableCoupons()" 
+                        style="background: none; border: none; color: #3b82f6; font-size: 0.75rem; cursor: pointer; text-decoration: underline;">
+                    View available coupons (<%= availableCoupons.length %>)
+                </button>
+            </div>
+            <% } %>
+        </div>
+        
+        <!-- Wallet Usage Option -->
+        <% if (user.wallet && user.wallet.balance > 0) { %>
+        <div style="margin: 1rem 0; padding: 1rem; background: #f0f9ff; border-radius: 8px; border: 1px solid #bae6fd;">
+            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                <input type="checkbox" id="useWallet" name="useWallet" style="margin: 0;">
+                <span style="font-weight: 500; font-size: 0.875rem;">Use wallet balance</span>
+            </label>
+            <p style="font-size: 0.75rem; color: #0369a1; margin: 0.25rem 0 0 1.5rem;">
+                Available: ₹<%= user.wallet.balance.toFixed(2) %>
+            </p>
+        </div>
         <% } %>
         
         <div class="summary-row total">
             <span>Total Amount</span>
-            <span class="summary-value">₹<%= pricing.totalAmount.toFixed(2) %></span>
+            <span class="summary-value" id="finalTotal">₹<%= pricing.totalAmount.toFixed(2) %></span>
         </div>
 
         <!-- Payment Methods -->
@@ -735,6 +795,36 @@
                     </label>
                 </div>
                 
+                <% if (razorpayKeyId) { %>
+                <div class="payment-method active">
+                    <input type="radio" id="razorpay" name="paymentMethod" value="razorpay">
+                    <label for="razorpay">
+                        <div class="payment-radio"></div>
+                        <div class="payment-icon">💳</div>
+                        <div class="payment-details">
+                            <div class="payment-name">Online Payment</div>
+                            <div class="payment-desc">Card, UPI, Net Banking & more</div>
+                        </div>
+                        <div class="payment-status available">Available</div>
+                    </label>
+                </div>
+                <% } %>
+                
+                <% if (user.wallet && user.wallet.balance > 0) { %>
+                <div class="payment-method active">
+                    <input type="radio" id="wallet" name="paymentMethod" value="wallet">
+                    <label for="wallet">
+                        <div class="payment-radio"></div>
+                        <div class="payment-icon">👛</div>
+                        <div class="payment-details">
+                            <div class="payment-name">Wallet Payment</div>
+                            <div class="payment-desc">Balance: ₹<%= user.wallet.balance.toFixed(2) %></div>
+                        </div>
+                        <div class="payment-status available">Available</div>
+                    </label>
+                </div>
+                <% } %>
+                
                 <div class="payment-method disabled">
                     <input type="radio" id="upi" name="paymentMethod" value="UPI" disabled>
                     <label for="upi">
@@ -743,32 +833,6 @@
                         <div class="payment-details">
                             <div class="payment-name">UPI Payment</div>
                             <div class="payment-desc">Google Pay, PhonePe, Paytm & more</div>
-                        </div>
-                        <div class="payment-status coming-soon">Coming Soon</div>
-                    </label>
-                </div>
-                
-                <div class="payment-method disabled">
-                    <input type="radio" id="wallet" name="paymentMethod" value="WALLET" disabled>
-                    <label for="wallet">
-                        <div class="payment-radio"></div>
-                        <div class="payment-icon">🏦</div>
-                        <div class="payment-details">
-                            <div class="payment-name">Digital Wallet</div>
-                            <div class="payment-desc">Pay using your digital wallet balance</div>
-                        </div>
-                        <div class="payment-status coming-soon">Coming Soon</div>
-                    </label>
-                </div>
-                
-                <div class="payment-method disabled">
-                    <input type="radio" id="card" name="paymentMethod" value="CARD" disabled>
-                    <label for="card">
-                        <div class="payment-radio"></div>
-                        <div class="payment-icon">💳</div>
-                        <div class="payment-details">
-                            <div class="payment-name">Credit/Debit Card</div>
-                            <div class="payment-desc">Visa, Mastercard, RuPay accepted</div>
                         </div>
                         <div class="payment-status coming-soon">Coming Soon</div>
                     </label>
@@ -1103,12 +1167,170 @@
         });
     }
 
+    // Coupon functionality
+    let appliedCoupon = null;
+    
+    function applyCoupon() {
+        const couponCode = $('#couponCode').val().trim().toUpperCase();
+        if (!couponCode) {
+            Swal.fire('Error', 'Please enter a coupon code', 'error');
+            return;
+        }
+        
+        $('#applyCouponBtn').prop('disabled', true).text('Applying...');
+        
+        // Find coupon in available coupons
+        const availableCoupons = <%- JSON.stringify(availableCoupons || []) %>;
+        const coupon = availableCoupons.find(c => c.code === couponCode);
+        
+        if (!coupon) {
+            Swal.fire('Error', 'Invalid or expired coupon code', 'error');
+            $('#applyCouponBtn').prop('disabled', false).text('Apply');
+            return;
+        }
+        
+        appliedCoupon = coupon;
+        updatePricing();
+        
+        // Show applied coupon section
+        $('#couponInputSection').hide();
+        $('#appliedCouponSection').show();
+        $('#viewCouponsSection').hide();
+        $('#appliedCouponCode').text(couponCode);
+        
+        Swal.fire('Success', `Coupon "${couponCode}" applied successfully!`, 'success');
+    }
+    
+    function removeCoupon() {
+        appliedCoupon = null;
+        updatePricing();
+        
+        // Show coupon input section
+        $('#couponInputSection').show();
+        $('#appliedCouponSection').hide();
+        $('#viewCouponsSection').show();
+        $('#couponCode').val('').prop('disabled', false);
+        $('#applyCouponBtn').prop('disabled', false).text('Apply').css('background', '#3b82f6');
+        
+        Swal.fire('Success', 'Coupon removed successfully!', 'success');
+    }
+    
+    function showAvailableCoupons() {
+        const availableCoupons = <%- JSON.stringify(availableCoupons || []) %>;
+        let couponsHtml = '<div style="max-height: 300px; overflow-y: auto;">';
+        
+        availableCoupons.forEach(coupon => {
+            const discountText = coupon.discountType === 'percentage' 
+                ? `${coupon.discountValue}% off` 
+                : `₹${coupon.discountValue} off`;
+            
+            couponsHtml += `
+                <div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 1rem; margin-bottom: 0.5rem; cursor: pointer;" 
+                     onclick="selectCoupon('${coupon.code}')">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <strong style="color: #3b82f6;">${coupon.code}</strong>
+                            <p style="margin: 0.25rem 0; font-size: 0.875rem; color: #64748b;">${coupon.name}</p>
+                            <p style="margin: 0; font-size: 0.75rem; color: #64748b;">Min order: ₹${coupon.minimumOrderAmount}</p>
+                        </div>
+                        <div style="text-align: right;">
+                            <span style="background: #dcfce7; color: #166534; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 500;">
+                                ${discountText}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        couponsHtml += '</div>';
+        
+        Swal.fire({
+            title: 'Available Coupons',
+            html: couponsHtml,
+            width: '500px',
+            showConfirmButton: false,
+            showCancelButton: true,
+            cancelButtonText: 'Close'
+        });
+    }
+    
+    function selectCoupon(code) {
+        $('#couponCode').val(code);
+        Swal.close();
+        applyCoupon();
+    }
+    
+    function updatePricing() {
+        const subtotal = <%= pricing.subtotal || 0 %>;
+        const shippingCost = <%= pricing.shippingCost || 0 %>;
+        const taxAmount = <%= pricing.taxAmount || 0 %>;
+        const offerDiscount = <%= pricing.offerDiscount || 0 %>;
+        
+        let couponDiscount = 0;
+        if (appliedCoupon) {
+            if (appliedCoupon.discountType === 'percentage') {
+                couponDiscount = Math.round((subtotal * appliedCoupon.discountValue) / 100);
+                if (appliedCoupon.maxDiscountAmount && couponDiscount > appliedCoupon.maxDiscountAmount) {
+                    couponDiscount = appliedCoupon.maxDiscountAmount;
+                }
+            } else {
+                couponDiscount = Math.min(appliedCoupon.discountValue, subtotal);
+            }
+        }
+        
+        const useWallet = $('#useWallet').is(':checked');
+        const walletBalance = <%= (user.wallet && user.wallet.balance) ? user.wallet.balance : 0 %>;
+        
+        let totalAmount = subtotal + shippingCost + taxAmount - offerDiscount - couponDiscount;
+        let walletUsed = 0;
+        
+        if (useWallet && walletBalance > 0) {
+            walletUsed = Math.min(walletBalance, totalAmount);
+            totalAmount -= walletUsed;
+        }
+        
+        // Update display
+        if (couponDiscount > 0) {
+            $('.summary-row:contains("Coupon Discount")').remove();
+            $('.summary-row:contains("Tax")').after(`
+                <div class="summary-row">
+                    <span>Coupon Discount</span>
+                    <span class="summary-value" style="color: #16a34a;">-₹${couponDiscount.toFixed(2)}</span>
+                </div>
+            `);
+            // Update coupon savings display
+            $('#couponSavings').text(couponDiscount.toFixed(2));
+        } else {
+            $('.summary-row:contains("Coupon Discount")').remove();
+        }
+        
+        if (walletUsed > 0) {
+            $('.summary-row:contains("Wallet Used")').remove();
+            $('.summary-row.total').before(`
+                <div class="summary-row">
+                    <span>Wallet Used</span>
+                    <span class="summary-value" style="color: #16a34a;">-₹${walletUsed.toFixed(2)}</span>
+                </div>
+            `);
+        }
+        
+        $('#finalTotal').text(`₹${totalAmount.toFixed(2)}`);
+    }
+    
+    // Update pricing when wallet checkbox changes
+    $('#useWallet').change(updatePricing);
+
     function placeOrder() {
         const paymentMethod = $('input[name="paymentMethod"]:checked').val();
+        const couponCode = appliedCoupon ? appliedCoupon.code : null;
+        const useWallet = $('#useWallet').is(':checked');
         
         console.log('Place order called');
         console.log('Selected address ID:', selectedAddressId);
         console.log('Payment method:', paymentMethod);
+        console.log('Coupon code:', couponCode);
+        console.log('Use wallet:', useWallet);
         
         if (!selectedAddressId) {
             Swal.fire('Error', 'Please select a delivery address', 'error');
@@ -1129,7 +1351,9 @@
                 
                 const orderData = {
                     addressId: selectedAddressId,
-                    paymentMethod: paymentMethod
+                    paymentMethod: paymentMethod,
+                    couponCode: couponCode,
+                    useWallet: useWallet
                 };
                 
                 console.log('Sending order data:', orderData);
@@ -1141,7 +1365,13 @@
                     data: JSON.stringify(orderData),
                     success: function(response) {
                         if (response.success) {
-                            window.location.href = `/order-success/${response.orderObjectId}`;
+                            if (response.requiresPayment && paymentMethod === 'razorpay') {
+                                // Handle Razorpay payment
+                                handleRazorpayPayment(response.razorpayOrder, response.orderData);
+                            } else {
+                                // Direct success (COD or wallet)
+                                window.location.href = `/order-success/${response.orderObjectId}`;
+                            }
                         } else {
                             Swal.fire('Error', response.message, 'error');
                             $('#placeOrderBtn').prop('disabled', false).html('<i class="fas fa-credit-card"></i> Place Order');
@@ -1164,7 +1394,95 @@
             closeAddressModal();
         }
     }
+    
+    // Razorpay payment handling
+    function handleRazorpayPayment(razorpayOrder, orderData) {
+        const options = {
+            key: razorpayOrder.key,
+            amount: razorpayOrder.amount,
+            currency: razorpayOrder.currency,
+            name: 'Melodia',
+            description: 'Order Payment',
+            order_id: razorpayOrder.id,
+            handler: function(response) {
+                // Payment successful
+                completeRazorpayOrder(response, orderData);
+            },
+            prefill: {
+                name: '<%= user.firstName %> <%= user.lastName %>',
+                email: '<%= user.email %>',
+                contact: '<%= user.phoneNumber || "" %>'
+            },
+            theme: {
+                color: '#3b82f6'
+            },
+            modal: {
+                ondismiss: function() {
+                    // Payment cancelled
+                    $('#placeOrderBtn').prop('disabled', false).html('<i class="fas fa-credit-card"></i> Place Order');
+                    Swal.fire('Payment Cancelled', 'Your payment was cancelled. You can try again.', 'info');
+                }
+            }
+        };
+        
+        const rzp = new Razorpay(options);
+        rzp.open();
+    }
+    
+    function completeRazorpayOrder(paymentResponse, orderData) {
+        console.log('=== COMPLETING RAZORPAY ORDER ===');
+        console.log('Payment Response:', paymentResponse);
+        console.log('Order Data:', orderData);
+        
+        $.ajax({
+            url: '/checkout/complete-razorpay',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                razorpayPaymentId: paymentResponse.razorpay_payment_id,
+                razorpayOrderId: paymentResponse.razorpay_order_id,
+                razorpaySignature: paymentResponse.razorpay_signature,
+                orderData: orderData
+            }),
+            success: function(response) {
+                console.log('=== RAZORPAY COMPLETION RESPONSE ===');
+                console.log('Response:', response);
+                
+                if (response.success) {
+                    console.log('Success! Redirecting to:', `/order-success/${response.orderObjectId}`);
+                    Swal.fire({
+                        title: 'Payment Successful!',
+                        text: 'Your order has been placed successfully.',
+                        icon: 'success',
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        window.location.href = `/order-success/${response.orderObjectId}`;
+                    });
+                } else {
+                    console.log('Error in response:', response.message);
+                    Swal.fire('Error', response.message, 'error');
+                    $('#placeOrderBtn').prop('disabled', false).html('<i class="fas fa-credit-card"></i> Place Order');
+                }
+            },
+            error: function(xhr) {
+                console.log('=== RAZORPAY COMPLETION ERROR ===');
+                console.log('XHR Status:', xhr.status);
+                console.log('XHR Response:', xhr.responseJSON);
+                console.log('XHR Text:', xhr.responseText);
+                
+                const response = xhr.responseJSON;
+                Swal.fire('Error', response?.message || 'Failed to complete order', 'error');
+                $('#placeOrderBtn').prop('disabled', false).html('<i class="fas fa-credit-card"></i> Place Order');
+            }
+        });
+    }
 </script>
+
+<!-- Razorpay SDK -->
+<% if (razorpayKeyId) { %>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<% } %>
 
 </body>
 </html>

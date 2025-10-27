@@ -368,6 +368,38 @@
             cursor: not-allowed;
         }
 
+        .btn-wishlist {
+            background: white;
+            color: #e11d48;
+            border: 2px solid #e11d48;
+            padding: 16px 24px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-wishlist:hover {
+            background: #e11d48;
+            color: white;
+        }
+
+        .btn-wishlist.in-wishlist {
+            background: #e11d48;
+            color: white;
+        }
+
+        .btn-wishlist.in-wishlist:hover {
+            background: #be185d;
+        }
+
         .specs-section {
             background: #f8f9fa;
             border-radius: 12px;
@@ -965,7 +997,8 @@
                                 <%= product.brand %>
                             </strong></p>
                     </div>
-                    <i class="<%= isInWishlist ? 'fas' : 'far' %> fa-heart wishlist-icon <%= isInWishlist ? 'active' : '' %>" onclick="toggleWishlist()"></i>
+                    <i class="<%= isInWishlist ? 'fas' : 'far' %> fa-heart wishlist-icon <%= isInWishlist ? 'active' : '' %>"
+                        onclick="toggleWishlist()"></i>
                 </div>
             </div>
 
@@ -977,12 +1010,13 @@
                                 %></span>
                         <% if (defaultVariant && defaultVariant.regularPrice> defaultVariant.salePrice) { %>
                             <span class="original-price" id="originalPrice">₹<%= defaultVariant.regularPrice %></span>
-                            <% const discount=Math.round(((defaultVariant.regularPrice - defaultVariant.salePrice) /
-                                defaultVariant.regularPrice) * 100); %>
+                            <% if (bestOffer> 0) { %>
                                 <span class="discount-badge" id="discountBadge">
-                                    <%= discount %>% OFF
+                                    <%= Math.round(bestOffer) %>% OFF
+                                      
                                 </span>
                                 <% } %>
+                                    <% } %>
                 </div>
                 <!-- Stock Info -->
                 <div class="stock-info">
@@ -1019,15 +1053,23 @@
 
                     <!-- Action Buttons -->
                     <div class="action-buttons">
-                        <% if (typeof user !== 'undefined' && user) { %>
+                        <% if (typeof user !=='undefined' && user) { %>
                             <button class="btn-primary" id="addToCartBtn" <%=stock <=0 ? 'disabled' : '' %>>
                                 <%= stock> 0 ? 'Add to Cart' : 'Out of Stock' %>
                             </button>
-                        <% } else { %>
-                            <button class="btn-primary" onclick="window.location.href='/login'">
-                                Login to Buy
-                            </button>
-                        <% } %>
+                            <!-- <button class="btn-wishlist" id="wishlistBtn" data-variant-id="<%= defaultVariant ? defaultVariant._id : '' %>">
+                                <i class="fas fa-heart"></i>
+                                <span id="wishlistBtnText">Add to Wishlist</span>
+                            </button> -->
+                            <% } else { %>
+                                <button class="btn-primary" onclick="window.location.href='/login'">
+                                    Login to Buy
+                                </button>
+                                <button class="btn-wishlist" onclick="window.location.href='/login'">
+                                    <i class="fas fa-heart"></i>
+                                    Login to Save
+                                </button>
+                                <% } %>
                     </div>
 
                     <!-- Specifications -->
@@ -1329,7 +1371,7 @@
                                 originalPriceEl.textContent = '₹' + variant.regularPrice;
                             }
 
-                            // Update discount badge
+                            // Update discount badge using actual offer percentage
                             if (discountBadgeEl && variant.regularPrice > variant.price) {
                                 const discount = Math.round(((variant.regularPrice - variant.price) / variant.regularPrice) * 100);
                                 discountBadgeEl.textContent = discount + '% OFF';
@@ -1376,10 +1418,12 @@
                             // Update current variant ID for cart functionality
                             if (typeof currentVariantId !== 'undefined') {
                                 currentVariantId = selectedVariantId;
-                                
-                                // Update wishlist icon state for new variant
+
+                                // Update wishlist button for new variant
                                 <% if (typeof user !== 'undefined' && user) { %>
-                                updateWishlistIconState(selectedVariantId);
+                                if (typeof updateWishlistButton === 'function') {
+                                        updateWishlistButton(selectedVariantId);
+                                    }
                                 <% } %>
                             }
                         }
@@ -1387,48 +1431,50 @@
 
                     // Update wishlist icon state for variant
                     <% if (typeof user !== 'undefined' && user) { %>
-                    function updateWishlistIconState(variantId) {
-                        // For now, reset to default state when variant changes
-                        // In a full implementation, you'd check if the specific variant is in wishlist
-                        const wishlistIcon = document.querySelector('.wishlist-icon');
-                        wishlistIcon.classList.remove('fas', 'active');
-                        wishlistIcon.classList.add('far');
-                    }
-                    <% } %>
+                        function updateWishlistIconState(variantId) {
+                            // For now, reset to default state when variant changes
+                            // In a full implementation, you'd check if the specific variant is in wishlist
+                            const wishlistIcon = document.querySelector('.wishlist-icon');
+                            if (wishlistIcon) {
+                                wishlistIcon.classList.remove('fas', 'active');
+                                wishlistIcon.classList.add('far');
+                            }
+                        }
+                        <% } %>
 
-                    // Image Magnifier - Fixed
-                    function initMagnifier() {
-                        const img = document.getElementById('mainProductImage');
-                        const container = img.parentElement;
-                        const glass = container.querySelector('.img-magnifier-glass');
+                            // Image Magnifier - Fixed
+                            function initMagnifier() {
+                                const img = document.getElementById('mainProductImage');
+                                const container = img.parentElement;
+                                const glass = container.querySelector('.img-magnifier-glass');
 
-                        container.addEventListener('mousemove', function (e) {
-                            const rect = container.getBoundingClientRect();
-                            const x = e.clientX - rect.left;
-                            const y = e.clientY - rect.top;
+                                container.addEventListener('mousemove', function (e) {
+                                    const rect = container.getBoundingClientRect();
+                                    const x = e.clientX - rect.left;
+                                    const y = e.clientY - rect.top;
 
-                            // Position the magnifier glass
-                            glass.style.left = (x - 75) + 'px';
-                            glass.style.top = (y - 75) + 'px';
+                                    // Position the magnifier glass
+                                    glass.style.left = (x - 75) + 'px';
+                                    glass.style.top = (y - 75) + 'px';
 
-                            // Calculate background position for zoom effect
-                            const fx = (x / container.offsetWidth) * 100;
-                            const fy = (y / container.offsetHeight) * 100;
+                                    // Calculate background position for zoom effect
+                                    const fx = (x / container.offsetWidth) * 100;
+                                    const fy = (y / container.offsetHeight) * 100;
 
-                            glass.style.backgroundImage = `url('${img.src}')`;
-                            glass.style.backgroundSize = `${container.offsetWidth * 2}px ${container.offsetHeight * 2}px`;
-                            glass.style.backgroundPosition = `${fx}% ${fy}%`;
-                            glass.style.backgroundRepeat = 'no-repeat';
-                        });
+                                    glass.style.backgroundImage = `url('${img.src}')`;
+                                    glass.style.backgroundSize = `${container.offsetWidth * 2}px ${container.offsetHeight * 2}px`;
+                                    glass.style.backgroundPosition = `${fx}% ${fy}%`;
+                                    glass.style.backgroundRepeat = 'no-repeat';
+                                });
 
-                        container.addEventListener('mouseenter', () => {
-                            glass.style.display = 'block';
-                        });
+                                container.addEventListener('mouseenter', () => {
+                                    glass.style.display = 'block';
+                                });
 
-                        container.addEventListener('mouseleave', () => {
-                            glass.style.display = 'none';
-                        });
-                    }
+                                container.addEventListener('mouseleave', () => {
+                                    glass.style.display = 'none';
+                                });
+                            }
 
                     // Initialize magnifier after page load
                     document.addEventListener('DOMContentLoaded', initMagnifier);
@@ -1437,126 +1483,130 @@
                     function toggleWishlist() {
                         <% if (typeof user !== 'undefined' && user) { %>
                         const wishlistIcon = document.querySelector('.wishlist-icon');
-                        const isCurrentlyInWishlist = wishlistIcon.classList.contains('fas');
-                        
-                        if (isCurrentlyInWishlist) {
-                            // Remove from wishlist
-                            $.ajax({
-                                url: '/wishlist/remove',
-                                method: 'DELETE',
-                                data: { variantId: currentVariantId },
-                                success: function(response) {
-                                    if (response.success) {
-                                        wishlistIcon.classList.remove('fas');
-                                        wishlistIcon.classList.add('far');
-                                        wishlistIcon.classList.remove('active');
-                                        showToast('Removed from wishlist', 'success');
-                                    } else {
-                                        showToast(response.message || 'Failed to remove from wishlist', 'error');
+                            if (!wishlistIcon) return;
+                            const isCurrentlyInWishlist = wishlistIcon.classList.contains('fas');
+
+                            if (isCurrentlyInWishlist) {
+                                // Remove from wishlist
+                                $.ajax({
+                                    url: '/wishlist/remove',
+                                    method: 'DELETE',
+                                    data: { variantId: currentVariantId },
+                                    success: function (response) {
+                                        if (response.success) {
+                                            wishlistIcon.classList.remove('fas');
+                                            wishlistIcon.classList.add('far');
+                                            wishlistIcon.classList.remove('active');
+                                            showToast('Removed from wishlist', 'success');
+                                        } else {
+                                            showToast(response.message || 'Failed to remove from wishlist', 'error');
+                                        }
+                                    },
+                                    error: function () {
+                                        showToast('Failed to remove from wishlist', 'error');
                                     }
-                                },
-                                error: function() {
-                                    showToast('Failed to remove from wishlist', 'error');
-                                }
-                            });
-                        } else {
-                            // Add to wishlist
-                            $.ajax({
-                                url: '/wishlist/add',
-                                method: 'POST',
-                                contentType: 'application/json',
-                                data: JSON.stringify({ variantId: currentVariantId }),
-                                success: function(response) {
-                                    if (response.success) {
-                                        wishlistIcon.classList.remove('far');
-                                        wishlistIcon.classList.add('fas');
-                                        wishlistIcon.classList.add('active');
-                                        showToast('Added to wishlist', 'success');
-                                    } else {
-                                        showToast(response.message || 'Failed to add to wishlist', 'error');
+                                });
+                            } else {
+                                // Add to wishlist
+                                $.ajax({
+                                    url: '/wishlist/add',
+                                    method: 'POST',
+                                    contentType: 'application/json',
+                                    data: JSON.stringify({ variantId: currentVariantId }),
+                                    success: function (response) {
+                                        if (response.success) {
+                                            wishlistIcon.classList.remove('far');
+                                            wishlistIcon.classList.add('fas');
+                                            wishlistIcon.classList.add('active');
+                                            showToast('Added to wishlist', 'success');
+                                        } else {
+                                            showToast(response.message || 'Failed to add to wishlist', 'error');
+                                        }
+                                    },
+                                    error: function () {
+                                        showToast('Failed to add to wishlist', 'error');
                                     }
-                                },
-                                error: function() {
-                                    showToast('Failed to add to wishlist', 'error');
-                                }
-                            });
-                        }
+                                });
+                            }
                         <% } else { %>
-                        window.location.href = '/login';
+                            window.location.href = '/login';
                         <% } %>
                     }
 
                     // Add to cart functionality (only if user is logged in)
                     <% if (typeof user !== 'undefined' && user) { %>
-                    let currentVariantId = '<%= defaultVariant ? defaultVariant._id : "" %>';
+                        let currentVariantId = '<%= defaultVariant ? defaultVariant._id : "" %>';
 
-                    // Add to cart button click handler
-                    document.getElementById('addToCartBtn').addEventListener('click', function () {
-                        if (this.disabled) return;
+                        // Add to cart button click handler
+                        const addToCartBtn = document.getElementById('addToCartBtn');
+                        if (addToCartBtn) {
+                            addToCartBtn.addEventListener('click', function () {
+                                if (this.disabled) return;
 
-                        const stock = parseInt(document.getElementById('stockText').textContent.match(/\d+/)?.[0] || '0');
-                        if (stock <= 0) {
-                            showToast('Product is out of stock', 'error');
-                            return;
+                                const stock = parseInt(document.getElementById('stockText').textContent.match(/\d+/)?.[0] || '0');
+                                if (stock <= 0) {
+                                    showToast('Product is out of stock', 'error');
+                                    return;
+                                }
+
+                                addToCart(currentVariantId);
+                            });
                         }
 
-                        addToCart(currentVariantId);
-                    });
+                        // Add to cart function
+                        function addToCart(variantId, quantity = 1) {
+                            // Show loading state
+                            const addToCartBtn = document.getElementById('addToCartBtn');
+                            const originalText = addToCartBtn.textContent;
+                            addToCartBtn.textContent = 'Adding...';
+                            addToCartBtn.disabled = true;
 
-                    // Add to cart function
-                    function addToCart(variantId, quantity = 1) {
-                        // Show loading state
-                        const addToCartBtn = document.getElementById('addToCartBtn');
-                        const originalText = addToCartBtn.textContent;
-                        addToCartBtn.textContent = 'Adding...';
-                        addToCartBtn.disabled = true;
-
-                        fetch('/cart/add', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({
-                                variantId: variantId,
-                                quantity: quantity
+                            fetch('/cart/add', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                    variantId: variantId,
+                                    quantity: quantity
+                                })
                             })
-                        })
-                            .then(response => response.json())
-                            .then(data => {
-                                if (data.success) {
-                                    showToast('Item added to cart successfully!', 'success');
-                                    updateCartCount(data.cartCount);
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.success) {
+                                        showToast('Item added to cart successfully!', 'success');
+                                        updateCartCount(data.cartCount);
 
-                                    // Temporarily change button text
-                                    addToCartBtn.textContent = 'Added to Cart!';
-                                    setTimeout(() => {
+                                        // Temporarily change button text
+                                        addToCartBtn.textContent = 'Added to Cart!';
+                                        setTimeout(() => {
+                                            addToCartBtn.textContent = originalText;
+                                            addToCartBtn.disabled = false;
+                                        }, 2000);
+                                    } else {
+                                        showToast(data.message || 'Failed to add item to cart', 'error');
                                         addToCartBtn.textContent = originalText;
                                         addToCartBtn.disabled = false;
-                                    }, 2000);
-                                } else {
-                                    showToast(data.message || 'Failed to add item to cart', 'error');
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error('Error adding to cart:', error);
+                                    showToast('Failed to add item to cart', 'error');
                                     addToCartBtn.textContent = originalText;
                                     addToCartBtn.disabled = false;
-                                }
-                            })
-                            .catch(error => {
-                                console.error('Error adding to cart:', error);
-                                showToast('Failed to add item to cart', 'error');
-                                addToCartBtn.textContent = originalText;
-                                addToCartBtn.disabled = false;
-                            });
-                    }
+                                });
+                        }
 
-                    // Toast notification function
-                    function showToast(message, type = 'info') {
-                        // Remove existing toasts
-                        const existingToasts = document.querySelectorAll('.toast-notification');
-                        existingToasts.forEach(toast => toast.remove());
+                        // Toast notification function
+                        function showToast(message, type = 'info') {
+                            // Remove existing toasts
+                            const existingToasts = document.querySelectorAll('.toast-notification');
+                            existingToasts.forEach(toast => toast.remove());
 
-                        // Create toast element
-                        const toast = document.createElement('div');
-                        toast.className = `toast-notification toast-${type}`;
-                        toast.innerHTML = `
+                            // Create toast element
+                            const toast = document.createElement('div');
+                            toast.className = `toast-notification toast-${type}`;
+                            toast.innerHTML = `
             <div class="toast-content">
                 <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i>
                 <span>${message}</span>
@@ -1566,8 +1616,8 @@
             </button>
         `;
 
-                        // Add toast styles
-                        toast.style.cssText = `
+                            // Add toast styles
+                            toast.style.cssText = `
             position: fixed;
             top: 20px;
             right: 20px;
@@ -1584,11 +1634,11 @@
             animation: slideInRight 0.3s ease-out;
         `;
 
-                        // Add animation styles if not already present
-                        if (!document.querySelector('#toast-styles')) {
-                            const style = document.createElement('style');
-                            style.id = 'toast-styles';
-                            style.textContent = `
+                            // Add animation styles if not already present
+                            if (!document.querySelector('#toast-styles')) {
+                                const style = document.createElement('style');
+                                style.id = 'toast-styles';
+                                style.textContent = `
                 @keyframes slideInRight {
                     from { transform: translateX(100%); opacity: 0; }
                     to { transform: translateX(0); opacity: 1; }
@@ -1610,33 +1660,174 @@
                     opacity: 0.8;
                 }
             `;
-                            document.head.appendChild(style);
+                                document.head.appendChild(style);
+                            }
+
+                            document.body.appendChild(toast);
+
+                            // Auto remove after 5 seconds
+                            setTimeout(() => {
+                                if (toast.parentElement) {
+                                    toast.remove();
+                                }
+                            }, 5000);
                         }
 
-                        document.body.appendChild(toast);
+                        // Update cart count in header
+                        function updateCartCount(count) {
+                            const cartCountElements = document.querySelectorAll('.cart-count');
 
-                        // Auto remove after 5 seconds
-                        setTimeout(() => {
-                            if (toast.parentElement) {
-                                toast.remove();
-                            }
-                        }, 5000);
-                    }
-
-                    // Update cart count in header
-                    function updateCartCount(count) {
-                        const cartCountElements = document.querySelectorAll('.cart-count');
-
-                        cartCountElements.forEach(element => {
-                            element.textContent = count;
-                            if (count > 0) {
-                                element.style.display = 'inline';
-                            } else {
-                                element.style.display = 'none';
-                            }
-                        });
-                    }
+                            cartCountElements.forEach(element => {
+                                element.textContent = count;
+                                if (count > 0) {
+                                    element.style.display = 'inline';
+                                } else {
+                                    element.style.display = 'none';
+                                }
+                            });
+                        }
                     <% } // End user check for cart functions %>
+
+                    // Wishlist functionality (for logged-in users)
+                    <% if (typeof user !== 'undefined' && user) { %>
+                        let currentWishlistVariantId = '<%= defaultVariant ? defaultVariant._id : "" %>';
+
+                        // Check if current variant is in wishlist on page load
+                        checkWishlistStatus(currentWishlistVariantId);
+
+                        // Wishlist button click handler
+                        const wishlistBtn = document.getElementById('wishlistBtn');
+                        if (wishlistBtn) {
+                            wishlistBtn.addEventListener('click', function () {
+                                const variantId = this.dataset.variantId;
+                                const isInWishlist = this.classList.contains('in-wishlist');
+
+                                if (isInWishlist) {
+                                    removeFromWishlist(variantId);
+                                } else {
+                                    addToWishlist(variantId);
+                                }
+                            });
+                        }
+
+                        // Add to wishlist function
+                        function addToWishlist(variantId) {
+                            const wishlistBtn = document.getElementById('wishlistBtn');
+                            const originalText = wishlistBtn.querySelector('#wishlistBtnText').textContent;
+
+                            wishlistBtn.querySelector('#wishlistBtnText').textContent = 'Adding...';
+                            wishlistBtn.disabled = true;
+
+                            fetch('/wishlist/add', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/x-www-form-urlencoded',
+                                },
+                                body: `variantId=${variantId}`
+                            })
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.success) {
+                                        wishlistBtn.classList.add('in-wishlist');
+                                        wishlistBtn.querySelector('#wishlistBtnText').textContent = 'In Wishlist';
+                                        updateWishlistCount(data.wishlistCount);
+                                        showToast('Added to wishlist!', 'success');
+                                    } else {
+                                        showToast(data.message || 'Failed to add to wishlist', 'error');
+                                        wishlistBtn.querySelector('#wishlistBtnText').textContent = originalText;
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error('Error adding to wishlist:', error);
+                                    showToast('Failed to add to wishlist', 'error');
+                                    wishlistBtn.querySelector('#wishlistBtnText').textContent = originalText;
+                                })
+                                .finally(() => {
+                                    wishlistBtn.disabled = false;
+                                });
+                        }
+
+                        // Remove from wishlist function
+                        function removeFromWishlist(variantId) {
+                            const wishlistBtn = document.getElementById('wishlistBtn');
+                            const originalText = wishlistBtn.querySelector('#wishlistBtnText').textContent;
+
+                            wishlistBtn.querySelector('#wishlistBtnText').textContent = 'Removing...';
+                            wishlistBtn.disabled = true;
+
+                            fetch('/wishlist/remove', {
+                                method: 'DELETE',
+                                headers: {
+                                    'Content-Type': 'application/x-www-form-urlencoded',
+                                },
+                                body: `variantId=${variantId}`
+                            })
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.success) {
+                                        wishlistBtn.classList.remove('in-wishlist');
+                                        wishlistBtn.querySelector('#wishlistBtnText').textContent = 'Add to Wishlist';
+                                        updateWishlistCount(data.wishlistCount);
+                                        showToast('Removed from wishlist', 'success');
+                                    } else {
+                                        showToast(data.message || 'Failed to remove from wishlist', 'error');
+                                        wishlistBtn.querySelector('#wishlistBtnText').textContent = originalText;
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error('Error removing from wishlist:', error);
+                                    showToast('Failed to remove from wishlist', 'error');
+                                    wishlistBtn.querySelector('#wishlistBtnText').textContent = originalText;
+                                })
+                                .finally(() => {
+                                    wishlistBtn.disabled = false;
+                                });
+                        }
+
+                        // Check wishlist status function
+                        function checkWishlistStatus(variantId) {
+                            if (!variantId) return;
+
+                            fetch(`/wishlist/check/${variantId}`)
+                                .then(response => response.json())
+                                .then(data => {
+                                    const wishlistBtn = document.getElementById('wishlistBtn');
+                                    if (data.inWishlist) {
+                                        wishlistBtn.classList.add('in-wishlist');
+                                        wishlistBtn.querySelector('#wishlistBtnText').textContent = 'In Wishlist';
+                                    } else {
+                                        wishlistBtn.classList.remove('in-wishlist');
+                                        wishlistBtn.querySelector('#wishlistBtnText').textContent = 'Add to Wishlist';
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error('Error checking wishlist status:', error);
+                                });
+                        }
+
+                        // Update wishlist count in header
+                        function updateWishlistCount(count) {
+                            const wishlistCountElements = document.querySelectorAll('.wishlist-count');
+                            wishlistCountElements.forEach(element => {
+                                element.textContent = count;
+                                if (count > 0) {
+                                    element.style.display = 'flex';
+                                } else {
+                                    element.style.display = 'none';
+                                }
+                            });
+                        }
+
+                        // Update wishlist button when variant changes
+                        function updateWishlistButton(variantId) {
+                            currentWishlistVariantId = variantId;
+                            const wishlistBtn = document.getElementById('wishlistBtn');
+                            if (wishlistBtn) {
+                                wishlistBtn.dataset.variantId = variantId;
+                                checkWishlistStatus(variantId);
+                            }
+                        }
+                    <% } // End user check for wishlist functions %>
                 </script>
-                
+
                 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>

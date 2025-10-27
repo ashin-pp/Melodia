@@ -85,13 +85,33 @@ const orderSchema = new mongoose.Schema({
   },
   paymentMethod: {
     type: String,
-    enum: ['COD', 'UPI', 'WALLET', 'CARD'],
+    enum: ['COD', 'RAZORPAY', 'WALLET', 'CARD'],
     default: 'COD'
   },
   paymentStatus: {
     type: String,
     enum: ['Pending', 'Paid', 'Failed', 'Refunded'],
     default: 'Pending'
+  },
+  razorpayOrderId: {
+    type: String
+  },
+  razorpayPaymentId: {
+    type: String
+  },
+  razorpaySignature: {
+    type: String
+  },
+  couponCode: {
+    type: String
+  },
+  couponDiscount: {
+    type: Number,
+    default: 0
+  },
+  offerDiscount: {
+    type: Number,
+    default: 0
   },
   orderStatus: {
     type: String,
@@ -159,6 +179,64 @@ const orderSchema = new mongoose.Schema({
       type: Date,
       default: Date.now
     }
+  }],
+  // Wallet and refund tracking fields
+  walletAmountUsed: {
+    type: Number,
+    default: 0
+  },
+  refundStatus: {
+    type: String,
+    enum: ['none', 'pending', 'processed', 'rejected'],
+    default: 'none'
+  },
+  refundAmount: {
+    type: Number,
+    default: 0
+  },
+  refundReason: {
+    type: String
+  },
+  refundProcessedAt: {
+    type: Date
+  },
+  refundProcessedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Admin'
+  },
+  returnRequests: [{
+    itemId: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true
+    },
+    reason: {
+      type: String,
+      required: true
+    },
+    status: {
+      type: String,
+      enum: ['pending', 'approved', 'rejected'],
+      default: 'pending'
+    },
+    requestedAt: {
+      type: Date,
+      default: Date.now
+    },
+    processedAt: {
+      type: Date
+    },
+    processedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Admin'
+    },
+    refundAmount: {
+      type: Number,
+      default: 0
+    },
+    adminNotes: {
+      type: String
+    },
+    images: [String]
   }]
 }, {
   timestamps: true
@@ -225,43 +303,75 @@ orderSchema.methods.cancelItems = async function (itemsToCancel, reason) {
       reason: reason
     });
 
-    // Update the status of the original item
-    const originalItem = this.items.find(orderItem => 
-      orderItem.variantId.toString() === item.variantId.toString()
-    );
+    // SIMPLE FIX: Just update the item status to 'Cancelled' like returns
+    console.log('Looking for item with variantId:', item.variantId);
+    console.log('Available items:', this.items.map(i => ({ id: i._id, variantId: i.variantId.toString(), status: i.status })));
+    
+    const originalItem = this.items.find(orderItem => {
+      // Handle different variantId formats
+      const orderVariantId = orderItem.variantId._id ? orderItem.variantId._id.toString() : orderItem.variantId.toString();
+      const cancelVariantId = item.variantId._id ? item.variantId._id.toString() : item.variantId.toString();
+      
+      const match = orderVariantId === cancelVariantId;
+      console.log(`Comparing ${orderVariantId} === ${cancelVariantId}: ${match}`);
+      return match;
+    });
     
     if (originalItem) {
-      console.log(`Found original item - Current quantity: ${originalItem.quantity}, Cancelling: ${item.quantity}`);
+      console.log(`✅ Found original item - Setting status to Cancelled`);
+      console.log(`Before: Status = ${originalItem.status}`);
       
-      // Check if the entire quantity is being cancelled
-      if (item.quantity >= originalItem.quantity) {
-        // Full cancellation - mark item as cancelled
-        console.log('Full cancellation - setting status to Cancelled and quantity to 0');
-        originalItem.status = 'Cancelled';
-        originalItem.cancelledAt = new Date();
-        originalItem.cancellationReason = reason;
-        originalItem.quantity = 0; // Set quantity to 0 to ensure it's filtered out
-        originalItem.totalPrice = 0; // Set total price to 0
-      } else {
-        // Partial cancellation - reduce quantity
-        console.log('Partial cancellation - reducing quantity');
-        originalItem.quantity -= item.quantity;
-        originalItem.totalPrice = originalItem.quantity * originalItem.price;
-      }
+      // Set status to Cancelled (same as returns)
+      originalItem.status = 'Cancelled';
+      originalItem.cancelledAt = new Date();
+      originalItem.cancellationReason = reason;
       
       // Add to status history
       if (!originalItem.statusHistory) {
         originalItem.statusHistory = [];
       }
       originalItem.statusHistory.push({
-        status: originalItem.quantity <= 0 ? 'Cancelled' : 'Partially Cancelled',
+        status: 'Cancelled',
         updatedAt: new Date(),
         reason: reason
       });
       
-      console.log(`Updated item - Status: ${originalItem.status}, Quantity: ${originalItem.quantity}`);
+      console.log(`After: Status = ${originalItem.status}`);
     } else {
-      console.log('Original item not found!');
+      console.log('❌ Original item not found with primary search!');
+      
+      // Try alternative search methods
+      console.log('Trying alternative search...');
+      const altItem = this.items.find(orderItem => {
+        // Try matching by index or other properties
+        return orderItem._id.toString() === item.itemId || 
+               orderItem.variantId.toString().includes(item.variantId) ||
+               item.variantId.toString().includes(orderItem.variantId.toString());
+      });
+      
+      if (altItem) {
+        console.log('✅ Found item with alternative search - Setting status to Cancelled');
+        altItem.status = 'Cancelled';
+        altItem.cancelledAt = new Date();
+        altItem.cancellationReason = reason;
+        
+        if (!altItem.statusHistory) {
+          altItem.statusHistory = [];
+        }
+        altItem.statusHistory.push({
+          status: 'Cancelled',
+          updatedAt: new Date(),
+          reason: reason
+        });
+      } else {
+        console.log('❌ Item still not found with alternative search!');
+        console.log('Search variantId:', item.variantId);
+        console.log('Available items:', this.items.map(i => ({
+          id: i._id.toString(),
+          variantId: i.variantId.toString(),
+          status: i.status
+        })));
+      }
     }
   });
 

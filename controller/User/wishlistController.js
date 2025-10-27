@@ -324,7 +324,37 @@ const getWishlistCount = async (req, res) => {
   }
 };
 
-export { addToWishlist, getWishlist, removeFromWishlist, moveToCart, getWishlistCount };
+// Check if item is in wishlist
+const checkWishlistItem = async (req, res) => {
+  try {
+    const { variantId } = req.params;
+    const userId = req.session.user.id;
+
+    const wishlist = await Wishlist.findOne({ userId });
+    const inWishlist = wishlist ? wishlist.hasItem(variantId) : false;
+
+    res.json({
+      success: true,
+      inWishlist
+    });
+
+  } catch (error) {
+    console.error('Check wishlist item error:', error);
+    res.json({
+      success: false,
+      inWishlist: false
+    });
+  }
+};
+
+export { 
+  addToWishlist, 
+  getWishlist, 
+  removeFromWishlist, 
+  moveToCart, 
+  getWishlistCount,
+  checkWishlistItem
+};
 
 // Default export for compatibility
 export default {
@@ -332,5 +362,6 @@ export default {
   getWishlist,
   removeFromWishlist,
   moveToCart,
-  getWishlistCount
+  getWishlistCount,
+  checkWishlistItem
 };

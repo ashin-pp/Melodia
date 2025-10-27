@@ -453,6 +453,12 @@
                                     const itemStatus = item.status || 'Pending';
                                     const canCancelItem = ['Pending', 'Confirmed', 'Processing'].includes(itemStatus);
                                     const canReturnItem = itemStatus === 'Delivered';
+                                    
+                                    // Check if return request already exists for this item
+                                    const hasReturnRequest = order.returnRequests && order.returnRequests.some(req => 
+                                        req.itemId.toString() === item._id.toString() && 
+                                        (req.status === 'pending' || req.status === 'approved')
+                                    );
                                 %>
                                 
                                 <% if (canCancelItem || canReturnItem) { %>
@@ -464,11 +470,16 @@
                                             </button>
                                         <% } %>
                                         
-                                        <% if (canReturnItem) { %>
+                                        <% if (canReturnItem && !hasReturnRequest) { %>
                                             <button onclick="returnItem('<%= order._id %>', '<%= item.variantId._id %>', '<%= item.quantity %>', 'Product')" style="padding: 0.375rem 0.75rem; background: #f59e0b; color: white; border: none; border-radius: 6px; font-size: 0.75rem; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 0.25rem;">
                                                 <i class="fas fa-undo"></i>
                                                 Return Item
                                             </button>
+                                        <% } else if (hasReturnRequest) { %>
+                                            <span style="padding: 0.375rem 0.75rem; background: #e5e7eb; color: #6b7280; border-radius: 6px; font-size: 0.75rem; font-weight: 500; display: inline-flex; align-items: center; gap: 0.25rem;">
+                                                <i class="fas fa-clock"></i>
+                                                Return Requested
+                                            </span>
                                         <% } %>
                                     </div>
                                 <% } %>
@@ -654,6 +665,122 @@
                                             hour: '2-digit',
                                             minute: '2-digit'
                                         }) %>
+                                    </div>
+                                <% } %>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+            <% } %>
+
+            <!-- Return Requests Section -->
+            <% if (order.returnRequests && order.returnRequests.length > 0) { %>
+                <div style="background: #f0f9ff; border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem; border-left: 4px solid #0ea5e9;">
+                    <h3 style="margin-bottom: 1rem; color: #0ea5e9; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fas fa-clipboard-list"></i>
+                        Return Requests (<%= order.returnRequests.length %>)
+                    </h3>
+                    
+                    <% order.returnRequests.forEach((returnRequest, index) => { %>
+                        <% 
+                            // Find the item details for this return request
+                            const requestedItem = order.items.find(item => 
+                                item._id.toString() === returnRequest.itemId.toString()
+                            );
+                        %>
+                        
+                        <div style="border: 1px solid #bae6fd; border-radius: 8px; padding: 1.5rem; margin-bottom: 1rem; background: white; display: flex; gap: 1rem;">
+                            <!-- Product Image -->
+                            <div style="width: 80px; height: 80px; border-radius: 8px; background: #e0f2fe; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                <% if (requestedItem && requestedItem.variantId && requestedItem.variantId.images && requestedItem.variantId.images.length > 0) { %>
+                                    <img src="<%= requestedItem.variantId.images[0].url || requestedItem.variantId.images[0] %>" 
+                                         alt="<%= requestedItem.variantId.productId ? requestedItem.variantId.productId.productName : 'Product' %>" 
+                                         style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;"
+                                         onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=\'fas fa-clipboard-list\' style=\'color: #0ea5e9;\'></i>';">
+                                <% } else { %>
+                                    <i class="fas fa-clipboard-list" style="color: #0ea5e9;"></i>
+                                <% } %>
+                            </div>
+                            
+                            <!-- Return Request Details -->
+                            <div style="flex: 1;">
+                                <div style="font-weight: 600; color: #0ea5e9; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                                    <% if (requestedItem && requestedItem.variantId && requestedItem.variantId.productId) { %>
+                                        <%= requestedItem.variantId.productId.productName %>
+                                    <% } else { %>
+                                        Product
+                                    <% } %>
+                                    <span style="background: <%= returnRequest.status === 'pending' ? '#f59e0b' : returnRequest.status === 'approved' ? '#10b981' : '#ef4444' %>; color: white; font-size: 0.625rem; font-weight: 600; padding: 0.125rem 0.375rem; border-radius: 4px; text-transform: uppercase;">
+                                        <%= returnRequest.status %>
+                                    </span>
+                                </div>
+                                
+                                <% if (requestedItem && requestedItem.variantId && requestedItem.variantId.productId && requestedItem.variantId.productId.brand) { %>
+                                    <div style="color: #64748b; font-size: 0.875rem; margin-bottom: 0.25rem;">
+                                        Brand: <%= requestedItem.variantId.productId.brand %>
+                                    </div>
+                                <% } %>
+                                
+                                <% if (requestedItem && requestedItem.variantId && requestedItem.variantId.color) { %>
+                                    <div style="color: #64748b; font-size: 0.875rem; margin-bottom: 0.5rem;">
+                                        Color: <%= requestedItem.variantId.color %>
+                                    </div>
+                                <% } %>
+                                
+                                <!-- Return Request Info -->
+                                <div style="margin-bottom: 0.5rem;">
+                                    <span style="font-size: 0.875rem; color: #64748b; margin-right: 0.5rem;">Refund Amount:</span>
+                                    <span style="font-weight: 600; color: #1e293b;">₹<%= (returnRequest.refundAmount || 0).toFixed(2) %></span>
+                                </div>
+                                
+                                <% if (returnRequest.reason) { %>
+                                    <div style="margin-top: 0.5rem; padding: 0.5rem; background: #e0f2fe; border-radius: 4px; font-size: 0.75rem; color: #0c4a6e; border-left: 3px solid #0ea5e9;">
+                                        <strong>Return Reason:</strong> <%= returnRequest.reason %>
+                                    </div>
+                                <% } %>
+                                
+                                <% if (returnRequest.adminNotes && returnRequest.status === 'rejected') { %>
+                                    <div style="margin-top: 0.5rem; padding: 0.5rem; background: #fee2e2; border-radius: 4px; font-size: 0.75rem; color: #991b1b; border-left: 3px solid #dc2626;">
+                                        <strong>Rejection Reason:</strong> <%= returnRequest.adminNotes %>
+                                    </div>
+                                <% } %>
+                                
+                                <div style="margin-top: 0.5rem; font-size: 0.75rem; color: #64748b;">
+                                    <strong>Requested on:</strong>
+                                    <%= new Date(returnRequest.requestedAt).toLocaleDateString('en-IN', { 
+                                        year: 'numeric', 
+                                        month: 'long', 
+                                        day: 'numeric',
+                                        hour: '2-digit',
+                                        minute: '2-digit'
+                                    }) %>
+                                    
+                                    <% if (returnRequest.processedAt) { %>
+                                        <br><strong>Processed on:</strong>
+                                        <%= new Date(returnRequest.processedAt).toLocaleDateString('en-IN', { 
+                                            year: 'numeric', 
+                                            month: 'long', 
+                                            day: 'numeric',
+                                            hour: '2-digit',
+                                            minute: '2-digit'
+                                        }) %>
+                                    <% } %>
+                                </div>
+                                
+                                <% if (returnRequest.status === 'pending') { %>
+                                    <div style="margin-top: 0.75rem; padding: 0.5rem; background: #fef3c7; border-radius: 4px; font-size: 0.75rem; color: #92400e;">
+                                        <i class="fas fa-clock" style="margin-right: 0.25rem;"></i>
+                                        Your return request is being reviewed by our admin team.
+                                    </div>
+                                <% } else if (returnRequest.status === 'approved') { %>
+                                    <div style="margin-top: 0.75rem; padding: 0.5rem; background: #dcfce7; border-radius: 4px; font-size: 0.75rem; color: #166534;">
+                                        <i class="fas fa-check-circle" style="margin-right: 0.25rem;"></i>
+                                        Return request approved! Refund will be processed soon.
+                                    </div>
+                                <% } else if (returnRequest.status === 'rejected') { %>
+                                    <div style="margin-top: 0.75rem; padding: 0.5rem; background: #fee2e2; border-radius: 4px; font-size: 0.75rem; color: #991b1b;">
+                                        <i class="fas fa-times-circle" style="margin-right: 0.25rem;"></i>
+                                        Return request was rejected.
                                     </div>
                                 <% } %>
                             </div>

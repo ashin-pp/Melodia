@@ -647,6 +647,22 @@
                 </div>
 
                 <div class="form-group">
+                    <label for="referralCode" class="form-label">Referral Code (Optional)</label>
+                    <input 
+                        type="text" 
+                        id="referralCode" 
+                        name="referralCode" 
+                        class="form-input" 
+                        placeholder="Enter referral code if you have one"
+                        value="<%= typeof referralCode !== 'undefined' ? referralCode : '' %>"
+                        style="text-transform: uppercase;"
+                        maxlength="8"
+                    >
+                    <div class="error-message" id="referralCodeError"></div>
+                    <div class="success-message" id="referralCodeSuccess" style="color: #38a169; font-size: 12px; margin-top: 5px; display: none;"></div>
+                </div>
+
+                <div class="form-group">
                     <label for="password" class="form-label">Password</label>
                     <div class="password-container">
                         <input 
@@ -1129,6 +1145,70 @@
                 }
             }
         });
+
+        // Referral code validation
+        const referralCodeInput = document.getElementById('referralCode');
+        const referralCodeError = document.getElementById('referralCodeError');
+        const referralCodeSuccess = document.getElementById('referralCodeSuccess');
+        
+        let referralValidationTimeout;
+        
+        referralCodeInput.addEventListener('input', function() {
+            const referralCode = this.value.trim().toUpperCase();
+            this.value = referralCode;
+            
+            // Clear previous timeout
+            clearTimeout(referralValidationTimeout);
+            
+            // Reset messages
+            referralCodeError.textContent = '';
+            referralCodeError.style.display = 'none';
+            referralCodeSuccess.textContent = '';
+            referralCodeSuccess.style.display = 'none';
+            
+            if (referralCode.length === 0) {
+                return; // Optional field, no validation needed for empty
+            }
+            
+            if (referralCode.length < 8) {
+                return; // Wait for complete code
+            }
+            
+            // Debounce validation
+            referralValidationTimeout = setTimeout(() => {
+                validateReferralCode(referralCode);
+            }, 500);
+        });
+        
+        async function validateReferralCode(code) {
+            try {
+                const response = await fetch('/api/referral/validate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ referralCode: code })
+                });
+                
+                const result = await response.json();
+                
+                if (result.valid) {
+                    referralCodeSuccess.textContent = `✓ Valid referral code from ${result.referrer.name}`;
+                    referralCodeSuccess.style.display = 'block';
+                    referralCodeInput.classList.add('success');
+                    referralCodeInput.classList.remove('error');
+                } else {
+                    referralCodeError.textContent = result.message;
+                    referralCodeError.style.display = 'block';
+                    referralCodeInput.classList.add('error');
+                    referralCodeInput.classList.remove('success');
+                }
+            } catch (error) {
+                console.error('Error validating referral code:', error);
+                referralCodeError.textContent = 'Unable to validate referral code';
+                referralCodeError.style.display = 'block';
+            }
+        }
     </script>
 
     <!-- FIXED: Proper error message handling -->

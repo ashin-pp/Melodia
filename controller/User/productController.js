@@ -14,7 +14,7 @@ import Wishlist from '../../model/wishlistSchema.js';
 
 export const getShop = async (req, res) => {
   try {
-    console.log(' getShop called - User:', req.session?.user?.name || 'Not logged in');
+
 
     let user = null;
     if (req.session && req.session.user && req.session.user.id) {
@@ -34,7 +34,7 @@ export const getShop = async (req, res) => {
       ? req.query.brands.split(',').map(b => b.trim()).filter(Boolean)
       : [];
 
-    console.log('Brand filters received:', brands);
+
 
     // Build match stage
     const matchStage = { isListed: true, };
@@ -77,16 +77,17 @@ export const getShop = async (req, res) => {
 
       {
         $addFields: {
-          // Get the best offer (product or category)
+          // Get the best offer (product or category) - Force maximum calculation
           bestOffer: {
-            $max: [
-              { $ifNull: ["$offer", 0] },
-              { $ifNull: ["$categoryInfo.offer", 0] }
-            ]
+            $cond: {
+              if: { $gte: [{ $ifNull: ["$categoryInfo.offer", 0] }, { $ifNull: ["$offer", 0] }] },
+              then: { $ifNull: ["$categoryInfo.offer", 0] },
+              else: { $ifNull: ["$offer", 0] }
+            }
           },
-          // Get lowest regular price
+          productOffer: { $ifNull: ["$offer", 0] },
+          categoryOffer: { $ifNull: ["$categoryInfo.offer", 0] },
           lowestPrice: { $min: "$variantDocs.regularPrice" },
-          // Get lowest sale price (already calculated in variant schema)
           lowestSalePrice: { $min: "$variantDocs.salePrice" }
         }
       }
@@ -133,6 +134,8 @@ export const getShop = async (req, res) => {
 
     // Execute query
     const products = await Product.aggregate(pipeline).exec();
+    
+
 
     // Count total products for pagination
     const countPipeline = [
@@ -229,6 +232,7 @@ export const getShop = async (req, res) => {
 
     // Get cart count for header (if user is logged in)
     let cartCount = 0;
+    let wishlistCount = 0;
     let userWishlistItems = [];
     if (user) {
       // Cart is now imported at the top
@@ -239,6 +243,7 @@ export const getShop = async (req, res) => {
       // Wishlist is now imported at the top
       const wishlist = await Wishlist.findOne({ userId: user._id });
       if (wishlist) {
+        wishlistCount = wishlist.items.length;
         userWishlistItems = wishlist.items.map(item => item.variantId.toString());
       }
     }
@@ -271,6 +276,7 @@ export const getShop = async (req, res) => {
         totalProducts,
         user,
         cartCount,
+        wishlistCount,
         userWishlistItems
       });
     }
@@ -302,7 +308,7 @@ export const getProductDetails = async (req, res) => {
     }
 
     const product = await Product.findById(productId)
-      .populate({ path: 'categoryId', select: 'name isListed' })
+      .populate({ path: 'categoryId', select: 'name isListed offer' })
       .populate('variants');
 
     console.log(product);
@@ -341,12 +347,27 @@ export const getProductDetails = async (req, res) => {
     // Get the first variant as default
     const defaultVariant = product.variants[0];
 
-    // Check if default variant is in user's wishlist
+    // Calculate best offer (product or category)
+    const productOffer = product.offer || 0;
+    const categoryOffer = product.categoryId?.offer || 0;
+    const bestOffer = Math.max(productOffer, categoryOffer);
+    const offerSource = bestOffer === productOffer ? 'product' : 'category';
+
+
+
+    // Check if default variant is in user's wishlist and get counts
     let isInWishlist = false;
+    let cartCount = 0;
+    let wishlistCount = 0;
     if (user && defaultVariant) {
-      // Wishlist is now imported at the top
+      // Get cart count
+      const cart = await Cart.findOne({ userId: user._id });
+      cartCount = cart ? cart.getTotalItems() : 0;
+      
+      // Get wishlist info
       const wishlist = await Wishlist.findOne({ userId: user._id });
       if (wishlist) {
+        wishlistCount = wishlist.items.length;
         isInWishlist = wishlist.items.some(item => item.variantId.toString() === defaultVariant._id.toString());
       }
     }
@@ -360,7 +381,14 @@ export const getProductDetails = async (req, res) => {
       categories: [product.categoryId],
       errorMessage: req.query.error || null,
       user,
-      isInWishlist
+      cartCount,
+      wishlistCount,
+      isInWishlist,
+      // Offer information
+      productOffer,
+      categoryOffer,
+      bestOffer,
+      offerSource
     });
 
   } catch (error) {
@@ -417,7 +445,6 @@ export const getVariantDetails = async (req, res) => {
       stock: variant.stock,
       color: variant.color,
       coupon: variant.productId?.coupon || null,
-      offerSource: bestOffer === productOffer ? 'product' : 'category'
     });
 
   } catch (error) {
