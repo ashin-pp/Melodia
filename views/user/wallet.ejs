@@ -1,0 +1,1032 @@
+<%- include('../partials/header-common', { title: 'My Wallet - Melodia' }) %>
+
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Inter', sans-serif;
+        background: #f1f5f9;
+        color: #334155;
+        line-height: 1.6;
+        margin-top: 80px;
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    .page-header {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        border-left: 4px solid #10b981;
+    }
+
+    .page-title {
+        font-size: 1.875rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .page-subtitle {
+        color: #64748b;
+        font-size: 1rem;
+    }
+
+    .wallet-card {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        border-radius: 16px;
+        padding: 2.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 25px rgba(16, 185, 129, 0.2);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .wallet-card::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        pointer-events: none;
+    }
+
+    .wallet-balance {
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .wallet-subtitle {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        font-weight: 500;
+    }
+
+    .wallet-icon {
+        position: absolute;
+        right: 2rem;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 4rem;
+        opacity: 0.2;
+    }
+
+    .filter-section {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .filter-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .filter-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        align-items: end;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .form-label {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #374151;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-control {
+        padding: 0.75rem;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        transition: all 0.2s;
+        background: white;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #10b981;
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+    }
+
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+    }
+
+    .btn-primary {
+        background: #10b981;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #059669;
+        transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+        background: #6b7280;
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background: #4b5563;
+    }
+
+    .transactions-section {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+
+    .section-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid #e5e7eb;
+        background: #f9fafb;
+    }
+
+    .section-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #1e293b;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .transactions-list {
+        padding: 1rem;
+    }
+
+    .transaction-card {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+        transition: all 0.2s;
+        position: relative;
+    }
+
+    .transaction-card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        transform: translateY(-1px);
+    }
+
+    .transaction-type-credit {
+        border-left: 4px solid #10b981;
+    }
+
+    .transaction-type-debit {
+        border-left: 4px solid #ef4444;
+    }
+
+    .transaction-content {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    .transaction-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.125rem;
+    }
+
+    .transaction-icon.credit {
+        background: rgba(16, 185, 129, 0.1);
+        color: #10b981;
+    }
+
+    .transaction-icon.debit {
+        background: rgba(239, 68, 68, 0.1);
+        color: #ef4444;
+    }
+
+    .transaction-details h6 {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 0.25rem;
+    }
+
+    .transaction-meta {
+        font-size: 0.75rem;
+        color: #6b7280;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .transaction-amount {
+        text-align: right;
+    }
+
+    .amount-credit {
+        color: #10b981;
+        font-weight: 600;
+        font-size: 1rem;
+    }
+
+    .amount-debit {
+        color: #ef4444;
+        font-weight: 600;
+        font-size: 1rem;
+    }
+
+    .balance-after {
+        font-size: 0.75rem;
+        color: #6b7280;
+        margin-top: 0.25rem;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: #6b7280;
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    .empty-state h4 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: #374151;
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 1.5rem;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .pagination a {
+        padding: 0.5rem 0.75rem;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        color: #374151;
+        text-decoration: none;
+        font-size: 0.875rem;
+        transition: all 0.2s;
+    }
+
+    .pagination a:hover {
+        background: #f3f4f6;
+        border-color: #9ca3af;
+    }
+
+    .pagination a.active {
+        background: #10b981;
+        border-color: #10b981;
+        color: white;
+    }
+
+    /* Referral Modal Styles */
+    .referral-modal {
+        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 6px rgba(59, 130, 246, 0.1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .referral-modal::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 100px;
+        height: 100px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        transform: translate(30px, -30px);
+    }
+
+    .referral-modal:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(59, 130, 246, 0.2);
+    }
+
+    .referral-modal-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: relative;
+        z-index: 1;
+    }
+
+    .referral-modal-left {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .referral-icon {
+        width: 50px;
+        height: 50px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.25rem;
+    }
+
+    .referral-text h4 {
+        color: white;
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin: 0 0 0.25rem 0;
+    }
+
+    .referral-text p {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 0.875rem;
+        margin: 0;
+    }
+
+    .referral-modal-right {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+    }
+
+    .referral-stats {
+        display: flex;
+        gap: 1.5rem;
+    }
+
+    .stat-item {
+        text-align: center;
+    }
+
+    .stat-number {
+        display: block;
+        color: white;
+        font-size: 1.125rem;
+        font-weight: 600;
+    }
+
+    .stat-label {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .referral-arrow {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 1rem;
+        transition: transform 0.3s ease;
+    }
+
+    .referral-modal:hover .referral-arrow {
+        transform: translateX(4px);
+    }
+
+    @media (max-width: 768px) {
+        .container {
+            padding: 1rem;
+        }
+
+        .wallet-card {
+            padding: 1.5rem;
+        }
+
+        .wallet-balance {
+            font-size: 2rem;
+        }
+
+        .filter-row {
+            grid-template-columns: 1fr;
+        }
+
+        .transaction-content {
+            grid-template-columns: 1fr;
+            gap: 0.75rem;
+            text-align: center;
+        }
+
+        .transaction-amount {
+            text-align: center;
+        }
+
+        .referral-modal {
+            padding: 1rem;
+        }
+
+        .referral-modal-content {
+            flex-direction: column;
+            gap: 1rem;
+            text-align: center;
+        }
+
+        .referral-stats {
+            gap: 1rem;
+        }
+
+        .referral-arrow {
+            transform: rotate(90deg);
+        }
+
+        .referral-modal:hover .referral-arrow {
+            transform: rotate(90deg) translateX(4px);
+        }
+    }
+</style>
+<div class="container">
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="fas fa-wallet"></i>
+            My Wallet
+        </h1>
+        <p class="page-subtitle">Manage your wallet balance and view transaction history</p>
+    </div>
+
+    <!-- Wallet Balance Card -->
+    <div class="wallet-card">
+        <div class="wallet-balance">₹<span id="walletBalance"><%= walletBalance.toFixed(2) %></span></div>
+        <p class="wallet-subtitle">Available Balance</p>
+        <i class="fas fa-coins wallet-icon"></i>
+    </div>
+
+    <!-- Share & Earn Referral Modal -->
+    <div class="referral-modal" onclick="scrollToReferralSection()">
+        <div class="referral-modal-content">
+            <div class="referral-modal-left">
+                <div class="referral-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="referral-text">
+                    <h4>Share & Earn</h4>
+                    <p>Invite friends and earn ₹200 for each referral!</p>
+                </div>
+            </div>
+            <div class="referral-modal-right">
+                <div class="referral-stats">
+                    <div class="stat-item">
+                        <span class="stat-number" id="modalTotalReferrals">0</span>
+                        <span class="stat-label">Friends</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">₹<span id="modalTotalRewards">0</span></span>
+                        <span class="stat-label">Earned</span>
+                    </div>
+                </div>
+                <div class="referral-arrow">
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transaction Filters -->
+    <div class="filter-section">
+        <h5 class="filter-title">
+            <i class="fas fa-filter"></i>
+            Filter Transactions
+        </h5>
+        <div class="filter-row">
+            <div class="form-group">
+                <label class="form-label">Transaction Type</label>
+                <select class="form-control" id="typeFilter">
+                    <option value="">All Types</option>
+                    <option value="credit">Credits</option>
+                    <option value="debit">Debits</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Start Date</label>
+                <input type="date" class="form-control" id="startDate">
+            </div>
+            <div class="form-group">
+                <label class="form-label">End Date</label>
+                <input type="date" class="form-control" id="endDate">
+            </div>
+            <div class="form-group">
+                <button class="btn btn-primary" onclick="filterTransactions()">
+                    <i class="fas fa-search"></i>Filter
+                </button>
+                <button class="btn btn-secondary" onclick="clearFilters()" style="margin-left: 0.5rem;">
+                    <i class="fas fa-times"></i>Clear
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transaction History -->
+    <div class="transactions-section">
+        <div class="section-header">
+            <h5 class="section-title">
+                <i class="fas fa-history"></i>
+                Transaction History
+            </h5>
+        </div>
+        
+        <div class="transactions-list">
+            <div id="transactionsList">
+                <% if (transactions && transactions.length > 0) { %>
+                    <% transactions.forEach(transaction => { %>
+                        <div class="transaction-card transaction-type-<%= transaction.type %>">
+                            <div class="transaction-content">
+                                <div class="transaction-icon <%= transaction.type %>">
+                                    <% if (transaction.type === 'credit') { %>
+                                        <i class="fas fa-plus"></i>
+                                    <% } else { %>
+                                        <i class="fas fa-minus"></i>
+                                    <% } %>
+                                </div>
+                                
+                                <div class="transaction-details">
+                                    <h6><%= transaction.description %></h6>
+                                    <div class="transaction-meta">
+                                        <i class="fas fa-calendar"></i>
+                                        <%= new Date(transaction.createdAt).toLocaleDateString('en-IN', { 
+                                            year: 'numeric', 
+                                            month: 'long', 
+                                            day: 'numeric',
+                                            hour: '2-digit',
+                                            minute: '2-digit'
+                                        }) %>
+                                        <% if (transaction.transactionId) { %>
+                                            <span>• ID: <%= transaction.transactionId %></span>
+                                        <% } %>
+                                    </div>
+                                </div>
+                                
+                                <div class="transaction-amount">
+                                    <span class="amount-<%= transaction.type %>">
+                                        <%= transaction.type === 'credit' ? '+' : '-' %>₹<%= transaction.amount.toFixed(2) %>
+                                    </span>
+                                    <div class="balance-after">Balance: ₹<%= transaction.balanceAfter.toFixed(2) %></div>
+                                </div>
+                            </div>
+                        </div>
+                    <% }) %>
+                <% } else { %>
+                    <div class="empty-state">
+                        <i class="fas fa-receipt"></i>
+                        <h4>No Transactions Yet</h4>
+                        <p>Your wallet transaction history will appear here.</p>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <% if (pagination && pagination.totalPages > 1) { %>
+            <div class="pagination">
+                <% if (pagination.currentPage > 1) { %>
+                    <a href="#" onclick="loadPage(<%= pagination.currentPage - 1 %>)">Previous</a>
+                <% } %>
+                
+                <% for (let i = 1; i <= pagination.totalPages; i++) { %>
+                    <a href="#" onclick="loadPage(<%= i %>)" class="<%= pagination.currentPage === i ? 'active' : '' %>"><%= i %></a>
+                <% } %>
+                
+                <% if (pagination.currentPage < pagination.totalPages) { %>
+                    <a href="#" onclick="loadPage(<%= pagination.currentPage + 1 %>)">Next</a>
+                <% } %>
+            </div>
+        <% } %>
+    </div>
+
+    <!-- Referral Section -->
+    <div class="transactions-section" id="referralSection" style="margin-top: 2rem;">
+        <div class="section-header">
+            <h5 class="section-title">
+                <i class="fas fa-users"></i>
+                Referral Program
+            </h5>
+        </div>
+        
+        <div class="transactions-list">
+            <!-- Referral Stats -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                <div style="background: #f0f9ff; padding: 1rem; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 1.5rem; font-weight: 600; color: #0369a1;">₹<span id="totalReferralRewards">0</span></div>
+                    <div style="font-size: 0.875rem; color: #64748b;">Total Earned</div>
+                </div>
+                <div style="background: #f0fdf4; padding: 1rem; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 1.5rem; font-weight: 600; color: #16a34a;"><span id="totalReferrals">0</span></div>
+                    <div style="font-size: 0.875rem; color: #64748b;">Friends Referred</div>
+                </div>
+            </div>
+
+            <!-- Share Section -->
+            <div style="background: #fafafa; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem;">
+                <h6 style="margin-bottom: 1rem; color: #1e293b;">Share & Earn</h6>
+                <p style="font-size: 0.875rem; color: #64748b; margin-bottom: 1rem;">
+                    Invite friends and earn ₹200 for each successful referral. Your friend gets ₹100 too!
+                </p>
+                
+                <div style="display: grid; grid-template-columns: 1fr auto; gap: 0.5rem; margin-bottom: 1rem;">
+                    <input type="text" id="referralCodeInput" readonly 
+                           style="padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 6px; background: white; font-family: monospace;"
+                           placeholder="Loading...">
+                    <button onclick="copyReferralCode()" 
+                            style="padding: 0.75rem 1rem; background: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer;">
+                        <i class="fas fa-copy"></i> Copy
+                    </button>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr auto; gap: 0.5rem;">
+                    <input type="text" id="referralUrlInput" readonly 
+                           style="padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 6px; background: white; font-size: 0.875rem;"
+                           placeholder="Loading...">
+                    <button onclick="copyReferralUrl()" 
+                            style="padding: 0.75rem 1rem; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer;">
+                        <i class="fas fa-link"></i> Copy Link
+                    </button>
+                </div>
+            </div>
+
+            <!-- Recent Referrals -->
+            <div id="referralsList">
+                <div style="text-align: center; padding: 2rem; color: #6b7280;">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 1.5rem; margin-bottom: 0.5rem;"></i>
+                    <p>Loading referrals...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('../partials/footer') %>
+    <script>
+        let currentPage = 1;
+        let currentFilters = {};
+
+        // Filter transactions
+        function filterTransactions() {
+            const type = document.getElementById('typeFilter').value;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+
+            currentFilters = {
+                type: type,
+                startDate: startDate,
+                endDate: endDate
+            };
+
+            loadTransactions(1, currentFilters);
+        }
+
+        // Clear filters
+        function clearFilters() {
+            document.getElementById('typeFilter').value = '';
+            document.getElementById('startDate').value = '';
+            document.getElementById('endDate').value = '';
+            currentFilters = {};
+            loadTransactions(1);
+        }
+
+        // Load specific page
+        function loadPage(page) {
+            currentPage = page;
+            loadTransactions(page, currentFilters);
+        }
+
+        // Load transactions via AJAX
+        function loadTransactions(page = 1, filters = {}) {
+            const params = new URLSearchParams({
+                page: page,
+                limit: 20,
+                ...filters
+            });
+
+            fetch(`/api/wallet/transactions?${params}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        updateTransactionsList(data.transactions);
+                        updatePagination(data.pagination);
+                    } else {
+                        console.error('Failed to load transactions:', data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading transactions:', error);
+                });
+        }
+
+        // Update transactions list
+        function updateTransactionsList(transactions) {
+            const container = document.getElementById('transactionsList');
+            
+            if (transactions.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-receipt"></i>
+                        <h4>No Transactions Found</h4>
+                        <p>No transactions match your current filters.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            transactions.forEach(transaction => {
+                const date = new Date(transaction.createdAt).toLocaleDateString('en-IN', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                html += `
+                    <div class="transaction-card card transaction-type-${transaction.type}">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-md-1">
+                                    ${transaction.type === 'credit' 
+                                        ? '<i class="fas fa-plus-circle text-success" style="font-size: 1.5rem;"></i>'
+                                        : '<i class="fas fa-minus-circle text-danger" style="font-size: 1.5rem;"></i>'
+                                    }
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="mb-1">${transaction.description}</h6>
+                                    <small class="text-muted">
+                                        <i class="fas fa-calendar me-1"></i>${date}
+                                    </small>
+                                </div>
+                                <div class="col-md-3">
+                                    ${transaction.transactionId ? `<small class="text-muted d-block">ID: ${transaction.transactionId}</small>` : ''}
+                                    <small class="text-muted">Balance: ₹${transaction.balanceAfter.toFixed(2)}</small>
+                                </div>
+                                <div class="col-md-2 text-end">
+                                    <span class="amount-${transaction.type}">
+                                        ${transaction.type === 'credit' ? '+' : '-'}₹${transaction.amount.toFixed(2)}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // Update pagination
+        function updatePagination(pagination) {
+            // Implementation for dynamic pagination update
+            // This would update the pagination controls based on the new data
+        }
+
+        // Refresh wallet balance
+        function refreshBalance() {
+            fetch('/api/wallet/balance')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('walletBalance').textContent = data.balance.toFixed(2);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error refreshing balance:', error);
+                });
+        }
+
+        // Auto-refresh balance every 30 seconds
+        setInterval(refreshBalance, 30000);
+
+        // Load referral data
+        loadReferralData();
+
+        // Scroll to referral section
+        function scrollToReferralSection() {
+            const referralSection = document.getElementById('referralSection');
+            if (referralSection) {
+                referralSection.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'start' 
+                });
+                
+                // Add a subtle highlight effect
+                referralSection.style.transition = 'box-shadow 0.3s ease';
+                referralSection.style.boxShadow = '0 0 20px rgba(59, 130, 246, 0.3)';
+                setTimeout(() => {
+                    referralSection.style.boxShadow = '';
+                }, 2000);
+            }
+        }
+
+        // Copy referral code
+        function copyReferralCode() {
+            const codeInput = document.getElementById('referralCodeInput');
+            codeInput.select();
+            codeInput.setSelectionRange(0, 99999);
+            
+            navigator.clipboard.writeText(codeInput.value).then(() => {
+                showToast('Referral code copied!', 'success');
+            }).catch(() => {
+                document.execCommand('copy');
+                showToast('Referral code copied!', 'success');
+            });
+        }
+
+        // Copy referral URL
+        function copyReferralUrl() {
+            const urlInput = document.getElementById('referralUrlInput');
+            urlInput.select();
+            urlInput.setSelectionRange(0, 99999);
+            
+            navigator.clipboard.writeText(urlInput.value).then(() => {
+                showToast('Referral link copied!', 'success');
+            }).catch(() => {
+                document.execCommand('copy');
+                showToast('Referral link copied!', 'success');
+            });
+        }
+
+        // Load referral data
+        function loadReferralData() {
+            fetch('/api/referral/stats')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const stats = data.stats;
+                        
+                        // Update stats
+                        document.getElementById('totalReferralRewards').textContent = stats.totalRewards || 0;
+                        document.getElementById('totalReferrals').textContent = stats.totalReferrals || 0;
+                        
+                        // Update modal stats
+                        document.getElementById('modalTotalReferrals').textContent = stats.totalReferrals || 0;
+                        document.getElementById('modalTotalRewards').textContent = stats.totalRewards || 0;
+                        
+                        // Update referral code and URL
+                        const referralCode = stats.referralCode || 'Loading...';
+                        document.getElementById('referralCodeInput').value = referralCode;
+                        
+                        if (stats.referralCode) {
+                            document.getElementById('referralUrlInput').value = `${window.location.origin}/signup?ref=${stats.referralCode}`;
+                        } else {
+                            document.getElementById('referralUrlInput').value = 'Generating referral code...';
+                            // Retry loading after a short delay if no referral code
+                            setTimeout(() => {
+                                loadReferralData();
+                            }, 2000);
+                        }
+                        
+                        // Update referrals list
+                        updateReferralsList(stats.referrals || []);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading referral data:', error);
+                    document.getElementById('referralsList').innerHTML = `
+                        <div style="text-align: center; padding: 2rem; color: #ef4444;">
+                            <i class="fas fa-exclamation-triangle" style="font-size: 1.5rem; margin-bottom: 0.5rem;"></i>
+                            <p>Failed to load referral data</p>
+                        </div>
+                    `;
+                });
+        }
+
+        // Update referrals list
+        function updateReferralsList(referrals) {
+            const container = document.getElementById('referralsList');
+            
+            if (referrals.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 2rem; color: #6b7280;">
+                        <i class="fas fa-user-plus" style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                        <h4 style="margin-bottom: 0.5rem;">No Referrals Yet</h4>
+                        <p>Share your referral code to start earning rewards!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '<h6 style="margin-bottom: 1rem; color: #1e293b;">Recent Referrals</h6>';
+            
+            referrals.forEach(referral => {
+                const joinDate = new Date(referral.joinedAt).toLocaleDateString('en-IN', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                });
+                
+                html += `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 6px; margin-bottom: 0.5rem;">
+                        <div>
+                            <div style="font-weight: 500; color: #1e293b;">${referral.userId.name}</div>
+                            <div style="font-size: 0.75rem; color: #6b7280;">Joined ${joinDate}</div>
+                        </div>
+                        <div style="padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 500; ${referral.rewardGiven ? 'background: #dcfce7; color: #166534;' : 'background: #fef3c7; color: #92400e;'}">
+                            ${referral.rewardGiven ? '₹200 Earned' : 'Pending'}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        // Show toast notification
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 12px 20px;
+                background: ${type === 'success' ? '#10b981' : '#ef4444'};
+                color: white;
+                border-radius: 6px;
+                font-size: 14px;
+                z-index: 10000;
+                animation: slideIn 0.3s ease;
+            `;
+            toast.textContent = message;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => document.body.removeChild(toast), 300);
+            }, 3000);
+        }
+
+        // Add CSS for toast animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

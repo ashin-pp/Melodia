@@ -12,6 +12,12 @@ import checkoutCtrl from '../controller/User/checkoutController.js';
 import { protectUser } from '../middleware/userAuth.js';
 import orderCtrl from '../controller/User/orderController.js';
 import { avatarUpload } from '../config/multer.js';
+import paymentCtrl from '../controller/User/paymentController.js';
+import couponCtrl from '../controller/User/couponController.js';
+import walletCtrl from '../controller/User/walletController.js';
+import referralService from '../services/referralService.js';
+import User from '../model/userSchema.js';
+import Order from '../model/orderSchema.js';
 
 const router = express.Router();
 
@@ -57,7 +63,7 @@ router.get(
 router.get(
   '/auth/google/callback',
   isNotAuthenticated,
-  passport.authenticate('google', { failureRedirect: '/login' }),
+  passport.authenticate('google', { failureRedirect: '/login?error=google_auth_failed' }),
   userCtrl.googleCallback
 );
 
@@ -104,6 +110,7 @@ router.post('/wishlist/add', protectUser, wishlistCtrl.addToWishlist);
 router.delete('/wishlist/remove', protectUser, wishlistCtrl.removeFromWishlist);
 router.post('/wishlist/move-to-cart', protectUser, wishlistCtrl.moveToCart);
 router.get('/wishlist/count', protectUser, wishlistCtrl.getWishlistCount);
+router.get('/wishlist/check/:variantId', protectUser, wishlistCtrl.checkWishlistItem);
 
 // Address routes
 router.get('/addresses', protectUser, addressCtrl.renderAddressesPage);
@@ -116,6 +123,7 @@ router.put('/addresses/:id/default', protectUser, addressCtrl.setDefaultAddress)
 // Checkout routes
 router.get('/checkout', protectUser, checkoutCtrl.getCheckout);
 router.post('/checkout/place-order', protectUser, checkoutCtrl.placeOrder);
+router.post('/checkout/complete-razorpay', protectUser, checkoutCtrl.completeRazorpayOrder);
 router.get('/order-success/:orderId', protectUser, checkoutCtrl.orderSuccess);
 
 // Order Management routes
@@ -127,8 +135,47 @@ router.post('/orders/:orderId/return', protectUser, orderCtrl.returnOrder);
 router.post('/orders/:orderId/return-item', protectUser, orderCtrl.returnOrderItem);
 router.get('/orders/:orderId/invoice', protectUser, orderCtrl.downloadInvoice);
 
+// Payment routes
+router.post('/payment/create-order', protectUser, paymentCtrl.createRazorpayOrder);
+router.post('/payment/verify', protectUser, paymentCtrl.verifyPayment);
+router.post('/payment/failure', protectUser, paymentCtrl.handlePaymentFailure);
+router.post('/payment/wallet', protectUser, paymentCtrl.processWalletPayment);
 
+// Payment result pages
+router.get('/payment/success/:orderId', protectUser, orderCtrl.getPaymentSuccess);
+router.get('/payment/failure/:orderId', protectUser, orderCtrl.getPaymentFailure);
 
+// Coupon routes
+router.post('/coupons/apply', protectUser, couponCtrl.applyCoupon);
+router.post('/coupons/remove', protectUser, couponCtrl.removeCoupon);
+router.get('/coupons/available', protectUser, couponCtrl.getAvailableCoupons);
 
+// Wallet routes
+router.get('/wallet', protectUser, walletCtrl.getWalletPage);
+router.get('/api/wallet/balance', protectUser, walletCtrl.getWalletBalance);
+router.get('/api/wallet/transactions', protectUser, walletCtrl.getTransactionHistory);
+router.post('/api/wallet/validate-payment', protectUser, walletCtrl.validateWalletPayment);
+
+// Referral routes (integrated with wallet)
+router.get('/api/referral/stats', protectUser, walletCtrl.getReferralStats);
+router.post('/api/referral/validate', async (req, res) => {
+  try {
+    const { referralCode } = req.body;
+
+    if (!referralCode || referralCode.trim().length === 0) {
+      return res.json({ valid: false, message: 'Referral code is required' });
+    }
+
+    // Basic rate limiting - prevent too many validation requests
+    const clientIP = req.ip || req.connection.remoteAddress;
+    const rateLimitKey = `referral_validate_${clientIP}`;
+
+    const result = await referralService.validateReferralCode(referralCode.trim());
+    res.json(result);
+  } catch (error) {
+    console.error('Referral validation error:', error);
+    res.status(500).json({ valid: false, message: 'Validation failed' });
+  }
+});
 
 export default router;

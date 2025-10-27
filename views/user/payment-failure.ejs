@@ -1,0 +1,306 @@
+<%- include('../partials/header-common', { title: 'Payment Failed - Melodia' }) %>
+
+<style>
+    body {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .failure-container {
+        background: white;
+        border-radius: 20px;
+        padding: 60px 40px;
+        text-align: center;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+        max-width: 500px;
+        width: 90%;
+        margin: 20px;
+    }
+
+    .failure-icon {
+        width: 100px;
+        height: 100px;
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 30px;
+        animation: failureShake 1s ease-in-out;
+    }
+
+    .failure-icon i {
+        font-size: 50px;
+        color: white;
+    }
+
+    @keyframes failureShake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
+    }
+
+    .failure-title {
+        font-size: 32px;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 15px;
+    }
+
+    .failure-message {
+        font-size: 18px;
+        color: #6b7280;
+        margin-bottom: 30px;
+        line-height: 1.6;
+    }
+
+    .error-details {
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        border-radius: 12px;
+        padding: 20px;
+        margin: 30px 0;
+        text-align: left;
+    }
+
+    .error-title {
+        font-weight: 600;
+        color: #dc2626;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .error-description {
+        color: #7f1d1d;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    .order-info {
+        background: #f9fafb;
+        border-radius: 12px;
+        padding: 20px;
+        margin: 20px 0;
+        text-align: left;
+    }
+
+    .order-info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .order-info-row:last-child {
+        border-bottom: none;
+    }
+
+    .order-info-label {
+        color: #6b7280;
+        font-weight: 500;
+    }
+
+    .order-info-value {
+        color: #1f2937;
+        font-weight: 600;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-top: 30px;
+    }
+
+    .btn {
+        padding: 15px 30px;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(239, 68, 68, 0.3);
+        color: white;
+        text-decoration: none;
+    }
+
+    .btn-secondary {
+        background: #f3f4f6;
+        color: #374151;
+        border: 2px solid #e5e7eb;
+    }
+
+    .btn-secondary:hover {
+        background: #e5e7eb;
+        transform: translateY(-2px);
+        color: #374151;
+        text-decoration: none;
+    }
+
+    .btn-success {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+    }
+
+    .btn-success:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+        color: white;
+        text-decoration: none;
+    }
+
+    .help-section {
+        margin-top: 30px;
+        padding: 20px;
+        background: #f0f9ff;
+        border-radius: 12px;
+        border: 1px solid #bae6fd;
+    }
+
+    .help-title {
+        font-weight: 600;
+        color: #0369a1;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .help-text {
+        color: #0c4a6e;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    @media (max-width: 768px) {
+        .failure-container {
+            padding: 40px 20px;
+        }
+        
+        .failure-title {
+            font-size: 28px;
+        }
+        
+        .action-buttons {
+            flex-direction: column;
+        }
+        
+        .btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+
+<body>
+    <div class="failure-container">
+        <div class="failure-icon">
+            <i class="fas fa-times"></i>
+        </div>
+        
+        <h1 class="failure-title">Payment Failed</h1>
+        <p class="failure-message">
+            We're sorry, but your payment could not be processed. Please try again or use a different payment method.
+        </p>
+
+        <% if (error && error.description) { %>
+        <div class="error-details">
+            <div class="error-title">
+                <i class="fas fa-exclamation-triangle"></i>
+                Error Details
+            </div>
+            <div class="error-description">
+                <%= error.description %>
+            </div>
+        </div>
+        <% } %>
+
+        <% if (order) { %>
+        <div class="order-info">
+            <div class="order-info-row">
+                <span class="order-info-label">Order ID:</span>
+                <span class="order-info-value">#<%= order.orderId %></span>
+            </div>
+            <div class="order-info-row">
+                <span class="order-info-label">Amount:</span>
+                <span class="order-info-value">₹<%= order.totalAmount.toLocaleString() %></span>
+            </div>
+            <div class="order-info-row">
+                <span class="order-info-label">Status:</span>
+                <span class="order-info-value" style="color: #dc2626;">Payment Failed</span>
+            </div>
+        </div>
+        <% } %>
+
+        <div class="action-buttons">
+            <% if (order) { %>
+            <button onclick="retryPayment()" class="btn btn-primary">
+                <i class="fas fa-redo"></i>
+                Retry Payment
+            </button>
+            <a href="/orders/<%= order.orderId %>" class="btn btn-secondary">
+                <i class="fas fa-receipt"></i>
+                View Order
+            </a>
+            <% } %>
+            <a href="/product/list" class="btn btn-success">
+                <i class="fas fa-shopping-bag"></i>
+                Continue Shopping
+            </a>
+        </div>
+
+        <div class="help-section">
+            <div class="help-title">
+                <i class="fas fa-question-circle"></i>
+                Need Help?
+            </div>
+            <div class="help-text">
+                If you continue to experience issues, please contact our support team. 
+                Your order is saved and you can complete the payment later from your orders page.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function retryPayment() {
+            <% if (order) { %>
+            // Redirect to checkout with the same order
+            window.location.href = '/checkout?retry=<%= order.orderId %>';
+            <% } else { %>
+            // Redirect to cart
+            window.location.href = '/cart';
+            <% } %>
+        }
+
+        // Show additional help after 5 seconds
+        setTimeout(() => {
+            const helpSection = document.querySelector('.help-section');
+            if (helpSection) {
+                helpSection.style.animation = 'fadeIn 0.5s ease-in';
+            }
+        }, 5000);
+    </script>
+</body>
+</html>
