@@ -181,16 +181,15 @@ export const postEditCategory = async (req, res) => {
 
     console.log('📝 Update fields:', updatedFields);
 
-    // ✅ BETTER UPDATE METHOD: Use updateOne for guaranteed update
-    const updateResult = await Category.updateOne(
+    // ✅ Use findOneAndUpdate to trigger the post-save hook for price recalculation
+    const updatedCategory = await Category.findOneAndUpdate(
       { _id: categoryId }, 
-      { $set: updatedFields }
+      { $set: updatedFields },
+      { new: true } // Return the updated document
     );
 
-    console.log('🔄 Update result:', updateResult);
-
-    // ✅ Verify the update worked
-    const updatedCategory = await Category.findById(categoryId);
+    console.log('🔄 Category updated and prices recalculated');
+    console.log('✅ Updated category:', updatedCategory);
     console.log('✅ Updated category verification:', {
       id: updatedCategory._id,
       name: updatedCategory.name, 
@@ -256,7 +255,7 @@ export const toggleCategoryStatus = async (req, res) => {
     });
     
   } catch (error) {
-    console.error('❌ Toggle error:', error);
+    console.error(' Toggle error:', error);
     res.status(500).json({ 
       success: false, 
       message: 'Error updating category status' 

@@ -87,7 +87,21 @@ export const getDashboard = async (req, res) => {
     // Get dashboard statistics
     const stats = await getDashboardStats();
     
-    res.render('admin/dashboard', { stats });
+    // Get recent orders for dashboard
+    const Order = (await import('../../model/orderSchema.js')).default;
+    const recentOrders = await Order.find()
+      .populate('userId', 'firstName lastName email')
+      .populate({
+        path: 'items.variantId',
+        populate: {
+          path: 'productId',
+          select: 'productName brand'
+        }
+      })
+      .sort({ orderDate: -1 })
+      .limit(10);
+    
+    res.render('admin/dashboard', { stats, recentOrders });
   } catch (err) {
     console.error('Dashboard render error:', err);
     res.render('error/500', { title: 'Server Error' });
@@ -100,6 +114,8 @@ const getDashboardStats = async () => {
     // Import models
     const Order = (await import('../../model/orderSchema.js')).default;
     const User = (await import('../../model/userSchema.js')).default;
+    const Product = (await import('../../model/productSchema.js')).default;
+    const Coupon = (await import('../../model/couponSchema.js')).default;
     
     // Get total users count
     const totalUsers = await User.countDocuments({ isBlocked: false });
@@ -124,6 +140,24 @@ const getDashboardStats = async () => {
       { $group: { _id: null, totalSales: { $sum: '$totalAmount' } } }
     ]);
     const totalSales = totalSalesResult.length > 0 ? totalSalesResult[0].totalSales : 0;
+    
+    // Get total discounts given
+    const totalDiscountResult = await Order.aggregate([
+      { $match: { orderStatus: 'Delivered' } },
+      { $group: { 
+        _id: null, 
+        totalDiscount: { 
+          $sum: { 
+            $add: [
+              { $ifNull: ['$discountAmount', 0] },
+              { $ifNull: ['$couponDiscount', 0] },
+              { $ifNull: ['$offerDiscount', 0] }
+            ]
+          }
+        }
+      }}
+    ]);
+    const totalDiscount = totalDiscountResult.length > 0 ? totalDiscountResult[0].totalDiscount : 0;
     
     // Get this month's statistics for comparison
     const currentDate = new Date();
@@ -171,6 +205,54 @@ const getDashboardStats = async () => {
       ? ((thisMonthSales - lastMonthSales) / lastMonthSales * 100).toFixed(1)
       : 0;
     
+    // Get top selling products (last 30 days)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    
+    const topProducts = await Order.aggregate([
+      { $match: { 
+        orderStatus: 'Delivered',
+        orderDate: { $gte: thirtyDaysAgo }
+      }},
+      { $unwind: '$items' },
+      { $group: {
+        _id: '$items.productId',
+        totalQuantity: { $sum: '$items.quantity' },
+        totalRevenue: { $sum: { $multiply: ['$items.price', '$items.quantity'] } }
+      }},
+      { $sort: { totalQuantity: -1 } },
+      { $limit: 5 },
+      { $lookup: {
+        from: 'products',
+        localField: '_id',
+        foreignField: '_id',
+        as: 'product'
+      }},
+      { $unwind: '$product' },
+      { $project: {
+        productName: '$product.productName',
+        brand: '$product.brand',
+        totalQuantity: 1,
+        totalRevenue: 1
+      }}
+    ]);
+    
+    // Get recent orders
+    const recentOrders = await Order.find()
+      .populate('userId', 'firstName lastName email')
+      .sort({ orderDate: -1 })
+      .limit(5)
+      .select('orderId orderDate totalAmount orderStatus paymentMethod');
+    
+    // Get active coupons count
+    const activeCoupons = await Coupon.countDocuments({ 
+      isActive: true,
+      endDate: { $gte: new Date() }
+    });
+    
+    // Get total products count
+    const totalProducts = await Product.countDocuments({ isListed: true });
+    
     return {
       totalUsers,
       totalOrders,
@@ -178,6 +260,9 @@ const getDashboardStats = async () => {
       pendingOrders,
       cancelledOrders,
       totalSales,
+      totalDiscount,
+      activeCoupons,
+      totalProducts,
       orderChange: {
         value: orderChange,
         isPositive: orderChange >= 0
@@ -185,7 +270,10 @@ const getDashboardStats = async () => {
       salesChange: {
         value: Math.abs(salesChange),
         isPositive: salesChange >= 0
-      }
+      },
+      topProducts,
+      recentOrders,
+      averageOrderValue: totalOrders > 0 ? (totalSales / totalOrders).toFixed(2) : 0
     };
   } catch (error) {
     console.error('Error getting dashboard stats:', error);
@@ -196,8 +284,14 @@ const getDashboardStats = async () => {
       pendingOrders: 0,
       cancelledOrders: 0,
       totalSales: 0,
+      totalDiscount: 0,
+      activeCoupons: 0,
+      totalProducts: 0,
       orderChange: { value: 0, isPositive: true },
-      salesChange: { value: 0, isPositive: true }
+      salesChange: { value: 0, isPositive: true },
+      topProducts: [],
+      recentOrders: [],
+      averageOrderValue: 0
     };
   }
 };

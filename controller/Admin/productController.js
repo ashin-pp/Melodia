@@ -701,6 +701,35 @@ export const uploadProductImage = async (req, res) => {
   }
 };
 
+// ============ PRICE RECALCULATION ============
+// Debug function to recalculate all product prices
+export const recalculateAllPrices = async (req, res) => {
+    try {
+        const products = await Product.find().populate('categoryId');
+        
+        console.log(`Recalculating prices for ${products.length} products...`);
+        
+        for (const product of products) {
+            console.log(`\nProduct: ${product.productName}`);
+            console.log(`Product Offer: ${product.offer || 0}%`);
+            console.log(`Category Offer: ${product.categoryId?.offer || 0}%`);
+            
+            // Trigger the post-save hook to recalculate prices
+            await product.save();
+        }
+        
+        res.json({
+            success: true,
+            message: `Recalculated prices for ${products.length} products`
+        });
+    } catch (error) {
+        console.error('Error recalculating prices:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
 
 // Default export for compatibility
 export default {
@@ -710,5 +739,6 @@ export default {
   postAddProduct,
   getEditProduct,
   postEditProduct,
-  uploadProductImage
+  uploadProductImage,
+  recalculateAllPrices
 };

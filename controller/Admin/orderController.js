@@ -186,7 +186,7 @@ export const renderOrdersPage = async (req, res) => {
 // Function to get order statistics
 const getOrderStatistics = async () => {
     try {
-
+        console.log('=== Getting Order Statistics ===');
 
         // First, let's see what order statuses exist in the database
         const allStatuses = await Order.distinct('orderStatus');
@@ -208,7 +208,7 @@ const getOrderStatistics = async () => {
 
         // Get total orders count
         const totalOrders = await Order.countDocuments();
-
+        console.log('Total orders:', totalOrders);
 
         // Get delivered orders count (both order-level and item-level)
         const deliveredOrdersByOrderStatus = await Order.countDocuments({ orderStatus: 'Delivered' });
