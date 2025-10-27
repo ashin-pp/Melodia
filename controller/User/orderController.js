@@ -4,6 +4,7 @@ import User from '../../model/userSchema.js';
 import Cart from '../../model/cartSchema.js';
 import PDFDocument from 'pdfkit';
 import mongoose from 'mongoose';
+import walletService from '../../services/walletService.js';
 
 // Get all orders for user
 const getOrders = async (req, res) => {
@@ -216,10 +217,38 @@ const cancelOrder = async (req, res) => {
     // Cancel the order
     await order.cancelOrder(reason);
 
-    res.json({
-      success: true,
-      message: 'Order cancelled successfully'
-    });
+    // Process automatic refund for paid orders
+    try {
+      const refundResult = await walletService.processOrderCancellationRefund(orderId, userId);
+      
+      if (refundResult.success) {
+        res.json({
+          success: true,
+          message: 'Order cancelled successfully',
+          refund: {
+            amount: refundResult.refundAmount,
+            newWalletBalance: refundResult.newBalance,
+            transactionId: refundResult.transactionId
+          }
+        });
+      } else {
+        res.json({
+          success: true,
+          message: 'Order cancelled successfully',
+          refund: {
+            message: refundResult.message
+          }
+        });
+      }
+    } catch (refundError) {
+      console.error('Refund processing error:', refundError);
+      // Order is still cancelled, but refund failed
+      res.json({
+        success: true,
+        message: 'Order cancelled successfully, but refund processing failed. Please contact support.',
+        refundError: refundError.message
+      });
+    }
 
   } catch (error) {
     console.error('Cancel order error:', error);
@@ -292,10 +321,55 @@ const cancelOrderItems = async (req, res) => {
     await order.cancelItems(items, reason);
     console.log('Items cancelled successfully');
 
-    res.json({
-      success: true,
-      message: 'Items cancelled successfully'
-    });
+    // Process partial refund for cancelled items
+    try {
+      if (order.paymentMethod !== 'COD') {
+        // Calculate refund amount for cancelled items
+        let refundAmount = 0;
+        for (const item of items) {
+          const orderItem = order.items.find(oi => oi.variantId._id.toString() === item.variantId);
+          if (orderItem) {
+            refundAmount += (orderItem.price * item.quantity);
+          }
+        }
+
+        if (refundAmount > 0) {
+          const refundResult = await walletService.addMoney(
+            userId,
+            refundAmount,
+            `Partial refund for cancelled items - Order ${order.orderId}`,
+            orderId
+          );
+
+          res.json({
+            success: true,
+            message: 'Items cancelled successfully',
+            refund: {
+              amount: refundAmount,
+              newWalletBalance: refundResult.newBalance,
+              transactionId: refundResult.transactionId
+            }
+          });
+        } else {
+          res.json({
+            success: true,
+            message: 'Items cancelled successfully'
+          });
+        }
+      } else {
+        res.json({
+          success: true,
+          message: 'Items cancelled successfully'
+        });
+      }
+    } catch (refundError) {
+      console.error('Partial refund processing error:', refundError);
+      res.json({
+        success: true,
+        message: 'Items cancelled successfully, but refund processing failed. Please contact support.',
+        refundError: refundError.message
+      });
+    }
 
   } catch (error) {
     console.error('Cancel order items error:', error);
@@ -306,12 +380,15 @@ const cancelOrderItems = async (req, res) => {
   }
 };
 
-// Return order
+// Create return request for entire order
 const returnOrder = async (req, res) => {
   try {
+    console.log('=== RETURN ORDER REQUEST ===');
     const userId = req.session.user.id;
     const orderId = req.params.orderId;
-    const { reason } = req.body;
+    const { reason, images } = req.body;
+
+    console.log('Return request details:', { userId, orderId, reason, hasImages: !!images });
 
     if (!reason || reason.trim() === '') {
       return res.status(400).json({
@@ -326,11 +403,19 @@ const returnOrder = async (req, res) => {
     });
 
     if (!order) {
+      console.log('Order not found:', orderId);
       return res.status(404).json({
         success: false,
         message: 'Order not found'
       });
     }
+
+    console.log('Order found:', {
+      orderId: order.orderId,
+      orderStatus: order.orderStatus,
+      deliveredDate: order.deliveredDate,
+      hasReturnRequests: order.returnRequests && order.returnRequests.length > 0
+    });
 
     // Check if order can be returned
     if (order.orderStatus !== 'Delivered') {
@@ -342,28 +427,69 @@ const returnOrder = async (req, res) => {
 
     // Check if return window is still open (e.g., 7 days)
     const returnWindow = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
-    const timeSinceDelivery = Date.now() - order.deliveredDate.getTime();
+    let timeSinceDelivery = 0;
+    
+    if (order.deliveredDate) {
+      timeSinceDelivery = Date.now() - order.deliveredDate.getTime();
+      console.log('Time since delivery (days):', timeSinceDelivery / (24 * 60 * 60 * 1000));
+    } else {
+      console.log('No deliveredDate found, using current time');
+      // If no deliveredDate, assume it was just delivered (allow return)
+      timeSinceDelivery = 0;
+    }
     
     if (timeSinceDelivery > returnWindow) {
       return res.status(400).json({
         success: false,
-        message: 'Return window has expired'
+        message: 'Return window has expired. Returns are only allowed within 7 days of delivery.'
       });
     }
 
-    // Return the order
-    await order.returnOrder(reason);
+    // Check if return request already exists for this order
+    if (order.returnRequests && order.returnRequests.length > 0) {
+      const existingReturns = order.returnRequests.filter(req => 
+        req.status === 'pending' || req.status === 'approved'
+      );
+      if (existingReturns.length > 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'Return request already exists for this order'
+        });
+      }
+    }
+
+    // Create return requests for all items
+    const returnRequests = order.items.map(item => ({
+      itemId: item._id,
+      reason: reason,
+      status: 'pending',
+      requestedAt: new Date(),
+      refundAmount: item.totalPrice,
+      images: images || []
+    }));
+
+    console.log('Creating return requests for', returnRequests.length, 'items');
+
+    // Add return requests to order
+    await Order.findByIdAndUpdate(orderId, {
+      $push: { returnRequests: { $each: returnRequests } },
+      $set: { refundStatus: 'pending' }
+    });
+
+    console.log('Return requests created successfully');
 
     res.json({
       success: true,
-      message: 'Return request submitted successfully'
+      message: 'Return request submitted successfully. Admin will review and process your request.'
     });
 
   } catch (error) {
-    console.error('Return order error:', error);
+    console.error('=== RETURN ORDER ERROR ===');
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
     res.status(500).json({
       success: false,
-      message: 'Failed to submit return request'
+      message: 'Failed to submit return request: ' + error.message
     });
   }
 };
@@ -506,14 +632,14 @@ const downloadInvoice = async (req, res) => {
   }
 };
 
+// Create return request for specific item
 const returnOrderItem = async (req, res) => {
   try {
     const { orderId } = req.params;
-    const { variantId, quantity, reason, comments } = req.body;
+    const { variantId, quantity, reason, comments, images } = req.body;
     const userId = req.session.user.id;
 
     console.log('Return item request:', { orderId, variantId, quantity, reason, comments, userId });
-    console.log('User session:', req.session.user);
 
     // Validate required fields
     if (!reason) {
@@ -545,9 +671,6 @@ const returnOrderItem = async (req, res) => {
     }
 
     // Check if item is delivered
-    console.log('Item status:', item.status);
-    console.log('Item status type:', typeof item.status);
-    
     if (item.status !== 'Delivered') {
       return res.status(400).json({
         success: false,
@@ -555,41 +678,69 @@ const returnOrderItem = async (req, res) => {
       });
     }
 
-    // Check if item is already returned
-    if (item.status === 'Returned') {
+    // Check if return window is still open (e.g., 7 days)
+    const returnWindow = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
+    let timeSinceDelivery = 0;
+    
+    // Use item's deliveredAt date if available, otherwise use order's deliveredDate
+    const deliveryDate = item.deliveredAt || order.deliveredDate;
+    
+    if (deliveryDate) {
+      timeSinceDelivery = Date.now() - deliveryDate.getTime();
+      console.log('Time since delivery (days):', timeSinceDelivery / (24 * 60 * 60 * 1000));
+    } else {
+      console.log('No delivery date found, using current time');
+      // If no delivery date, assume it was just delivered (allow return)
+      timeSinceDelivery = 0;
+    }
+    
+    if (timeSinceDelivery > returnWindow) {
       return res.status(400).json({
         success: false,
-        message: 'Item is already returned'
+        message: 'Return window has expired. Returns are only allowed within 7 days of delivery.'
       });
     }
 
-    // Update item status to returned
-    item.status = 'Returned';
-    item.returnedAt = new Date();
-    item.returnReason = reason;
-    if (comments) {
-      item.returnComments = comments;
+    // Check if item already has a return request (pending or approved)
+    const existingRequest = order.returnRequests.find(
+      req => req.itemId.toString() === item._id.toString() && 
+             (req.status === 'pending' || req.status === 'approved')
+    );
+
+    if (existingRequest) {
+      return res.status(400).json({
+        success: false,
+        message: `Return request already ${existingRequest.status} for this item`
+      });
     }
-    
-    // Add to status history
-    if (!item.statusHistory) {
-      item.statusHistory = [];
-    }
-    item.statusHistory.push({
-      status: 'Returned',
-      updatedAt: new Date(),
-      reason: `Customer return: ${reason}${comments ? ` - ${comments}` : ''}`
+
+    // Calculate refund amount (proportional to quantity if partial return)
+    const refundAmount = (item.totalPrice / item.quantity) * (quantity || item.quantity);
+
+    // Create return request
+    const returnRequest = {
+      itemId: item._id,
+      reason: reason,
+      status: 'pending',
+      requestedAt: new Date(),
+      refundAmount: refundAmount,
+      adminNotes: comments || '',
+      images: images || []
+    };
+
+    // Add return request to order
+    await Order.findByIdAndUpdate(orderId, {
+      $push: { returnRequests: returnRequest }
     });
-
-    console.log('Attempting to save order with return...');
-    await order.save();
-    console.log('Order saved successfully');
-
-    console.log('Item return processed successfully');
 
     res.json({
       success: true,
-      message: 'Return request submitted successfully'
+      message: 'Return request submitted successfully. Admin will review and process your request.',
+      returnRequest: {
+        itemId: item._id,
+        refundAmount: refundAmount,
+        status: 'pending'
+      }
     });
 
   } catch (error) {
@@ -603,7 +754,40 @@ const returnOrderItem = async (req, res) => {
   }
 };
 
-export { getOrders, getOrderDetails, cancelOrder, cancelOrderItems, returnOrder, returnOrderItem, downloadInvoice };
+// Payment Success Page
+const getPaymentSuccess = async (req, res) => {
+  try {
+    const order = await Order.findOne({ orderId: req.params.orderId });
+    if (!order) {
+      return res.redirect('/orders');
+    }
+    res.render('user/payment-success', { order, title: 'Payment Success - Melodia' });
+  } catch (err) {
+    console.error('Error loading success page:', err);
+    res.redirect('/orders');
+  }
+};
+
+// Payment Failure Page
+const getPaymentFailure = async (req, res) => {
+  try {
+    const order = await Order.findOne({ orderId: req.params.orderId });
+    res.render('user/payment-failure', {
+      order,
+      error: req.query.error ? JSON.parse(req.query.error) : null,
+      title: 'Payment Failed - Melodia'
+    });
+  } catch (err) {
+    console.error('Error loading failure page:', err);
+    res.render('user/payment-failure', {
+      order: null,
+      error: null,
+      title: 'Payment Failed - Melodia'
+    });
+  }
+};
+
+export { getOrders, getOrderDetails, cancelOrder, cancelOrderItems, returnOrder, returnOrderItem, downloadInvoice, getPaymentSuccess, getPaymentFailure };
 
 // Default export for compatibility
 export default {
@@ -613,5 +797,7 @@ export default {
   cancelOrderItems,
   returnOrder,
   returnOrderItem,
-  downloadInvoice
+  downloadInvoice,
+  getPaymentSuccess,
+  getPaymentFailure
 };

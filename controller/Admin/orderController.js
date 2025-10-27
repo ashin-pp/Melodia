@@ -14,29 +14,60 @@ export const listOrder = async (req, res) => {
         let searchConditions = [];
         let statusConditions = [];
 
-        if (search) {
-            const user = await User.find({
+        if (search && search.trim()) {
+
+            
+            // Search for users by name, email, or phone
+            const users = await User.find({
                 $or: [
-                    { fullName: { $regex: search, $options: 'i' } },
-                    { email: { $regex: search, $options: 'i' } },
-                    { phoneNumber: { $regex: search, $options: 'i' } }
+                    { fullName: { $regex: search.trim(), $options: 'i' } },
+                    { email: { $regex: search.trim(), $options: 'i' } },
+                    { phone: { $regex: search.trim(), $options: 'i' } }
                 ]
-            }).select('_id');
+            }).select('_id name email phone');
+
+
 
             searchConditions = [
-                { orderId: { $regex: search, $options: 'i' } },
-                { userId: { $in: user.map(u => u._id) } }
+                { orderId: { $regex: search.trim(), $options: 'i' } }
             ];
+
+            // Add user-based search if users found
+            if (users.length > 0) {
+                searchConditions.push({ userId: { $in: users.map(u => u._id) } });
+            }
+
+
         }
 
         if (status && status !== 'all') {
-            console.log(`=== Filtering by status: ${status} ===`);
-            // Check both order-level status and item-level status
-            statusConditions = [
-                { orderStatus: status },
-                { 'items.status': status }
-            ];
-            console.log('Status conditions:', statusConditions);
+            if (status === 'Cancelled') {
+                // For cancelled status, check both order-level and item-level cancellations
+                statusConditions = [
+                    { orderStatus: 'Cancelled' },
+                    { 'items.status': 'Cancelled' },
+                    { 'cancelledItems.0': { $exists: true } } // Orders with cancelled items
+                ];
+
+            } else if (status === 'Partially Cancelled') {
+                // For partially cancelled, find orders with some cancelled items but not fully cancelled
+                statusConditions = [
+                    {
+                        $and: [
+                            { 'cancelledItems.0': { $exists: true } }, // Has cancelled items
+                            { orderStatus: { $ne: 'Cancelled' } } // But order is not fully cancelled
+                        ]
+                    }
+                ];
+
+            } else {
+                // Check both order-level status and item-level status
+                statusConditions = [
+                    { orderStatus: status },
+                    { 'items.status': status }
+                ];
+            }
+
         }
 
         // Combine search and status conditions
@@ -53,34 +84,62 @@ export const listOrder = async (req, res) => {
             query = { $or: statusConditions };
         }
 
-        console.log('Final query:', JSON.stringify(query, null, 2));
+
+        
         const total = await Order.countDocuments(query);
-        console.log(`Total orders matching query: ${total}`);
+
         const totalPages = Math.ceil(total / limit);
 
         const orders = await Order.find(query)
-            .populate('userId', 'fullName email phoneNumber')
+            .populate('userId', 'name email phone')
             .sort({ [sortBy]: order === 'desc' ? -1 : 1 })
             .skip(parseInt(skip))
             .limit(parseInt(limit));
 
-        const processedOrders = orders.map(order => ({
-            id: order._id,
-            referenceNo: order.orderId,
-            orderDate: order.orderDate,
-            status: order.orderStatus,
-            total: order.totalAmount,
-            paymentMethod: order.paymentMethod,
-            itemCount: order.items ? order.items.length : 0,
-            user: {
-                id: order.userId?._id,
-                name: order.userId?.fullName || order.shippingAddress?.fullName || 'N/A',
-                email: order.userId?.email || 'N/A',
-                phone: order.userId?.phoneNumber || order.shippingAddress?.phoneNumber || 'N/A'
-            },
-            createdAt: order.createdAt,
-            updatedAt: order.updatedAt
-        }));
+
+
+        const processedOrders = orders.map(order => {
+            // Check if order has cancelled items but order status is not cancelled
+            const hasCancelledItems = (order.cancelledItems && order.cancelledItems.length > 0) ||
+                (order.items && order.items.some(item => item.status === 'Cancelled'));
+
+            // Determine display status
+            let displayStatus = order.orderStatus;
+            if (hasCancelledItems && order.orderStatus !== 'Cancelled') {
+                // If order has cancelled items but order status is not cancelled, show as "Partially Cancelled"
+                const allItemsCancelled = order.items && order.items.every(item => item.status === 'Cancelled' || item.quantity === 0);
+                if (allItemsCancelled) {
+                    displayStatus = 'Cancelled';
+                } else {
+                    displayStatus = 'Partially Cancelled';
+                }
+            }
+
+            // Calculate correct display total (for wallet payments, add back wallet amount)
+            const displayTotal = order.paymentMethod === 'WALLET' && order.totalAmount === 0
+                ? (order.walletAmountUsed || 0)
+                : order.totalAmount;
+
+            return {
+                id: order._id,
+                referenceNo: order.orderId,
+                orderDate: order.orderDate,
+                status: displayStatus,
+                originalStatus: order.orderStatus, // Keep original for debugging
+                total: displayTotal,
+                paymentMethod: order.paymentMethod,
+                itemCount: order.items ? order.items.length : 0,
+                cancelledItemCount: order.cancelledItems ? order.cancelledItems.length : 0,
+                user: {
+                    id: order.userId?._id,
+                    name: order.userId?.name || order.shippingAddress?.fullName || 'N/A',
+                    email: order.userId?.email || 'N/A',
+                    phone: order.userId?.phone || order.shippingAddress?.phoneNumber || 'N/A'
+                },
+                createdAt: order.createdAt,
+                updatedAt: order.updatedAt
+            };
+        });
 
         // Get overall statistics (not just current page)
         const stats = await getOrderStatistics();
@@ -127,7 +186,7 @@ export const renderOrdersPage = async (req, res) => {
 // Function to get order statistics
 const getOrderStatistics = async () => {
     try {
-        console.log('=== Getting Order Statistics ===');
+
 
         // First, let's see what order statuses exist in the database
         const allStatuses = await Order.distinct('orderStatus');
@@ -149,7 +208,7 @@ const getOrderStatistics = async () => {
 
         // Get total orders count
         const totalOrders = await Order.countDocuments();
-        console.log('Total orders:', totalOrders);
+
 
         // Get delivered orders count (both order-level and item-level)
         const deliveredOrdersByOrderStatus = await Order.countDocuments({ orderStatus: 'Delivered' });
@@ -180,6 +239,12 @@ const getOrderStatistics = async () => {
         // Get cancelled orders count
         const cancelledOrders = await Order.countDocuments({ orderStatus: 'Cancelled' });
         console.log('Cancelled orders:', cancelledOrders);
+
+        // Debug: Let's see what cancelled orders exist
+        const cancelledOrdersList = await Order.find({ orderStatus: 'Cancelled' })
+            .select('orderId orderStatus cancelledAt')
+            .limit(5);
+        console.log('Sample cancelled orders:', cancelledOrdersList);
 
         // Get shipped orders count
         const shippedOrders = await Order.countDocuments({ orderStatus: 'Shipped' });
@@ -214,64 +279,77 @@ const getOrderStatistics = async () => {
 };
 
 export const getAdminOrderDetails = async (req, res) => {
-    console.log('🔍 ===== ADMIN ORDER DETAILS DEBUG START =====');
-    console.log('📍 Function called at:', new Date().toISOString());
-    console.log('🌐 Request URL:', req.url);
-    console.log('📋 Request method:', req.method);
-    console.log('🆔 Order ID from params:', req.params.orderId);
-    console.log('👤 Admin session:', req.session?.admin ? 'EXISTS' : 'MISSING');
-    console.log('🔑 Session ID:', req.sessionID);
 
     try {
         const orderId = req.params.orderId;
-        console.log('✅ Order ID extracted:', orderId);
+        console.log(' Order ID extracted:', orderId);
 
-        // Validate ObjectId
-        if (!mongoose.Types.ObjectId.isValid(orderId)) {
-            console.log('❌ Invalid ObjectId format:', orderId);
-            return res.send(`
-                <html>
-                <head><title>Invalid Order ID</title></head>
-                <body style="font-family: Arial; padding: 20px;">
-                    <h1>❌ Invalid Order ID Format</h1>
-                    <p>Order ID: ${orderId}</p>
-                    <p>Expected: 24 character hex string</p>
-                    <a href="/admin/orders">← Back to Orders</a>
-                </body>
-                </html>
-            `);
+        console.log('Searching database for order...');
+        let order;
+
+        // Try to find by ObjectId first, then by orderId string
+        if (mongoose.Types.ObjectId.isValid(orderId)) {
+            console.log('Searching by ObjectId...');
+            order = await Order.findById(orderId)
+                .populate('userId', 'firstName lastName email phoneNumber')
+                .populate({
+                    path: 'items.variantId',
+                    select: 'color images salePrice regularPrice',
+                    populate: {
+                        path: 'productId',
+                        select: 'productName brand images description'
+                    }
+                })
+                .populate({
+                    path: 'cancelledItems.variantId',
+                    select: 'color images salePrice regularPrice',
+                    populate: {
+                        path: 'productId',
+                        select: 'productName brand images description'
+                    }
+                });
+        } else {
+            console.log(' Searching by orderId string...');
+            order = await Order.findOne({ orderId: orderId })
+                .populate('userId', 'firstName lastName email phoneNumber')
+                .populate({
+                    path: 'items.variantId',
+                    select: 'color images salePrice regularPrice',
+                    populate: {
+                        path: 'productId',
+                        select: 'productName brand images description'
+                    }
+                })
+                .populate({
+                    path: 'cancelledItems.variantId',
+                    select: 'color images salePrice regularPrice',
+                    populate: {
+                        path: 'productId',
+                        select: 'productName brand images description'
+                    }
+                });
         }
-        console.log('✅ ObjectId validation passed');
 
-        console.log('🔍 Searching database for order...');
-        const order = await Order.findById(orderId)
-            .populate('userId', 'fullName email phoneNumber')
-            .populate({
-                path: 'items.variantId',
-                select: 'color images',
-                populate: {
-                    path: 'productId',
-                    select: 'productName brand images'
-                }
-            })
-            .populate({
-                path: 'cancelledItems.variantId',
-                select: 'color images',
-                populate: {
-                    path: 'productId',
-                    select: 'productName brand images'
-                }
-            });
 
         console.log('📊 Database query result:', order ? 'ORDER FOUND' : 'ORDER NOT FOUND');
 
         if (order) {
-            console.log('📋 Order details:');
-            console.log('  - Order ID:', order.orderId);
-            console.log('  - Status:', order.orderStatus);
-            console.log('  - Items count:', order.items?.length || 0);
-            console.log('  - Customer:', order.userId?.fullName || 'N/A');
-            console.log('  - Total:', order.totalAmount);
+
+            // Debug item statuses
+            if (order.items && order.items.length > 0) {
+                console.log('📦 Item statuses:');
+                order.items.forEach((item, index) => {
+                    console.log(`  Item ${index}: status=${item.status || 'undefined'}, variantId=${item.variantId?._id}`);
+                });
+            }
+
+            // Debug cancelled items
+            if (order.cancelledItems && order.cancelledItems.length > 0) {
+                console.log('❌ Cancelled items:');
+                order.cancelledItems.forEach((cancelled, index) => {
+                    console.log(`  Cancelled ${index}: variantId=${cancelled.variantId?._id}, quantity=${cancelled.quantity}, reason=${cancelled.reason}`);
+                });
+            }
         }
 
         if (!order) {
@@ -289,22 +367,44 @@ export const getAdminOrderDetails = async (req, res) => {
             `);
         }
 
-        console.log('🎨 Rendering original EJS template with full functionality');
+        // Calculate proper overall order status based on item statuses
+        if (order.items && order.items.length > 0) {
+            const itemStatuses = order.items.map(item => item.status);
+            const allDelivered = itemStatuses.every(status => status === 'Delivered');
+            const allCancelled = itemStatuses.every(status => status === 'Cancelled');
+            const allReturned = itemStatuses.every(status => status === 'Returned');
+            const hasDelivered = itemStatuses.some(status => status === 'Delivered');
+            const hasCancelled = itemStatuses.some(status => status === 'Cancelled');
+            const hasReturned = itemStatuses.some(status => status === 'Returned');
+            
+            // Update order status based on item statuses
+            if (allDelivered) {
+                order.orderStatus = 'Delivered';
+            } else if (allCancelled) {
+                order.orderStatus = 'Cancelled';
+            } else if (allReturned) {
+                order.orderStatus = 'Returned';
+            } else if (hasDelivered && (hasCancelled || hasReturned)) {
+                order.orderStatus = 'Partially Delivered';
+            } else if (hasCancelled && !hasDelivered) {
+                order.orderStatus = 'Partially Cancelled';
+            }
+            
+            console.log('📊 Order status updated to:', order.orderStatus);
+        }
+
+        console.log(' Rendering original EJS template with full functionality');
 
         res.render('admin/order-details', {
             order: order,
             title: `Admin - Order #${order.orderId}`
         });
 
-        console.log('✅ EJS template rendered successfully');
-        console.log('🔍 ===== ADMIN ORDER DETAILS DEBUG END =====');
+        console.log(' EJS template rendered successfully');
+        console.log(' ===== ADMIN ORDER DETAILS DEBUG END =====');
 
     } catch (error) {
-        console.log('💥 ===== ERROR OCCURRED =====');
-        console.error('❌ Error type:', error.name);
-        console.error('❌ Error message:', error.message);
-        console.error('❌ Error stack:', error.stack);
-        console.log('💥 ===== ERROR END =====');
+        console.log(' ===== ERROR OCCURRED =====');
 
         res.send(`
             <html>
@@ -328,6 +428,82 @@ export const getAdminOrderDetails = async (req, res) => {
             </body>
             </html>
         `);
+    }
+};
+
+// Update overall order status
+export const updateOrderStatus = async (req, res) => {
+    try {
+        const { orderId } = req.params;
+        const { status, reason } = req.body;
+
+        console.log('=== UPDATE ORDER STATUS ===');
+        console.log('Order ID:', orderId);
+        console.log('New Status:', status);
+        console.log('Reason:', reason);
+
+        // Find the order
+        const order = await Order.findById(orderId);
+        if (!order) {
+            return res.status(404).json({
+                success: false,
+                error: 'Order not found'
+            });
+        }
+
+        const oldStatus = order.orderStatus;
+        console.log('Current order status:', oldStatus);
+
+        // Update order status
+        order.orderStatus = status;
+
+        // Set delivery date if status is Delivered
+        if (status === 'Delivered' && !order.deliveredDate) {
+            order.deliveredDate = new Date();
+            console.log('Set delivery date:', order.deliveredDate);
+        }
+
+        // Update all items to the same status if they're not cancelled or returned
+        order.items.forEach(item => {
+            if (item.status !== 'Cancelled' && item.status !== 'Returned') {
+                item.status = status;
+
+                // Set item delivery date if status is Delivered
+                if (status === 'Delivered' && !item.deliveredAt) {
+                    item.deliveredAt = new Date();
+                }
+
+                // Add to status history
+                if (!item.statusHistory) {
+                    item.statusHistory = [];
+                }
+                item.statusHistory.push({
+                    status: status,
+                    updatedAt: new Date(),
+                    reason: reason || `Order status changed to ${status}`
+                });
+            }
+        });
+
+        await order.save();
+        console.log('Order status updated successfully');
+
+        return res.json({
+            success: true,
+            message: `Order status updated from ${oldStatus} to ${status}`,
+            data: {
+                orderId: order._id,
+                oldStatus,
+                newStatus: status,
+                deliveredDate: order.deliveredDate
+            }
+        });
+    } catch (error) {
+        console.error('Update order status error:', error);
+        return res.status(500).json({
+            success: false,
+            error: 'Failed to update order status'
+        });
     }
 };
 
@@ -748,14 +924,390 @@ export const downloadInvoice = async (req, res) => {
     }
 };
 
+// ============ RETURN REQUEST PROCESSING ============
+export const processReturnRequest = async (req, res) => {
+    try {
+        const { itemId } = req.params;
+        const { action, reason } = req.body; // 'approve' or 'reject'
+
+        const order = await Order.findOne({ 'items._id': itemId });
+        if (!order) {
+            return res.json({ success: false, message: 'Order not found' });
+        }
+
+        const item = order.items.id(itemId);
+        if (!item) {
+            return res.json({ success: false, message: 'Item not found' });
+        }
+
+        if (action === 'approve') {
+            item.status = 'Returned';
+            item.returnedAt = new Date();
+            item.returnReason = reason || 'Return approved by admin';
+
+            // Add wallet credit (simplified - full wallet logic to be implemented)
+            const user = await User.findById(order.userId);
+            if (user) {
+                user.wallet.balance += item.totalPrice;
+                user.wallet.transactions.push({
+                    type: 'credit',
+                    amount: item.totalPrice,
+                    description: `Refund for returned item - Order ${order.orderId}`,
+                    orderId: order._id
+                });
+                await user.save();
+            }
+        } else {
+            item.returnReason = reason || 'Return rejected by admin';
+        }
+
+        await order.save();
+        res.json({
+            success: true,
+            message: `Return request ${action}d successfully`
+        });
+    } catch (error) {
+        res.json({ success: false, message: error.message });
+    }
+};
+
+// ============ RETURN REQUEST APPROVAL/REJECTION ============
+// Approve return request - automatically credits funds to user wallet
+export const approveReturnRequest = async (req, res) => {
+    try {
+        const { itemId } = req.params;
+        const { reason } = req.body;
+
+        console.log('=== APPROVE RETURN REQUEST DEBUG ===');
+        console.log('Item ID:', itemId);
+        console.log('Reason:', reason);
+        console.log('Request body:', req.body);
+        console.log('Request params:', req.params);
+
+        // Find the order containing this item
+        const order = await Order.findOne({ 'items._id': itemId }).populate('userId', 'name email');
+        if (!order) {
+            return res.status(404).json({
+                success: false,
+                message: 'Order not found'
+            });
+        }
+
+        // Find the specific item in the order
+        const item = order.items.id(itemId);
+        if (!item) {
+            return res.status(404).json({
+                success: false,
+                message: 'Item not found in order'
+            });
+        }
+
+        console.log('Current item status:', item.status);
+
+        // Check if item is delivered (can be returned) or already cancelled
+        if (item.status !== 'Delivered' && item.status !== 'Cancelled') {
+            return res.status(400).json({
+                success: false,
+                message: `Item cannot be returned. Current status: ${item.status}`
+            });
+        }
+
+        // Update item status
+        item.status = 'Returned';
+        item.returnedAt = new Date();
+        item.returnReason = reason || 'Return approved by admin';
+
+        // Calculate refund amount (item's total price)
+        const refundAmount = item.totalPrice;
+
+        // Add refund to user's wallet
+        const user = await User.findById(order.userId);
+        if (user) {
+            // Initialize wallet if it doesn't exist
+            if (!user.wallet) {
+                user.wallet = { balance: 0, transactions: [] };
+            }
+
+            user.wallet.balance += refundAmount;
+            user.wallet.transactions.push({
+                type: 'credit',
+                amount: refundAmount,
+                description: `Refund for returned item - Order ${order.orderId}`,
+                orderId: order._id,
+                balanceAfter: user.wallet.balance,
+                createdAt: new Date()
+            });
+
+            await user.save();
+            console.log('User wallet updated. New balance:', user.wallet.balance);
+        }
+
+        // Update any pending return request for this item
+        if (order.returnRequests && order.returnRequests.length > 0) {
+            const returnRequest = order.returnRequests.find(req =>
+                req.itemId && req.itemId.toString() === itemId
+            );
+            if (returnRequest) {
+                returnRequest.status = 'approved';
+                returnRequest.processedAt = new Date();
+                returnRequest.adminReason = reason || 'Return approved by admin';
+            }
+        }
+
+        // Save the order
+        await order.save();
+
+        console.log('Return approved successfully:', {
+            orderId: order.orderId,
+            itemId,
+            refundAmount,
+            userBalance: user?.wallet?.balance
+        });
+
+        res.json({
+            success: true,
+            message: 'Return request approved successfully',
+            data: {
+                refundAmount,
+                newWalletBalance: user?.wallet?.balance || 0
+            }
+        });
+
+    } catch (error) {
+        console.error('Error approving return:', error);
+        console.error('Error details:', error.message);
+        console.error('Stack trace:', error.stack);
+        res.status(500).json({
+            success: false,
+            message: `Failed to approve return request: ${error.message}`
+        });
+    }
+};
+
+// Reject return request
+export const rejectReturnRequest = async (req, res) => {
+    try {
+        const { itemId } = req.params;
+        const { reason } = req.body;
+
+        console.log('=== REJECT RETURN REQUEST DEBUG ===');
+        console.log('Item ID:', itemId);
+        console.log('Reason:', reason);
+        console.log('Request body:', req.body);
+        console.log('Request params:', req.params);
+
+        // Find the order containing this item
+        const order = await Order.findOne({ 'items._id': itemId });
+        if (!order) {
+            return res.status(404).json({
+                success: false,
+                message: 'Order not found'
+            });
+        }
+
+        // Find the specific item in the order
+        const item = order.items.id(itemId);
+        if (!item) {
+            return res.status(404).json({
+                success: false,
+                message: 'Item not found in order'
+            });
+        }
+
+        console.log('Current item status:', item.status);
+
+        // Check if item is in a state that can be rejected
+        if (item.status !== 'Delivered' && item.status !== 'Cancelled' && item.status !== 'Returned') {
+            return res.status(400).json({
+                success: false,
+                message: `Item cannot be processed for return rejection. Current status: ${item.status}`
+            });
+        }
+
+        // Keep item status as delivered (don't change if already delivered)
+        if (item.status === 'Returned') {
+            item.status = 'Delivered'; // Revert back to delivered
+        }
+        item.returnReason = reason || 'Return rejected by admin';
+
+        // Update any pending return request for this item
+        if (order.returnRequests && order.returnRequests.length > 0) {
+            const returnRequest = order.returnRequests.find(req =>
+                req.itemId && req.itemId.toString() === itemId
+            );
+            if (returnRequest) {
+                returnRequest.status = 'rejected';
+                returnRequest.processedAt = new Date();
+                returnRequest.adminReason = reason || 'Return rejected by admin';
+            }
+        }
+
+        // Save the order
+        await order.save();
+
+        console.log('Return rejected successfully:', {
+            orderId: order.orderId,
+            itemId,
+            reason
+        });
+
+        res.json({
+            success: true,
+            message: 'Return request rejected successfully'
+        });
+
+    } catch (error) {
+        console.error('Error rejecting return:', error);
+        console.error('Error details:', error.message);
+        console.error('Stack trace:', error.stack);
+        res.status(500).json({
+            success: false,
+            message: `Failed to reject return request: ${error.message}`
+        });
+    }
+};
+
+// Legacy function for existing frontend compatibility
+export const processReturnRequestLegacy = async (req, res) => {
+    try {
+        const { returnRequestId } = req.params;
+        const { action, rejectionReason } = req.body;
+
+        console.log('=== LEGACY RETURN REQUEST PROCESSING ===');
+        console.log('Return Request ID:', returnRequestId);
+        console.log('Action:', action);
+        console.log('Rejection Reason:', rejectionReason);
+
+        // Find the order containing this return request
+        const order = await Order.findOne({
+            'returnRequests._id': returnRequestId
+        }).populate('userId', 'name email');
+
+        if (!order) {
+            return res.status(404).json({
+                success: false,
+                message: 'Return request not found'
+            });
+        }
+
+        // Find the specific return request
+        const returnRequest = order.returnRequests.id(returnRequestId);
+        if (!returnRequest) {
+            return res.status(404).json({
+                success: false,
+                message: 'Return request not found'
+            });
+        }
+
+        // Find the item associated with this return request
+        const item = order.items.id(returnRequest.itemId);
+        if (!item) {
+            return res.status(404).json({
+                success: false,
+                message: 'Item not found for this return request'
+            });
+        }
+
+        console.log('Found item:', item._id, 'with status:', item.status);
+
+        if (action === 'approved') {
+            // Update return request
+            returnRequest.status = 'approved';
+            returnRequest.processedAt = new Date();
+            returnRequest.adminReason = 'Return approved by admin';
+
+            // Update item status
+            item.status = 'Returned';
+            item.returnedAt = new Date();
+            item.returnReason = 'Return approved by admin';
+
+            // Calculate refund amount
+            const refundAmount = item.totalPrice;
+
+            // Add refund to user's wallet
+            const user = await User.findById(order.userId);
+            if (user) {
+                // Initialize wallet if it doesn't exist
+                if (!user.wallet) {
+                    user.wallet = { balance: 0, transactions: [] };
+                }
+
+                user.wallet.balance += refundAmount;
+                user.wallet.transactions.push({
+                    type: 'credit',
+                    amount: refundAmount,
+                    description: `Refund for returned item - Order ${order.orderId}`,
+                    orderId: order._id,
+                    balanceAfter: user.wallet.balance,
+                    createdAt: new Date()
+                });
+
+                await user.save();
+                console.log('User wallet updated. New balance:', user.wallet.balance);
+            }
+
+            await order.save();
+
+            console.log('Return approved successfully');
+
+            res.json({
+                success: true,
+                message: 'Return request approved successfully',
+                data: {
+                    refundAmount,
+                    newWalletBalance: user?.wallet?.balance || 0
+                }
+            });
+
+        } else if (action === 'rejected') {
+            // Update return request
+            returnRequest.status = 'rejected';
+            returnRequest.processedAt = new Date();
+            returnRequest.adminReason = rejectionReason || 'Return rejected by admin';
+
+            // Keep item status as delivered (don't change)
+            item.returnReason = rejectionReason || 'Return rejected by admin';
+
+            await order.save();
+
+            console.log('Return rejected successfully');
+
+            res.json({
+                success: true,
+                message: 'Return request rejected successfully'
+            });
+
+        } else {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid action. Must be "approved" or "rejected"'
+            });
+        }
+
+    } catch (error) {
+        console.error('Error processing legacy return request:', error);
+        console.error('Error details:', error.message);
+        console.error('Stack trace:', error.stack);
+        res.status(500).json({
+            success: false,
+            message: `Failed to process return request: ${error.message}`
+        });
+    }
+};
+
 // Default export for compatibility
 export default {
     listOrder,
     renderOrdersPage,
     getAdminOrderDetails,
+    updateOrderStatus,
     updateItemStatus,
     renderInventoryPage,
     getInventory,
     updateStock,
-    downloadInvoice
+    downloadInvoice,
+    processReturnRequest,
+    approveReturnRequest,
+    rejectReturnRequest,
+    processReturnRequestLegacy
 };
