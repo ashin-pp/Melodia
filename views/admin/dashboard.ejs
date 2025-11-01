@@ -806,8 +806,8 @@
                     </div>
                 </div>
 
-                <!-- Charts Section -->
-                <!-- <div class="charts-container">
+                <!-- Charts Section  -->
+                 <div class="charts-container">
                     <div class="chart-section sales-overview">
                         <div class="chart-header">
                             <h3>Sales Overview</h3>
@@ -841,8 +841,8 @@
 
 
 
-                <!-- Generate Ledger Book Section -->
-                <!-- <div class="ledger-section">
+                 <!-- Generate Ledger Book Section  -->
+             <div class="ledger-section">
                     <div class="ledger-header">
                         <h3>Generate Ledger Book</h3>
                     </div>
@@ -868,8 +868,8 @@
                     </div>
                 </div>
 
-                <!-- Latest Orders Table -->
-                <!-- <div class="table-section">
+                 <!-- Latest Orders Table  -->
+                <div class="table-section">
                     <div style="padding: 20px; border-bottom: 1px solid #e9ecef;">
                         <h3 style="margin: 0; color: #2c3e50;">Latest Orders</h3>
                     </div>
@@ -948,9 +948,9 @@
                         </tbody>
                     </table>
                 </div>
-            </div> -->
-        </div> -->
-    </div> -->
+            </div>
+        </div> 
+    </div> 
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
@@ -963,229 +963,229 @@
             loadDashboardData();
         });
         
-    //     function initializeDashboard() {
-    //         // Apply filters button
-    //         document.getElementById('applyFilters').addEventListener('click', loadDashboardData);
+        function initializeDashboard() {
+            // Apply filters button
+            document.getElementById('applyFilters').addEventListener('click', loadDashboardData);
             
-    //         // Ledger generation
-    //         document.getElementById('generateLedgerPDF').addEventListener('click', generateLedgerPDF);
+            // Ledger generation
+            document.getElementById('generateLedgerPDF').addEventListener('click', generateLedgerPDF);
             
-    //         // Set default dates (last 30 days)
-    //         const today = new Date();
-    //         const thirtyDaysAgo = new Date();
-    //         thirtyDaysAgo.setDate(today.getDate() - 30);
+            // Set default dates (last 30 days)
+            const today = new Date();
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(today.getDate() - 30);
             
-    //         document.getElementById('ledgerEndDate').value = today.toISOString().split('T')[0];
-    //         document.getElementById('ledgerStartDate').value = thirtyDaysAgo.toISOString().split('T')[0];
-    //     }
+            document.getElementById('ledgerEndDate').value = today.toISOString().split('T')[0];
+            document.getElementById('ledgerStartDate').value = thirtyDaysAgo.toISOString().split('T')[0];
+        }
         
-    //     async function loadDashboardData() {
-    //         const period = document.getElementById('periodSelect').value;
-    //         const year = document.getElementById('yearSelect').value;
-    //         const month = document.getElementById('monthSelect').value;
+        async function loadDashboardData() {
+            const period = document.getElementById('periodSelect').value;
+            const year = document.getElementById('yearSelect').value;
+            const month = document.getElementById('monthSelect').value;
             
-    //         try {
-    //             // Build query parameters
-    //             const params = new URLSearchParams({ period });
-    //             if (period === 'monthly') {
-    //                 params.append('year', year);
-    //                 params.append('month', month);
-    //             }
+            try {
+                // Build query parameters
+                const params = new URLSearchParams({ period });
+                if (period === 'monthly') {
+                    params.append('year', year);
+                    params.append('month', month);
+                }
                 
-    //             // Fetch dashboard data
-    //             const response = await fetch(`/admin/api/sales-report?${params}`);
-    //             const result = await response.json();
+                // Fetch dashboard data
+                const response = await fetch(`/admin/api/sales-report?${params}`);
+                const result = await response.json();
                 
-    //             if (result.success) {
-    //                 updateDashboard(result.data);
-    //             } else {
-    //                 console.error('Error loading dashboard data:', result.message);
-    //             }
-    //         } catch (error) {
-    //             console.error('Error:', error);
-    //         }
-    //     }
+                if (result.success) {
+                    updateDashboard(result.data);
+                } else {
+                    console.error('Error loading dashboard data:', result.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
         
-    //     function updateDashboard(data) {
-    //         // Update stats cards
-    //         document.getElementById('totalSalesValue').textContent = `₹${data.summary.totalRevenue.toLocaleString()}`;
-    //         document.getElementById('visitorsValue').textContent = data.summary.totalOrders || '0';
-    //         document.getElementById('totalOrdersValue').textContent = data.summary.totalOrders || '0';
-    //         document.getElementById('usersValue').textContent = data.summary.totalOrders || '0';
+        function updateDashboard(data) {
+            // Update stats cards
+            document.getElementById('totalSalesValue').textContent = `₹${data.summary.totalRevenue.toLocaleString()}`;
+            document.getElementById('visitorsValue').textContent = data.summary.totalOrders || '0';
+            document.getElementById('totalOrdersValue').textContent = data.summary.totalOrders || '0';
+            document.getElementById('usersValue').textContent = data.summary.totalOrders || '0';
             
-    //         // Update charts
-    //         updateSalesChart(data.chartData || []);
-    //         updateOrdersChart(data.chartData || []);
-    //     }
+            // Update charts
+            updateSalesChart(data.chartData || []);
+            updateOrdersChart(data.chartData || []);
+        }
         
-    //     function updateSalesChart(chartData) {
-    //         const ctx = document.getElementById('salesChart').getContext('2d');
+        function updateSalesChart(chartData) {
+            const ctx = document.getElementById('salesChart').getContext('2d');
             
-    //         // Destroy existing chart
-    //         if (salesChart) {
-    //             salesChart.destroy();
-    //         }
+            // Destroy existing chart
+            if (salesChart) {
+                salesChart.destroy();
+            }
             
-    //         // Generate sample data if no real data
-    //         const labels = chartData.length > 0 
-    //             ? chartData.map(item => new Date(item.date).toLocaleDateString())
-    //             : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            // Generate sample data if no real data
+            const labels = chartData.length > 0 
+                ? chartData.map(item => new Date(item.date).toLocaleDateString())
+                : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
             
-    //         const salesData = chartData.length > 0 
-    //             ? chartData.map(item => item.sales)
-    //             : [30000, 45000, 35000, 50000, 40000, 60000, 45000, 55000, 65000, 50000, 70000, 60000];
+            const salesData = chartData.length > 0 
+                ? chartData.map(item => item.sales)
+                : [30000, 45000, 35000, 50000, 40000, 60000, 45000, 55000, 65000, 50000, 70000, 60000];
             
-    //         // Create sales chart (line chart like in your image)
-    //         salesChart = new Chart(ctx, {
-    //             type: 'line',
-    //             data: {
-    //                 labels: labels,
-    //                 datasets: [{
-    //                     label: 'Sales Amount',
-    //                     data: salesData,
-    //                     borderColor: '#007bff',
-    //                     backgroundColor: 'rgba(0, 123, 255, 0.1)',
-    //                     tension: 0.4,
-    //                     fill: true,
-    //                     pointBackgroundColor: '#007bff',
-    //                     pointBorderColor: '#007bff',
-    //                     pointRadius: 4
-    //                 }]
-    //             },
-    //             options: {
-    //                 responsive: true,
-    //                 maintainAspectRatio: false,
-    //                 plugins: {
-    //                     legend: {
-    //                         display: false
-    //                     }
-    //                 },
-    //                 scales: {
-    //                     x: {
-    //                         grid: {
-    //                             display: false
-    //                         }
-    //                     },
-    //                     y: {
-    //                         beginAtZero: true,
-    //                         grid: {
-    //                             color: '#f0f0f0'
-    //                         },
-    //                         ticks: {
-    //                             callback: function(value) {
-    //                                 return '₹' + (value / 1000) + 'K';
-    //                             }
-    //                         }
-    //                     }
-    //                 }
-    //             }
-    //         });
-    //     }
+            // Create sales chart (line chart like in your image)
+            salesChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Sales Amount',
+                        data: salesData,
+                        borderColor: '#007bff',
+                        backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#007bff',
+                        pointBorderColor: '#007bff',
+                        pointRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: '#f0f0f0'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return '₹' + (value / 1000) + 'K';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
         
-    //     function updateOrdersChart(chartData) {
-    //         const ctx = document.getElementById('ordersChart').getContext('2d');
+        function updateOrdersChart(chartData) {
+            const ctx = document.getElementById('ordersChart').getContext('2d');
             
-    //         // Destroy existing chart
-    //         if (ordersChart) {
-    //             ordersChart.destroy();
-    //         }
+            // Destroy existing chart
+            if (ordersChart) {
+                ordersChart.destroy();
+            }
             
-    //         // Generate sample data if no real data
-    //         const labels = chartData.length > 0 
-    //             ? chartData.map(item => new Date(item.date).toLocaleDateString())
-    //             : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            // Generate sample data if no real data
+            const labels = chartData.length > 0 
+                ? chartData.map(item => new Date(item.date).toLocaleDateString())
+                : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
             
-    //         const ordersData = chartData.length > 0 
-    //             ? chartData.map(item => item.orders)
-    //             : [2, 2, 4, 2, 3, 3, 2, 4, 3, 2, 3, 2];
+            const ordersData = chartData.length > 0 
+                ? chartData.map(item => item.orders)
+                : [2, 2, 4, 2, 3, 3, 2, 4, 3, 2, 3, 2];
             
-    //         // Create orders chart (bar chart like in your image)
-    //         ordersChart = new Chart(ctx, {
-    //             type: 'bar',
-    //             data: {
-    //                 labels: labels,
-    //                 datasets: [{
-    //                     label: 'Orders Count',
-    //                     data: ordersData,
-    //                     backgroundColor: '#28a745',
-    //                     borderRadius: 4,
-    //                     barThickness: 20
-    //                 }]
-    //             },
-    //             options: {
-    //                 responsive: true,
-    //                 maintainAspectRatio: false,
-    //                 plugins: {
-    //                     legend: {
-    //                         display: false
-    //                     }
-    //                 },
-    //                 scales: {
-    //                     x: {
-    //                         grid: {
-    //                             display: false
-    //                         }
-    //                     },
-    //                     y: {
-    //                         beginAtZero: true,
-    //                         max: 5,
-    //                         grid: {
-    //                             color: '#f0f0f0'
-    //                         },
-    //                         ticks: {
-    //                             stepSize: 1
-    //                         }
-    //                     }
-    //                 }
-    //             }
-    //         });
-    //     }
+            // Create orders chart (bar chart like in your image)
+            ordersChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Orders Count',
+                        data: ordersData,
+                        backgroundColor: '#28a745',
+                        borderRadius: 4,
+                        barThickness: 20
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            max: 5,
+                            grid: {
+                                color: '#f0f0f0'
+                            },
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        }
         
-    //     // Generate Ledger PDF
-    //     function generateLedgerPDF() {
-    //         const startDate = document.getElementById('ledgerStartDate').value;
-    //         const endDate = document.getElementById('ledgerEndDate').value;
+        // Generate Ledger PDF
+        function generateLedgerPDF() {
+            const startDate = document.getElementById('ledgerStartDate').value;
+            const endDate = document.getElementById('ledgerEndDate').value;
             
-    //         if (!startDate || !endDate) {
-    //             alert('Please select both start and end dates');
-    //             return;
-    //         }
+            if (!startDate || !endDate) {
+                alert('Please select both start and end dates');
+                return;
+            }
             
-    //         if (new Date(startDate) > new Date(endDate)) {
-    //             alert('Start date cannot be later than end date');
-    //             return;
-    //         }
+            if (new Date(startDate) > new Date(endDate)) {
+                alert('Start date cannot be later than end date');
+                return;
+            }
             
-    //         // Show loading state
-    //         const btn = document.getElementById('generateLedgerPDF');
-    //         const originalText = btn.innerHTML;
-    //         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
-    //         btn.disabled = true;
+            // Show loading state
+            const btn = document.getElementById('generateLedgerPDF');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+            btn.disabled = true;
             
-    //         // Build download URL
-    //         const params = new URLSearchParams({
-    //             startDate: startDate,
-    //             endDate: endDate,
-    //             type: 'ledger'
-    //         });
+            // Build download URL
+            const params = new URLSearchParams({
+                startDate: startDate,
+                endDate: endDate,
+                type: 'ledger'
+            });
             
-    //         const url = `/admin/reports/download/pdf?${params}`;
+            const url = `/admin/reports/download/pdf?${params}`;
             
-    //         // Create temporary link and click it
-    //         const link = document.createElement('a');
-    //         link.href = url;
-    //         link.download = `ledger-book-${startDate}-to-${endDate}.pdf`;
-    //         document.body.appendChild(link);
-    //         link.click();
-    //         document.body.removeChild(link);
+            // Create temporary link and click it
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `ledger-book-${startDate}-to-${endDate}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
             
-    //         // Reset button after 2 seconds
-    //         setTimeout(() => {
-    //             btn.innerHTML = originalText;
-    //             btn.disabled = false;
-    //         }, 2000);
-    //     }
-    // </script>
+            // Reset button after 2 seconds
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }, 2000);
+        }
+    </script>
 
   
 <script>

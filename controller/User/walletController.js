@@ -2,12 +2,11 @@ import walletService from '../../services/walletService.js';
 import referralService from '../../services/referralService.js';
 import User from '../../model/userSchema.js';
 
-// Get wallet balance
 export const getWalletBalance = async (req, res) => {
     try {
         const userId = req.session.user.id;
         const balance = await walletService.getBalance(userId);
-        
+
         res.json({
             success: true,
             balance: balance
@@ -21,7 +20,7 @@ export const getWalletBalance = async (req, res) => {
     }
 };
 
-// Get transaction history
+
 export const getTransactionHistory = async (req, res) => {
     try {
         const userId = req.session.user.id;
@@ -34,7 +33,7 @@ export const getTransactionHistory = async (req, res) => {
         };
 
         const result = await walletService.getTransactionHistory(userId, filters);
-        
+
         res.json({
             success: true,
             ...result
@@ -48,7 +47,7 @@ export const getTransactionHistory = async (req, res) => {
     }
 };
 
-// Validate wallet payment
+
 export const validateWalletPayment = async (req, res) => {
     try {
         const userId = req.session.user.id;
@@ -62,7 +61,7 @@ export const validateWalletPayment = async (req, res) => {
         }
 
         const validation = await walletService.validateWalletPayment(userId, amount);
-        
+
         res.json({
             success: validation.valid,
             message: validation.message,
@@ -78,11 +77,11 @@ export const validateWalletPayment = async (req, res) => {
     }
 };
 
-// Get wallet page
+
 export const getWalletPage = async (req, res) => {
     try {
         const userId = req.session.user.id;
-        
+
         // Get user data
         const user = await User.findById(userId).select('name email wallet referralCode');
         if (!user) {
@@ -97,14 +96,14 @@ export const getWalletPage = async (req, res) => {
 
         // Get wallet balance
         const balance = await walletService.getBalance(userId);
-        
+
         // Get recent transactions (last 10)
-        const recentTransactions = await walletService.getTransactionHistory(userId, { 
-            page: 1, 
-            limit: 10 
+        const recentTransactions = await walletService.getTransactionHistory(userId, {
+            page: 1,
+            limit: 10
         });
-        
-        // Get referral stats
+
+      
         const referralStats = await referralService.getReferralStats(userId);
 
         res.render('user/wallet', {
@@ -125,14 +124,14 @@ export const getWalletPage = async (req, res) => {
 export const getReferralStats = async (req, res) => {
     try {
         const userId = req.session.user.id;
-        
+
         // First, ensure user has a referral code
         const userForReferral = await User.findById(userId);
         if (!userForReferral.referralCode) {
             userForReferral.referralCode = userForReferral.generateReferralCode();
             await userForReferral.save();
         }
-        
+
         const result = await referralService.getReferralStats(userId);
         res.json(result);
     } catch (error) {

@@ -16,8 +16,6 @@ import paymentCtrl from '../controller/User/paymentController.js';
 import couponCtrl from '../controller/User/couponController.js';
 import walletCtrl from '../controller/User/walletController.js';
 import referralService from '../services/referralService.js';
-import User from '../model/userSchema.js';
-import Order from '../model/orderSchema.js';
 
 const router = express.Router();
 
@@ -166,10 +164,6 @@ router.post('/api/referral/validate', async (req, res) => {
       return res.json({ valid: false, message: 'Referral code is required' });
     }
 
-    // Basic rate limiting - prevent too many validation requests
-    const clientIP = req.ip || req.connection.remoteAddress;
-    const rateLimitKey = `referral_validate_${clientIP}`;
-
     const result = await referralService.validateReferralCode(referralCode.trim());
     res.json(result);
   } catch (error) {
@@ -177,5 +171,11 @@ router.post('/api/referral/validate', async (req, res) => {
     res.status(500).json({ valid: false, message: 'Validation failed' });
   }
 });
+
+
+
+
+
+
 
 export default router;

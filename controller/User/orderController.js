@@ -182,9 +182,12 @@ const getOrderDetails = async (req, res) => {
 // Cancel entire order
 const cancelOrder = async (req, res) => {
   try {
+    console.log('=== USER ORDER CANCELLATION STARTED ===');
     const userId = req.session.user.id;
     const orderId = req.params.orderId;
     const { reason } = req.body;
+    
+    console.log('Cancellation request:', { userId, orderId, reason });
 
     const order = await Order.findOne({ 
       _id: orderId, 
@@ -217,38 +220,185 @@ const cancelOrder = async (req, res) => {
     // Cancel the order
     await order.cancelOrder(reason);
 
-    // Process automatic refund for paid orders
-    try {
-      const refundResult = await walletService.processOrderCancellationRefund(orderId, userId);
+    // Reload the order to get the updated data
+    const updatedOrder = await Order.findById(orderId);
+    
+    // Process automatic refund for paid orders (NOT COD)
+    console.log('=== CHECKING REFUND ELIGIBILITY ===');
+    console.log('Original order details:', {
+      orderId: order.orderId,
+      paymentMethod: order.paymentMethod,
+      paymentStatus: order.paymentStatus,
+      totalAmount: order.totalAmount,
+      walletAmountUsed: order.walletAmountUsed,
+      orderStatus: order.orderStatus
+    });
+    console.log('Updated order details:', {
+      orderId: updatedOrder.orderId,
+      paymentMethod: updatedOrder.paymentMethod,
+      paymentStatus: updatedOrder.paymentStatus,
+      totalAmount: updatedOrder.totalAmount,
+      walletAmountUsed: updatedOrder.walletAmountUsed,
+      orderStatus: updatedOrder.orderStatus
+    });
+    
+
+    
+    // Use the updated order for refund processing
+    const orderForRefund = updatedOrder || order;
+    
+    if (orderForRefund.paymentStatus === 'Paid' && orderForRefund.paymentMethod !== 'COD') {
+      console.log('✅ Order eligible for refund - processing...');
+      console.log('DEBUG: About to call wallet service with:', {
+        userId,
+        amount: orderForRefund.totalAmount,
+        orderId: orderForRefund._id
+      });
       
-      if (refundResult.success) {
-        res.json({
-          success: true,
-          message: 'Order cancelled successfully',
-          refund: {
-            amount: refundResult.refundAmount,
-            newWalletBalance: refundResult.newBalance,
+      // Validate user ID
+      if (!userId) {
+        throw new Error('User ID is missing from session');
+      }
+      
+      // Verify user exists
+      const User = (await import('../../model/userSchema.js')).default;
+      const user = await User.findById(userId);
+      if (!user) {
+        throw new Error(`User not found with ID: ${userId}`);
+      }
+      
+      console.log('DEBUG: User validation passed:', {
+        userId: user._id,
+        userName: user.name || user.fullName || 'No name',
+        hasWallet: !!user.wallet
+      });
+      
+      try {
+        // Use wallet service for reliable refund processing
+        const walletService = (await import('../../services/walletService.js')).default;
+        
+        console.log('DEBUG: Wallet service imported successfully');
+        
+        const refundResult = await walletService.addMoney(
+          userId,
+          orderForRefund.totalAmount,
+          `Refund for cancelled order ${orderForRefund.orderId}`,
+          orderForRefund._id
+        );
+
+        console.log('DEBUG: Wallet service returned:', refundResult);
+
+        if (refundResult.success) {
+          // Update order refund status
+          orderForRefund.refundStatus = 'processed';
+          orderForRefund.refundAmount = orderForRefund.totalAmount;
+          orderForRefund.refundProcessedAt = new Date();
+          await orderForRefund.save();
+          
+          console.log('✅ REFUND SUCCESSFUL:', {
+            refundAmount: orderForRefund.totalAmount,
+            newBalance: refundResult.newBalance,
             transactionId: refundResult.transactionId
+          });
+          
+          res.json({
+            success: true,
+            message: 'Order cancelled and refund processed successfully',
+            refund: {
+              amount: orderForRefund.totalAmount,
+              newWalletBalance: refundResult.newBalance,
+              transactionId: refundResult.transactionId
+            }
+          });
+        } else {
+          console.error('DEBUG: Wallet service failed, trying direct approach');
+          console.error('Wallet service error:', refundResult.error);
+          
+          // Fallback: Direct wallet credit - FORCE SUCCESS
+          console.log('FORCING DIRECT WALLET CREDIT...');
+          
+          if (!user.wallet) {
+            console.log('Creating new wallet for user');
+            user.wallet = { balance: 0, transactions: [], isWalletActive: true };
           }
+          
+          const oldBalance = user.wallet.balance || 0;
+          const newBalance = oldBalance + orderForRefund.totalAmount;
+          const transactionId = `REFUND${Date.now()}`;
+          
+          console.log('Direct refund calculation:', {
+            oldBalance,
+            refundAmount: orderForRefund.totalAmount,
+            newBalance
+          });
+          
+          const transaction = {
+            type: 'credit',
+            amount: orderForRefund.totalAmount,
+            description: `Refund for cancelled order ${orderForRefund.orderId}`,
+            orderId: orderForRefund._id,
+            transactionId: transactionId,
+            balanceAfter: newBalance,
+            createdAt: new Date()
+          };
+          
+          user.wallet.balance = newBalance;
+          user.wallet.transactions.push(transaction);
+          
+          console.log('Saving user with updated wallet...');
+          const savedUser = await user.save();
+          console.log('User saved. New wallet balance:', savedUser.wallet.balance);
+          
+          // Update order refund status
+          orderForRefund.refundStatus = 'processed';
+          orderForRefund.refundAmount = orderForRefund.totalAmount;
+          orderForRefund.refundProcessedAt = new Date();
+          await orderForRefund.save();
+          
+          console.log('✅ DIRECT REFUND SUCCESSFUL:', {
+            refundAmount: orderForRefund.totalAmount,
+            newBalance: savedUser.wallet.balance,
+            transactionId: transactionId
+          });
+          
+          res.json({
+            success: true,
+            message: 'Order cancelled and refund processed successfully (direct method)',
+            refund: {
+              amount: orderForRefund.totalAmount,
+              newWalletBalance: savedUser.wallet.balance,
+              transactionId: transactionId
+            }
+          });
+        }
+        
+      } catch (refundError) {
+        console.error('❌ REFUND ERROR:', refundError);
+        console.error('DEBUG: Full error details:', {
+          name: refundError.name,
+          message: refundError.message,
+          stack: refundError.stack
         });
-      } else {
         res.json({
           success: true,
-          message: 'Order cancelled successfully',
-          refund: {
-            message: refundResult.message
-          }
+          message: 'Order cancelled successfully, but refund failed. Please contact support.',
+          refundError: refundError.message
         });
       }
-    } catch (refundError) {
-      console.error('Refund processing error:', refundError);
-      // Order is still cancelled, but refund failed
+    } else {
+      console.log('❌ Order not eligible for refund:', {
+        paymentStatus: orderForRefund.paymentStatus,
+        paymentMethod: orderForRefund.paymentMethod,
+        reason: orderForRefund.paymentStatus !== 'Paid' ? 'Not paid' : 'COD order'
+      });
+      
       res.json({
         success: true,
-        message: 'Order cancelled successfully, but refund processing failed. Please contact support.',
-        refundError: refundError.message
+        message: 'Order cancelled successfully'
       });
     }
+
+
 
   } catch (error) {
     console.error('Cancel order error:', error);
@@ -321,45 +471,133 @@ const cancelOrderItems = async (req, res) => {
     await order.cancelItems(items, reason);
     console.log('Items cancelled successfully');
 
+    // Get updated order to see new totals
+    const updatedOrder = await Order.findById(orderId);
+    console.log('Updated order totals:', {
+      originalTotal: order.totalAmount,
+      newTotal: updatedOrder.totalAmount,
+      difference: order.totalAmount - updatedOrder.totalAmount
+    });
+
     // Process partial refund for cancelled items
     try {
-      if (order.paymentMethod !== 'COD') {
-        // Calculate refund amount for cancelled items
-        let refundAmount = 0;
-        for (const item of items) {
-          const orderItem = order.items.find(oi => oi.variantId._id.toString() === item.variantId);
-          if (orderItem) {
-            refundAmount += (orderItem.price * item.quantity);
-          }
-        }
+      if (order.paymentStatus === 'Paid' && order.paymentMethod !== 'COD') {
+        const originalTotal = order.totalAmount;
+        const newTotal = updatedOrder.totalAmount;
+        const refundAmount = originalTotal - newTotal;
+
+        console.log('Refund calculation:', {
+          originalTotal,
+          newTotal,
+          refundAmount
+        });
 
         if (refundAmount > 0) {
+          console.log('Processing user item cancellation refund:', {
+            userId,
+            refundAmount,
+            orderId: order.orderId
+          });
+          
+          // Use wallet service for reliable refund processing
+          const walletService = (await import('../../services/walletService.js')).default;
+          
           const refundResult = await walletService.addMoney(
             userId,
             refundAmount,
             `Partial refund for cancelled items - Order ${order.orderId}`,
-            orderId
+            order._id
           );
 
-          res.json({
-            success: true,
-            message: 'Items cancelled successfully',
-            refund: {
-              amount: refundAmount,
-              newWalletBalance: refundResult.newBalance,
+          if (refundResult.success) {
+            console.log('Item refund successful:', {
+              refundAmount,
+              newBalance: refundResult.newBalance,
               transactionId: refundResult.transactionId
+            });
+
+            res.json({
+              success: true,
+              message: 'Items cancelled successfully',
+              orderUpdate: {
+                originalTotal,
+                newTotal,
+                refundAmount
+              },
+              refund: {
+                amount: refundAmount,
+                newWalletBalance: refundResult.newBalance,
+                transactionId: refundResult.transactionId
+              }
+            });
+          } else {
+            console.error('Wallet service failed for item refund, trying direct approach');
+            
+            // Fallback: Direct wallet credit
+            const User = (await import('../../model/userSchema.js')).default;
+            const user = await User.findById(userId);
+            
+            if (!user.wallet) {
+              user.wallet = { balance: 0, transactions: [], isWalletActive: true };
             }
-          });
+            
+            const oldBalance = user.wallet.balance || 0;
+            const newBalance = oldBalance + refundAmount;
+            const transactionId = `ITEMREFUND${Date.now()}`;
+            
+            const transaction = {
+              type: 'credit',
+              amount: refundAmount,
+              description: `Partial refund for cancelled items - Order ${order.orderId}`,
+              orderId: order._id,
+              transactionId: transactionId,
+              balanceAfter: newBalance,
+              createdAt: new Date()
+            };
+            
+            user.wallet.balance = newBalance;
+            user.wallet.transactions.push(transaction);
+            await user.save();
+            
+            console.log('Direct item refund successful:', {
+              refundAmount,
+              newBalance: newBalance,
+              transactionId: transactionId
+            });
+
+            res.json({
+              success: true,
+              message: 'Items cancelled successfully',
+              orderUpdate: {
+                originalTotal,
+                newTotal,
+                refundAmount
+              },
+              refund: {
+                amount: refundAmount,
+                newWalletBalance: newBalance,
+                transactionId: transactionId
+              }
+            });
+          }
         } else {
           res.json({
             success: true,
-            message: 'Items cancelled successfully'
+            message: 'Items cancelled successfully',
+            orderUpdate: {
+              originalTotal,
+              newTotal
+            }
           });
         }
       } else {
         res.json({
           success: true,
-          message: 'Items cancelled successfully'
+          message: 'Items cancelled successfully',
+          orderUpdate: {
+            originalTotal: order.totalAmount,
+            newTotal: updatedOrder.totalAmount
+          }
         });
       }
     } catch (refundError) {
@@ -367,7 +605,11 @@ const cancelOrderItems = async (req, res) => {
       res.json({
         success: true,
         message: 'Items cancelled successfully, but refund processing failed. Please contact support.',
-        refundError: refundError.message
+        refundError: refundError.message,
+        orderUpdate: {
+          originalTotal: order.totalAmount,
+          newTotal: updatedOrder.totalAmount
+        }
       });
     }
 
@@ -567,8 +809,10 @@ const downloadInvoice = async (req, res) => {
     doc.moveTo(50, yPosition).lineTo(550, yPosition).stroke();
     yPosition += 10;
 
-    // Order items
-    order.items.forEach(item => {
+    // Order items (only active items, excluding cancelled and returned ones)
+    const activeItems = order.items.filter(item => item.status !== 'Cancelled' && item.status !== 'Returned');
+    
+    activeItems.forEach(item => {
       const productName = item.variantId.productId.productName;
       const brand = item.variantId.productId.brand;
       const color = item.variantId.color;
@@ -579,6 +823,50 @@ const downloadInvoice = async (req, res) => {
       doc.text(`₹${item.totalPrice.toFixed(2)}`, 450, yPosition);
       yPosition += 20;
     });
+
+    // Show cancelled items if any
+    const cancelledItems = order.items.filter(item => item.status === 'Cancelled');
+    if (cancelledItems.length > 0) {
+      yPosition += 10;
+      doc.fontSize(10).fillColor('red').text('Cancelled Items:', 50, yPosition);
+      yPosition += 15;
+      
+      cancelledItems.forEach(item => {
+        const productName = item.variantId.productId.productName;
+        const brand = item.variantId.productId.brand;
+        const color = item.variantId.color;
+        
+        doc.fillColor('gray').text(`${productName} (${brand}) - ${color} [CANCELLED]`, 50, yPosition);
+        doc.text(item.quantity.toString(), 300, yPosition);
+        doc.text(`₹${item.price.toFixed(2)}`, 350, yPosition);
+        doc.text(`-₹${item.totalPrice.toFixed(2)}`, 450, yPosition);
+        yPosition += 15;
+      });
+      
+      doc.fillColor('black'); // Reset color
+    }
+
+    // Show returned items if any
+    const returnedItems = order.items.filter(item => item.status === 'Returned');
+    if (returnedItems.length > 0) {
+      yPosition += 10;
+      doc.fontSize(10).fillColor('orange').text('Returned Items:', 50, yPosition);
+      yPosition += 15;
+      
+      returnedItems.forEach(item => {
+        const productName = item.variantId.productId.productName;
+        const brand = item.variantId.productId.brand;
+        const color = item.variantId.color;
+        
+        doc.fillColor('gray').text(`${productName} (${brand}) - ${color} [RETURNED]`, 50, yPosition);
+        doc.text(item.quantity.toString(), 300, yPosition);
+        doc.text(`₹${item.price.toFixed(2)}`, 350, yPosition);
+        doc.text(`-₹${item.totalPrice.toFixed(2)}`, 450, yPosition);
+        yPosition += 15;
+      });
+      
+      doc.fillColor('black'); // Reset color
+    }
 
     // Draw line
     yPosition += 10;
@@ -612,13 +900,55 @@ const downloadInvoice = async (req, res) => {
     doc.fontSize(12).text('Total Amount:', 350, yPosition);
     doc.text(`₹${order.totalAmount.toFixed(2)}`, 450, yPosition);
 
-    // Payment method
+    // Payment method and order info
     yPosition += 30;
     doc.fontSize(10).text(`Payment Method: ${order.paymentMethod}`, 50, yPosition);
     doc.text(`Order Status: ${order.orderStatus}`, 50, yPosition + 15);
+    
+    // Add return information if any
+    if (order.returnRequests && order.returnRequests.length > 0) {
+      yPosition += 40;
+      doc.fontSize(12).text('Return Information:', 50, yPosition);
+      yPosition += 20;
+      
+      order.returnRequests.forEach(returnReq => {
+        const returnItem = order.items.find(item => item._id.toString() === returnReq.itemId.toString());
+        if (returnItem) {
+          doc.fontSize(10).text(`• Return Status: ${returnReq.status}`, 50, yPosition);
+          doc.text(`  Reason: ${returnReq.reason}`, 50, yPosition + 12);
+          doc.text(`  Requested: ${returnReq.requestedAt.toLocaleDateString()}`, 50, yPosition + 24);
+          if (returnReq.processedAt) {
+            doc.text(`  Processed: ${returnReq.processedAt.toLocaleDateString()}`, 50, yPosition + 36);
+            yPosition += 48;
+          } else {
+            yPosition += 36;
+          }
+        }
+      });
+    }
+
+    // Refund information if any
+    if (order.refundStatus && order.refundStatus !== 'none') {
+      yPosition += 20;
+      doc.fontSize(12).text('Refund Information:', 50, yPosition);
+      yPosition += 15;
+      doc.fontSize(10).text(`Refund Status: ${order.refundStatus}`, 50, yPosition);
+      if (order.refundAmount) {
+        doc.text(`Refund Amount: ₹${order.refundAmount.toFixed(2)}`, 50, yPosition + 12);
+        yPosition += 24;
+      } else {
+        yPosition += 12;
+      }
+      if (order.refundProcessedAt) {
+        doc.text(`Refund Processed: ${order.refundProcessedAt.toLocaleDateString()}`, 50, yPosition);
+        yPosition += 12;
+      }
+    }
 
     // Footer
-    doc.text('Thank you for your business!', 50, yPosition + 50);
+    yPosition += 30;
+    doc.text('Thank you for your business!', 50, yPosition);
+    doc.text('For any queries regarding returns or refunds, contact us at support@melodia.com', 50, yPosition + 15);
 
     // Finalize PDF
     doc.end();

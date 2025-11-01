@@ -26,6 +26,12 @@ export const walletService = {
     // Add money to wallet (credit) - No transactions for standalone MongoDB
     addMoney: async (userId, amount, description, orderId = null, adminId = null) => {
         try {
+            console.log('=== ADD MONEY TO WALLET ===');
+            console.log('User ID:', userId);
+            console.log('Amount:', amount);
+            console.log('Description:', description);
+            console.log('Order ID:', orderId);
+
             if (amount <= 0) {
                 throw new Error('Amount must be greater than 0');
             }
@@ -35,8 +41,12 @@ export const walletService = {
                 throw new Error('User not found');
             }
 
+            console.log('User found:', user.name || user.fullName || user.email);
+            console.log('Current wallet:', user.wallet);
+
             // Initialize wallet if it doesn't exist
             if (!user.wallet) {
+                console.log('Initializing wallet for user');
                 user.wallet = {
                     balance: 0,
                     transactions: [],
@@ -53,6 +63,12 @@ export const walletService = {
             const newBalance = currentBalance + amount;
             const transactionId = walletService.generateTransactionId();
 
+            console.log('Balance calculation:', {
+                currentBalance,
+                amount,
+                newBalance
+            });
+
             // Create transaction record
             const transaction = {
                 type: 'credit',
@@ -65,23 +81,30 @@ export const walletService = {
                 adminId: adminId
             };
 
-            // Update user wallet without MongoDB transactions
-            await User.findByIdAndUpdate(
-                userId,
-                {
-                    $set: { 'wallet.balance': newBalance },
-                    $push: { 'wallet.transactions': transaction }
-                },
-                { new: true }
-            );
+            console.log('Creating transaction:', transaction);
+
+            // Update user wallet - use direct save method for better reliability
+            user.wallet.balance = newBalance;
+            user.wallet.transactions.push(transaction);
+            
+            const savedUser = await user.save();
+
+            console.log('Wallet updated successfully:', {
+                oldBalance: currentBalance,
+                newBalance: savedUser.wallet.balance,
+                transactionId,
+                transactionCount: savedUser.wallet.transactions.length
+            });
+
             return {
                 success: true,
                 transactionId: transactionId,
-                newBalance: newBalance,
+                newBalance: savedUser.wallet.balance,
                 transaction: transaction
             };
 
         } catch (error) {
+            console.error('Add money error:', error);
             return {
                 success: false,
                 error: error.message,
@@ -270,25 +293,62 @@ export const walletService = {
         try {
             const order = await Order.findById(orderId);
             if (!order) {
-                throw new Error('Order not found');
+                return { success: false, message: 'Order not found' };
             }
 
             if (order.userId.toString() !== userId.toString()) {
-                throw new Error('Unauthorized access to order');
+                return { success: false, message: 'Unauthorized access to order' };
             }
 
-            // Only refund if payment was made (not COD)
+            // Only refund if payment was made (not COD) and payment was successful
             if (order.paymentMethod === 'COD') {
                 return { success: false, message: 'No refund needed for COD orders' };
             }
 
-            // Calculate refund amount
-            let refundAmount = order.totalAmount;
-
-            // If wallet was used, don't refund that portion again
-            if (order.walletAmountUsed) {
-                refundAmount = order.totalAmount - order.walletAmountUsed;
+            if (order.paymentStatus !== 'Paid') {
+                return { success: false, message: 'No refund needed for unpaid orders' };
             }
+
+            // Calculate refund amount based on payment method
+            let refundAmount = 0;
+
+            console.log('Order details for refund:', {
+                paymentMethod: order.paymentMethod,
+                paymentStatus: order.paymentStatus,
+                totalAmount: order.totalAmount,
+                walletAmountUsed: order.walletAmountUsed,
+                orderId: order.orderId
+            });
+
+            if (order.paymentMethod === 'WALLET') {
+                // For pure wallet payments, refund the total amount
+                // The walletAmountUsed should equal totalAmount for pure wallet payments
+                refundAmount = order.totalAmount;
+                console.log('Wallet payment detected - refunding total amount:', refundAmount);
+            } else if (order.paymentMethod === 'RAZORPAY') {
+                // For Razorpay payments, refund the amount paid via Razorpay
+                refundAmount = order.totalAmount;
+                if (order.walletAmountUsed && order.walletAmountUsed > 0) {
+                    // If wallet was also used in combination, only refund the Razorpay portion
+                    refundAmount = order.totalAmount - order.walletAmountUsed;
+                    console.log('Combined payment detected - refunding Razorpay portion:', refundAmount);
+                }
+            } else if (order.walletAmountUsed && order.walletAmountUsed > 0) {
+                // If wallet was used with other payment methods (like COD + wallet)
+                refundAmount = order.walletAmountUsed;
+                console.log('Partial wallet payment detected - refunding wallet portion:', refundAmount);
+            } else {
+                // For other payment methods, refund the total amount
+                refundAmount = order.totalAmount;
+                console.log('Other payment method detected - refunding total amount:', refundAmount);
+            }
+
+            console.log('Final refund calculation:', {
+                paymentMethod: order.paymentMethod,
+                totalAmount: order.totalAmount,
+                walletAmountUsed: order.walletAmountUsed,
+                calculatedRefund: refundAmount
+            });
 
             if (refundAmount <= 0) {
                 return { success: false, message: 'No refund amount calculated' };
@@ -301,6 +361,10 @@ export const walletService = {
                 `Refund for cancelled order ${order.orderId}`,
                 orderId
             );
+
+            if (!refundResult.success) {
+                return { success: false, message: refundResult.error };
+            }
 
             // Update order refund status
             await Order.findByIdAndUpdate(orderId, {
@@ -318,7 +382,7 @@ export const walletService = {
 
         } catch (error) {
             console.error('Error processing cancellation refund:', error);
-            throw error;
+            return { success: false, message: error.message };
         }
     },
 
@@ -397,6 +461,8 @@ export const walletService = {
             throw error;
         }
     },
+
+
 
     // Get wallet statistics for admin
     getWalletStats: async () => {

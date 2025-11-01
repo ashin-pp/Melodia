@@ -169,16 +169,22 @@ export const processWalletPayment = async (req, res) => {
             });
         }
 
-        // Deduct from wallet
-        user.wallet.balance -= amount;
-        user.wallet.transactions.push({
-            type: 'debit',
+        // Deduct from wallet using wallet service
+        const walletService = (await import('../../services/walletService.js')).default;
+        
+        const deductResult = await walletService.deductMoney(
+            userId,
             amount,
-            description: `Payment for order ${orderId}`,
-            orderId: orderId
-        });
+            `Payment for order ${orderId}`,
+            orderId
+        );
 
-        await user.save();
+        if (!deductResult.success) {
+            return res.status(400).json({
+                success: false,
+                message: deductResult.error || 'Wallet payment failed'
+            });
+        }
 
         // Update order
         await Order.findOneAndUpdate(

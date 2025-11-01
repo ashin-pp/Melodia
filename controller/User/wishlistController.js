@@ -1,7 +1,5 @@
 import Wishlist from '../../model/wishlistSchema.js';
 import Variant from '../../model/variantSchema.js';
-import Product from '../../model/productSchema.js';
-import Category from '../../model/categorySchema.js';
 import Cart from '../../model/cartSchema.js';
 import User from '../../model/userSchema.js';
 
@@ -347,14 +345,7 @@ const checkWishlistItem = async (req, res) => {
   }
 };
 
-export { 
-  addToWishlist, 
-  getWishlist, 
-  removeFromWishlist, 
-  moveToCart, 
-  getWishlistCount,
-  checkWishlistItem
-};
+
 
 // Default export for compatibility
 export default {
@@ -363,5 +354,5 @@ export default {
   removeFromWishlist,
   moveToCart,
   getWishlistCount,
-  checkWishlistItem
+  checkWishlistItem,
 };

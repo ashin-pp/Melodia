@@ -4,6 +4,7 @@ import Product from '../../model/productSchema.js';
 import Category from '../../model/categorySchema.js';
 import mongoose from 'mongoose';
 import User from '../../model/userSchema.js';
+import Wishlist from '../../model/wishlistSchema.js';
 
 // Maximum quantity per product
 const MAX_QUANTITY_PER_PRODUCT = 5;
@@ -131,25 +132,35 @@ const addToCart = async (req, res) => {
 
     await cart.save();
 
-    // Remove from wishlist if exists (optional, skip if causing issues)
+    // Remove from wishlist if exists
     try {
       const wishlist = await Wishlist.findOne({ userId });
-      if (wishlist && wishlist.hasItem && typeof wishlist.hasItem === 'function') {
-        if (wishlist.hasItem(variantId)) {
-          await wishlist.removeItem(variantId);
+      if (wishlist) {
+        const itemExists = wishlist.items.some(item => 
+          item.variantId.toString() === variantId.toString()
+        );
+        
+        if (itemExists) {
+          wishlist.items = wishlist.items.filter(item => 
+            item.variantId.toString() !== variantId.toString()
+          );
+          await wishlist.save();
         }
       }
-    } catch (wishlistError) {
-      console.log('Wishlist operation failed, continuing with cart add:', wishlistError.message);
+    } catch (error) {
+      console.log('Wishlist removal failed:', error.message);
     }
 
-    // Get updated cart count
+    // Get updated counts
     const totalItems = cart.getTotalItems();
+    const wishlist = await Wishlist.findOne({ userId });
+    const wishlistCount = wishlist ? wishlist.items.length : 0;
 
     res.json({
       success: true,
       message: 'Item added to cart successfully',
-      cartCount: totalItems
+      cartCount: totalItems,
+      wishlistCount: wishlistCount
     });
 
   } catch (error) {

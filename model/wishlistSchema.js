@@ -56,6 +56,13 @@ wishlistSchema.methods.getTotalItems = function() {
   return this.items.length;
 };
 
+wishlistSchema.methods.clearAllItems=async function (){
+  this.items=[];
+  this.updatedAt=new Date();
+  return await this.save();
+  
+}
+
 
 
 const Wishlist = mongoose.model('Wishlist', wishlistSchema);

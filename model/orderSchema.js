@@ -252,10 +252,34 @@ orderSchema.pre('save', async function (next) {
   next();
 });
 
-// Method to calculate total amount
+// Method to calculate total amount (excluding cancelled items)
 orderSchema.methods.calculateTotal = function () {
-  this.subtotal = this.items.reduce((sum, item) => sum + item.totalPrice, 0);
-  this.totalAmount = this.subtotal + this.shippingCost + this.taxAmount - this.discountAmount;
+  // Only include items that are not cancelled
+  const activeItems = this.items.filter(item => item.status !== 'Cancelled');
+  this.subtotal = activeItems.reduce((sum, item) => sum + item.totalPrice, 0);
+
+  // Recalculate shipping cost based on new subtotal
+  // If subtotal becomes 0 or very low, shipping might still apply
+  if (this.subtotal === 0) {
+    this.shippingCost = 0;
+  } else if (this.subtotal < 500 && this.shippingCost === 0) {
+    // If original order had free shipping but now below threshold, add shipping
+    // You might want to adjust this logic based on your business rules
+    this.shippingCost = 50;
+  }
+
+  // Recalculate tax based on new subtotal
+  const taxRate = 0.18; // 18% GST
+  this.taxAmount = Math.round(this.subtotal * taxRate);
+
+  // Recalculate total
+  this.totalAmount = this.subtotal + this.shippingCost + this.taxAmount - this.discountAmount - this.couponDiscount;
+
+  // Ensure total is not negative
+  if (this.totalAmount < 0) {
+    this.totalAmount = 0;
+  }
+
   return this.totalAmount;
 };
 
@@ -288,14 +312,43 @@ orderSchema.methods.returnOrder = async function (reason) {
   return await this.save();
 };
 
+// Method to get current active total (excluding cancelled items)
+orderSchema.methods.getActiveTotal = function () {
+  const activeItems = this.items.filter(item => item.status !== 'Cancelled');
+  const activeSubtotal = activeItems.reduce((sum, item) => sum + item.totalPrice, 0);
+
+  // Calculate shipping for active items
+  let activeShippingCost = 0;
+  if (activeSubtotal > 0) {
+    activeShippingCost = activeSubtotal > 500 ? 0 : 50;
+  }
+
+  // Calculate tax for active items
+  const activeTaxAmount = Math.round(activeSubtotal * 0.18);
+
+  // Calculate active total
+  const activeTotal = activeSubtotal + activeShippingCost + activeTaxAmount - this.discountAmount - this.couponDiscount;
+
+  return {
+    subtotal: activeSubtotal,
+    shippingCost: activeShippingCost,
+    taxAmount: activeTaxAmount,
+    totalAmount: Math.max(0, activeTotal),
+    activeItemsCount: activeItems.length
+  };
+};
+
 // Method to cancel specific items
 orderSchema.methods.cancelItems = async function (itemsToCancel, reason) {
   console.log('=== cancelItems method called ===');
   console.log('Items to cancel:', itemsToCancel);
-  
+  console.log('Original total amount:', this.totalAmount);
+
+  let cancelledAmount = 0;
+
   itemsToCancel.forEach(item => {
     console.log(`Processing cancellation for variant ${item.variantId}, quantity: ${item.quantity}`);
-    
+
     // Add to cancelled items
     this.cancelledItems.push({
       variantId: item.variantId,
@@ -303,29 +356,30 @@ orderSchema.methods.cancelItems = async function (itemsToCancel, reason) {
       reason: reason
     });
 
-    // SIMPLE FIX: Just update the item status to 'Cancelled' like returns
     console.log('Looking for item with variantId:', item.variantId);
-    console.log('Available items:', this.items.map(i => ({ id: i._id, variantId: i.variantId.toString(), status: i.status })));
-    
+
     const originalItem = this.items.find(orderItem => {
       // Handle different variantId formats
       const orderVariantId = orderItem.variantId._id ? orderItem.variantId._id.toString() : orderItem.variantId.toString();
       const cancelVariantId = item.variantId._id ? item.variantId._id.toString() : item.variantId.toString();
-      
+
       const match = orderVariantId === cancelVariantId;
       console.log(`Comparing ${orderVariantId} === ${cancelVariantId}: ${match}`);
       return match;
     });
-    
+
     if (originalItem) {
       console.log(`✅ Found original item - Setting status to Cancelled`);
-      console.log(`Before: Status = ${originalItem.status}`);
-      
-      // Set status to Cancelled (same as returns)
+      console.log(`Before: Status = ${originalItem.status}, Price = ${originalItem.totalPrice}`);
+
+      // Calculate cancelled amount for this item
+      cancelledAmount += originalItem.totalPrice;
+
+      // Set status to Cancelled
       originalItem.status = 'Cancelled';
       originalItem.cancelledAt = new Date();
       originalItem.cancellationReason = reason;
-      
+
       // Add to status history
       if (!originalItem.statusHistory) {
         originalItem.statusHistory = [];
@@ -335,26 +389,26 @@ orderSchema.methods.cancelItems = async function (itemsToCancel, reason) {
         updatedAt: new Date(),
         reason: reason
       });
-      
+
       console.log(`After: Status = ${originalItem.status}`);
     } else {
       console.log('❌ Original item not found with primary search!');
-      
+
       // Try alternative search methods
-      console.log('Trying alternative search...');
       const altItem = this.items.find(orderItem => {
-        // Try matching by index or other properties
-        return orderItem._id.toString() === item.itemId || 
-               orderItem.variantId.toString().includes(item.variantId) ||
-               item.variantId.toString().includes(orderItem.variantId.toString());
+        return orderItem._id.toString() === item.itemId ||
+          orderItem.variantId.toString().includes(item.variantId) ||
+          item.variantId.toString().includes(orderItem.variantId.toString());
       });
-      
+
       if (altItem) {
         console.log('✅ Found item with alternative search - Setting status to Cancelled');
+        cancelledAmount += altItem.totalPrice;
+
         altItem.status = 'Cancelled';
         altItem.cancelledAt = new Date();
         altItem.cancellationReason = reason;
-        
+
         if (!altItem.statusHistory) {
           altItem.statusHistory = [];
         }
@@ -363,32 +417,35 @@ orderSchema.methods.cancelItems = async function (itemsToCancel, reason) {
           updatedAt: new Date(),
           reason: reason
         });
-      } else {
-        console.log('❌ Item still not found with alternative search!');
-        console.log('Search variantId:', item.variantId);
-        console.log('Available items:', this.items.map(i => ({
-          id: i._id.toString(),
-          variantId: i.variantId.toString(),
-          status: i.status
-        })));
       }
     }
   });
 
-  // Recalculate total amount
-  this.calculateTotal();
+  console.log(`Total cancelled amount: ${cancelledAmount}`);
+
+  // Recalculate total amount excluding cancelled items
+  const activeTotal = this.getActiveTotal();
+
+  // Update order totals
+  this.subtotal = activeTotal.subtotal;
+  this.shippingCost = activeTotal.shippingCost;
+  this.taxAmount = activeTotal.taxAmount;
+  this.totalAmount = activeTotal.totalAmount;
+
+  console.log(`Updated totals - Subtotal: ${this.subtotal}, Shipping: ${this.shippingCost}, Tax: ${this.taxAmount}, Total: ${this.totalAmount}`);
 
   // Check if all items are cancelled
-  const activeItems = this.items.filter(item => item.status !== 'Cancelled' && item.quantity > 0);
+  const activeItems = this.items.filter(item => item.status !== 'Cancelled');
   console.log(`Active items remaining: ${activeItems.length}`);
-  
+
   if (activeItems.length === 0) {
     console.log('All items cancelled - marking order as cancelled');
     this.orderStatus = 'Cancelled';
     this.cancelledAt = new Date();
+    this.totalAmount = 0;
   }
 
-  console.log('=== Saving order ===');
+  console.log('=== Saving order with updated totals ===');
   return await this.save();
 };
 

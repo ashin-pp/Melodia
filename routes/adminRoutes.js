@@ -48,6 +48,11 @@ router.put('/api/orders/:orderId/status', adminAuth, adminOrderCtrl.updateOrderS
 router.get('/orders/:orderId', adminAuth, adminOrderCtrl.getAdminOrderDetails);
 router.get('/orders/:orderId/invoice', adminAuth, adminOrderCtrl.downloadInvoice);
 
+// Order Cancellation routes
+router.post('/api/orders/:orderId/cancel', adminAuth, adminOrderCtrl.adminCancelOrder);
+router.post('/api/orders/:orderId/cancel-items', adminAuth, adminOrderCtrl.adminCancelOrderItems);
+router.post('/api/orders/:orderId/refund', adminAuth, adminOrderCtrl.processManualRefund);
+
 // Coupon Management routes
 router.get('/coupons', adminAuth, couponCtrl.getCoupons);
 router.post('/coupons/create', adminAuth, couponCtrl.createCoupon);
@@ -73,12 +78,15 @@ router.get('/reports/download/pdf', adminAuth, salesReportCtrl.downloadPDFReport
 router.put('/api/orders/items/:itemId/return/approve', adminAuth, adminOrderCtrl.approveReturnRequest);
 router.put('/api/orders/items/:itemId/return/reject', adminAuth, adminOrderCtrl.rejectReturnRequest);
 
-// Alternative routes for backward compatibility (if frontend uses different routes)
-router.post('/api/orders/items/:itemId/return/approve', adminAuth, adminOrderCtrl.approveReturnRequest);
-router.post('/api/orders/items/:itemId/return/reject', adminAuth, adminOrderCtrl.rejectReturnRequest);
 
 // Legacy route for existing frontend (uses returnRequestId instead of itemId)
 router.put('/api/return-requests/:returnRequestId/process', adminAuth, adminOrderCtrl.processReturnRequestLegacy);
+
+
+
+
+
+
 
 // Referral Analytics routes
 router.get('/api/referral/analytics', adminAuth, async (req, res) => {
