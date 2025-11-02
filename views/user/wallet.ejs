@@ -834,8 +834,51 @@
 
         // Update pagination
         function updatePagination(pagination) {
-            // Implementation for dynamic pagination update
-            // This would update the pagination controls based on the new data
+            // Find the existing pagination container
+            let paginationContainer = document.querySelector('.pagination');
+            
+            // If no pagination container exists, create one
+            if (!paginationContainer) {
+                const transactionsSection = document.querySelector('.transactions-section');
+                if (transactionsSection) {
+                    paginationContainer = document.createElement('div');
+                    paginationContainer.className = 'pagination';
+                    transactionsSection.appendChild(paginationContainer);
+                } else {
+                    return; // Can't create pagination without parent container
+                }
+            }
+            
+            // If only one page, hide pagination
+            if (pagination.totalPages <= 1) {
+                paginationContainer.style.display = 'none';
+                return;
+            }
+            
+            // Show pagination if hidden
+            paginationContainer.style.display = 'flex';
+            
+            // Build new pagination HTML
+            let paginationHTML = '';
+            
+            // Previous button
+            if (pagination.currentPage > 1) {
+                paginationHTML += `<a href="#" onclick="loadPage(${pagination.currentPage - 1})">Previous</a>`;
+            }
+            
+            // Page numbers
+            for (let i = 1; i <= pagination.totalPages; i++) {
+                const activeClass = pagination.currentPage === i ? 'active' : '';
+                paginationHTML += `<a href="#" onclick="loadPage(${i})" class="${activeClass}">${i}</a>`;
+            }
+            
+            // Next button
+            if (pagination.currentPage < pagination.totalPages) {
+                paginationHTML += `<a href="#" onclick="loadPage(${pagination.currentPage + 1})">Next</a>`;
+            }
+            
+            // Update the pagination container
+            paginationContainer.innerHTML = paginationHTML;
         }
 
         // Refresh wallet balance

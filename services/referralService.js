@@ -22,7 +22,7 @@ export const referralService = {
             const referrer = await User.findOne({
                 referralCode: referralCode.toUpperCase(),
                 isBlocked: false // Only allow active users
-            }).select('_id name referralCode isBlocked');
+            }).select('_id name referralCode isBlocked referrals referralStats');
 
             if (!referrer) {
                 return { valid: false, message: 'Invalid referral code' };
@@ -56,12 +56,23 @@ export const referralService = {
                 return { success: false, message: validation.message };
             }
 
-            const referrer = validation.referrer;
+            // Get the full referrer data
+            const referrer = await User.findOne({
+                referralCode: referralCode.toUpperCase(),
+                isBlocked: false
+            });
+
+            if (!referrer) {
+                return { success: false, message: 'Invalid referral code' };
+            }
+
             const newUser = await User.findById(newUserId);
 
             if (!newUser) {
                 return { success: false, message: 'New user not found' };
             }
+
+            console.log('Processing referral for new user:', newUserId);
 
             // Prevent self-referral
             if (referrer._id.toString() === newUserId.toString()) {
@@ -71,6 +82,14 @@ export const referralService = {
             // Check if user was already referred
             if (newUser.referredBy) {
                 return { success: false, message: 'User already has a referrer' };
+            }
+
+            // Initialize referral arrays if they don't exist
+            if (!referrer.referrals) {
+                referrer.referrals = [];
+            }
+            if (!referrer.referralStats) {
+                referrer.referralStats = { totalReferrals: 0, totalRewards: 0 };
             }
 
             // Check if this referral already exists (prevent duplicates)
@@ -130,6 +149,8 @@ export const referralService = {
     // Process wallet rewards for referral
     processWalletRewards: async (referrerId, newUserId, newUserName) => {
         try {
+            console.log('Processing wallet rewards for referral');
+
             // Give ₹200 to referrer
             const referrerReward = await walletService.addMoney(
                 referrerId,
@@ -151,6 +172,11 @@ export const referralService = {
             // Update referrer stats
             const referrer = await User.findById(referrerId);
             if (referrer) {
+                // Initialize referralStats if it doesn't exist
+                if (!referrer.referralStats) {
+                    referrer.referralStats = { totalReferrals: 0, totalRewards: 0 };
+                }
+                
                 referrer.referralStats.totalRewards += 200;
 
                 // Mark reward as given for this referral
@@ -165,16 +191,21 @@ export const referralService = {
                 await referrer.save();
             }
 
-            return {
+            const result = {
                 success: true,
                 referrerReward: referrerReward.success ? 200 : 0,
                 newUserReward: newUserReward.success ? 100 : 0,
                 referrerBalance: referrerReward.newBalance,
-                newUserBalance: newUserReward.newBalance
+                newUserBalance: newUserReward.newBalance,
+                referrerRewardSuccess: referrerReward.success,
+                newUserRewardSuccess: newUserReward.success
             };
 
+            console.log('Wallet rewards processed successfully');
+            return result;
+
         } catch (error) {
-            console.error('Error processing wallet rewards:', error);
+            console.error('❌ Error processing wallet rewards:', error);
             return { success: false, message: 'Failed to process rewards', error: error.message };
         }
     },
@@ -195,6 +226,8 @@ export const referralService = {
                 user.referralCode = user.generateReferralCode();
                 await user.save();
             }
+            const sortedReferrals=user.referrals?
+            user.referrals.sort((a,b)=>new Date(b.joinedAt)-new Date(a.joinedAt)):[];
 
             return {
                 success: true,
@@ -202,7 +235,7 @@ export const referralService = {
                     referralCode: user.referralCode,
                     totalReferrals: user.referralStats?.totalReferrals || 0,
                     totalRewards: user.referralStats?.totalRewards || 0,
-                    referrals: user.referrals || []
+                    referrals: sortedReferrals
                 }
             };
 

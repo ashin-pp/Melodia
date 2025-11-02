@@ -256,9 +256,8 @@ export const postLogin = async (req, res) => {
 
 
 
-// Render signup page
+
 export const getSignup = (req, res) => {
-  // Get referral code from URL parameter 'ref' or 'referral'
   const referralCode = req.query.ref || req.query.referral || '';
 
   res.render('user/signUp', {
@@ -572,18 +571,28 @@ export const verifyOtp = async (req, res) => {
 
     // Process referral if provided
     if (referralCode && referralCode.trim()) {
+      console.log('=== PROCESSING REFERRAL ===');
+      console.log('Referral Code:', referralCode.trim());
+      console.log('New User ID:', savedUser._id);
+
       try {
         const referralResult = await referralService.processReferral(savedUser._id, referralCode.trim());
 
+        console.log('Referral Result:', referralResult);
+
         if (referralResult.success) {
+          console.log('✅ Referral processed successfully');
           // Store referral success info for display
           req.session.referralSuccess = {
             message: referralResult.message,
             reward: referralResult.reward
           };
+        } else {
+          console.log('❌ Referral processing failed:', referralResult.message);
         }
       } catch (referralError) {
-        // Silently handle referral errors - don't block user registration
+        console.error('❌ Referral processing error:', referralError);
+        // Don't block user registration, but log the error
       }
     }
 

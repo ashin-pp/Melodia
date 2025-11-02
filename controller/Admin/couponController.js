@@ -23,6 +23,7 @@ export const getCoupons = async (req, res) => {
 export const createCoupon = async (req, res) => {
     try {
         const {
+            code,
             name,
             description,
             discountType,
@@ -36,8 +37,14 @@ export const createCoupon = async (req, res) => {
         } = req.body;
 
         // Validation
-        if (!name || !discountType || !discountValue || !startDate || !endDate) {
+        if (!code || !name || !discountType || !discountValue || !startDate || !endDate) {
             return res.json({ success: false, message: 'All required fields must be filled' });
+        }
+
+        // Check if coupon code already exists
+        const existingCoupon = await Coupon.findOne({ code: code.toUpperCase() });
+        if (existingCoupon) {
+            return res.json({ success: false, message: 'Coupon code already exists' });
         }
 
         // Validate dates
@@ -57,6 +64,7 @@ export const createCoupon = async (req, res) => {
         }
 
         const coupon = new Coupon({
+            code: code.toUpperCase(),
             name: name.toUpperCase(),
             description,
             discountType,
@@ -135,6 +143,7 @@ export const updateCoupon = async (req, res) => {
     try {
         const { id } = req.params;
         const {
+            code,
             name,
             description,
             discountType,
@@ -188,7 +197,22 @@ export const updateCoupon = async (req, res) => {
             });
         }
 
+        // Check if code already exists (if code is being changed)
+        if (code && code.toUpperCase() !== coupon.code) {
+            const existingCoupon = await Coupon.findOne({ 
+                code: code.toUpperCase(), 
+                _id: { $ne: id } 
+            });
+            if (existingCoupon) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Coupon code already exists'
+                });
+            }
+        }
+
         // Update coupon fields
+        if (code) coupon.code = code.toUpperCase();
         coupon.name = name.toUpperCase();
         coupon.description = description;
         coupon.discountType = discountType;

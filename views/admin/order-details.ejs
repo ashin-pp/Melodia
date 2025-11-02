@@ -427,35 +427,25 @@
 
 
 
-    .btn-change-item-status {
-      background: #28a745;
+    .btn-change-order-status {
+      background: #007bff;
       color: white;
       border: none;
-      padding: 4px 8px;
+      padding: 6px 12px;
       border-radius: 4px;
       font-size: 12px;
       cursor: pointer;
       transition: all 0.3s ease;
+      margin-left: 10px;
     }
 
-    .btn-change-item-status:hover {
-      background: #218838;
+    .btn-change-order-status:hover {
+      background: #0056b3;
+      transform: translateY(-1px);
     }
 
-    .btn-change-item-status.disabled {
-      background: #6c757d !important;
-      cursor: not-allowed;
-      opacity: 0.6;
-    }
-
-    .btn-change-item-status.disabled:hover {
-      background: #6c757d !important;
-      transform: none;
-    }
-
-    .btn-change-item-status.disabled:hover {
-      background: #6c757d;
-      transform: none;
+    .btn-change-order-status:active {
+      transform: translateY(0);
     }
 
     /* Status Modal */
@@ -734,7 +724,10 @@
                   style="background: #e3f2fd; color: #1976d2; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;">
                   <%= order.orderStatus || 'Pending' %>
                 </span>
-                <!-- Order status change button removed - only individual item statuses can be changed -->
+                <button onclick="showOrderStatusModal()" class="btn-change-order-status"
+                  style="background: #007bff; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 12px; cursor: pointer; transition: all 0.3s ease; margin-left: 10px;">
+                  <i class="fas fa-edit"></i> Change Status
+                </button>
               </div>
             </div>
             <div class="order-info">
@@ -838,7 +831,6 @@
                     <th>Price</th>
                     <th>Status</th>
                     <th>Total</th>
-                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -904,16 +896,6 @@
 
                             </td>
                             <td>₹<%= ((item.quantity || 0) * (item.price || 0)).toLocaleString() %>
-                            </td>
-                            <td>
-                              <button class="btn-change-item-status <%= isFinalStatus ? 'disabled' : '' %>"
-                                data-item-id="<%= item._id || index %>" data-item-status="<%= currentStatus %>"
-                                data-item-name="<%= (item.variantId && item.variantId.productId ? item.variantId.productId.productName : (item.productName || 'Product')) %>"
-                                <%=isFinalStatus ? 'disabled' : '' %>
-                                title="<%= isFinalStatus ? 'Cannot change status of ' + currentStatus.toLowerCase()
-                                  + ' items' : 'Change item status' %>">
-                                  <i class="fas fa-<%= isFinalStatus ? 'lock' : 'edit' %>"></i>
-                              </button>
                             </td>
                       </tr>
                       <% }); %>
@@ -1236,25 +1218,18 @@
 
   <script>
     const orderId = '<%= order._id %>';
-    let currentItemId = null;
-    let currentItemStatus = null;
+    const currentOrderStatus = '<%= order.orderStatus || "Pending" %>';
 
-    // Order status flags will be read from hidden elements
+    // Order Status Functions
+    async function showOrderStatusModal() {
+      console.log('=== showOrderStatusModal called ===');
+      console.log('Current Order Status:', currentOrderStatus);
 
-
-
-    // Item Status Functions
-    async function showItemStatusModal(itemId, itemStatus, itemName) {
-      console.log('=== showItemStatusModal called ===');
-      console.log('Item ID:', itemId);
-      console.log('Current Status:', itemStatus);
-      console.log('Item Name:', itemName);
-
-      // Check if item has final status
-      if (itemStatus === 'Returned' || itemStatus === 'Cancelled') {
+      // Check if order has final status
+      if (currentOrderStatus === 'Cancelled') {
         Swal.fire({
           title: 'Status Cannot Be Changed',
-          text: `This item has a final status of "${itemStatus}" and cannot be modified. ${itemStatus} items have reached their final state in the order lifecycle.`,
+          text: `This order has a final status of "Cancelled" and cannot be modified.`,
           icon: 'info',
           confirmButtonColor: '#6c757d',
           customClass: {
@@ -1264,18 +1239,15 @@
         return;
       }
 
-      currentItemId = itemId;
-      currentItemStatus = itemStatus;
-
-      // Use SweetAlert2 instead of regular modal to avoid z-index issues
+      // Use SweetAlert2 for order status change
       const { value: formValues } = await Swal.fire({
-        title: 'Change Item Status',
+        title: 'Change Order Status',
         html: `
           <div style="text-align: left;">
-            <label style="display: block; margin-bottom: 8px; font-weight: 500;">Item: <strong>${itemName}</strong></label>
-            <label style="display: block; margin-bottom: 8px; font-weight: 500;">Current Status: <strong>${itemStatus}</strong></label>
+            <label style="display: block; margin-bottom: 8px; font-weight: 500;">Order ID: <strong><%= order.orderId %></strong></label>
+            <label style="display: block; margin-bottom: 8px; font-weight: 500;">Current Status: <strong>${currentOrderStatus}</strong></label>
             <label style="display: block; margin-bottom: 8px; font-weight: 500;">New Status:</label>
-            <select id="swal-item-status" class="swal2-input" style="width: 100%; margin-bottom: 15px;">
+            <select id="swal-order-status" class="swal2-input" style="width: 100%; margin-bottom: 15px;">
               <option value="">Select Status</option>
               <option value="Pending">Pending</option>
               <option value="Confirmed">Confirmed</option>
@@ -1286,28 +1258,28 @@
               <option value="Cancelled">Cancelled</option>
             </select>
             <label style="display: block; margin-bottom: 8px; font-weight: 500;">Reason (Optional):</label>
-            <textarea id="swal-item-reason" class="swal2-textarea" placeholder="Enter reason for status change..." style="width: 100%; min-height: 80px;"></textarea>
+            <textarea id="swal-order-reason" class="swal2-textarea" placeholder="Enter reason for status change..." style="width: 100%; min-height: 80px;"></textarea>
           </div>
         `,
         focusConfirm: false,
         showCancelButton: true,
         confirmButtonColor: '#28a745',
         cancelButtonColor: '#6c757d',
-        confirmButtonText: 'Update Status',
+        confirmButtonText: 'Update Order Status',
         cancelButtonText: 'Cancel',
         customClass: {
           container: 'swal2-top-z-index'
         },
         preConfirm: () => {
-          const status = document.getElementById('swal-item-status').value;
-          const reason = document.getElementById('swal-item-reason').value;
+          const status = document.getElementById('swal-order-status').value;
+          const reason = document.getElementById('swal-order-reason').value;
 
           if (!status) {
             Swal.showValidationMessage('Please select a status');
             return false;
           }
 
-          if (status === itemStatus) {
+          if (status === currentOrderStatus) {
             Swal.showValidationMessage('Please select a different status');
             return false;
           }
@@ -1324,13 +1296,13 @@
         setTimeout(async () => {
           // Show confirmation with highest z-index
           const confirmResult = await Swal.fire({
-            title: 'Confirm Item Status Change',
-            text: `Change "${itemName}" status from "${itemStatus}" to "${formValues.status}"?`,
+            title: 'Confirm Order Status Change',
+            text: `Change order status from "${currentOrderStatus}" to "${formValues.status}"? This will update the status of all items in this order.`,
             icon: 'question',
             showCancelButton: true,
             confirmButtonColor: '#28a745',
             cancelButtonColor: '#6c757d',
-            confirmButtonText: 'Yes, Update Item Status',
+            confirmButtonText: 'Yes, Update Order Status',
             cancelButtonText: 'Cancel',
             customClass: {
               container: 'swal2-top-z-index'
@@ -1338,34 +1310,23 @@
           });
 
           if (confirmResult.isConfirmed) {
-            updateItemStatus(itemId, formValues.status, formValues.reason);
+            updateOrderStatus(formValues.status, formValues.reason);
           }
         }, 100);
       }
     }
 
-    function closeItemStatusModal() {
-      // No longer needed since we're using SweetAlert2
-      currentItemId = null;
-      currentItemStatus = null;
-    }
-
-
-
-    // Item status form submission is now handled by SweetAlert2 in showItemStatusModal
-
-
-
-    async function updateItemStatus(itemId, status, reason) {
+    async function updateOrderStatus(status, reason) {
       try {
-        console.log('=== updateItemStatus called ===');
-        console.log('Item ID:', itemId);
+        console.log('=== updateOrderStatus called ===');
+        console.log('Order ID:', orderId);
         console.log('New Status:', status);
         console.log('Reason:', reason);
 
         // Show loading with high z-index
         Swal.fire({
-          title: 'Updating Item Status...',
+          title: 'Updating Order Status...',
+          text: 'This will update the status of all items in the order',
           allowOutsideClick: false,
           customClass: {
             container: 'swal2-top-z-index'
@@ -1375,7 +1336,7 @@
           }
         });
 
-        const response = await fetch(`/admin/api/orders/items/${itemId}/status`, {
+        const response = await fetch(`/admin/api/orders/${orderId}/status`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json'
@@ -1403,7 +1364,7 @@
         } else {
           Swal.fire({
             title: 'Error',
-            text: result.error || 'Failed to update item status',
+            text: result.error || 'Failed to update order status',
             icon: 'error',
             customClass: {
               container: 'swal2-top-z-index'
@@ -1411,10 +1372,10 @@
           });
         }
       } catch (error) {
-        console.error('Update item status error:', error);
+        console.error('Update order status error:', error);
         Swal.fire({
           title: 'Error',
-          text: 'Failed to update item status. Please check console for details.',
+          text: 'Failed to update order status. Please check console for details.',
           icon: 'error',
           customClass: {
             container: 'swal2-top-z-index'
@@ -1573,31 +1534,14 @@
         });
       }
 
-      // Bind item status change buttons
-      const itemStatusButtons = document.querySelectorAll('.btn-change-item-status');
-      itemStatusButtons.forEach(button => {
-        button.addEventListener('click', function () {
-          // Check if button is disabled
-          if (this.disabled || this.classList.contains('disabled')) {
-            const itemStatus = this.getAttribute('data-item-status');
-            Swal.fire({
-              title: 'Action Not Allowed',
-              text: `Cannot change status of ${itemStatus.toLowerCase()} items. ${itemStatus} items have a final status that cannot be modified.`,
-              icon: 'warning',
-              confirmButtonColor: '#6c757d',
-              customClass: {
-                container: 'swal2-top-z-index'
-              }
-            });
-            return;
-          }
-
-          const itemId = this.getAttribute('data-item-id');
-          const itemStatus = this.getAttribute('data-item-status');
-          const itemName = this.getAttribute('data-item-name');
-          showItemStatusModal(itemId, itemStatus, itemName);
+      // Bind order status change button
+      const orderStatusButton = document.querySelector('.btn-change-order-status');
+      if (orderStatusButton) {
+        orderStatusButton.addEventListener('click', function (e) {
+          e.preventDefault();
+          showOrderStatusModal();
         });
-      });
+      }
     });
 
     // Process return request function (for approval)

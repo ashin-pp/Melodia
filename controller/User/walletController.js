@@ -83,7 +83,7 @@ export const getWalletPage = async (req, res) => {
         const userId = req.session.user.id;
 
         // Get user data
-        const user = await User.findById(userId).select('name email wallet referralCode');
+        const user = await User.findById(userId).select('name email wallet referralCode avatar');
         if (!user) {
             return res.redirect('/login');
         }

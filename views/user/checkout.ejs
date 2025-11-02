@@ -756,18 +756,8 @@
             <% } %>
         </div>
         
-        <!-- Wallet Usage Option -->
-        <% if (user.wallet && user.wallet.balance > 0) { %>
-        <div style="margin: 1rem 0; padding: 1rem; background: #f0f9ff; border-radius: 8px; border: 1px solid #bae6fd;">
-            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                <input type="checkbox" id="useWallet" name="useWallet" style="margin: 0;">
-                <span style="font-weight: 500; font-size: 0.875rem;">Use wallet balance</span>
-            </label>
-            <p style="font-size: 0.75rem; color: #0369a1; margin: 0.25rem 0 0 1.5rem;">
-                Available: ₹<%= user.wallet.balance.toFixed(2) %>
-            </p>
-        </div>
-        <% } %>
+
+
         
         <div class="summary-row total">
             <span>Total Amount</span>
