@@ -3,7 +3,7 @@ import Order from '../../model/orderSchema.js';
 import User from '../../model/userSchema.js';
 import crypto from 'crypto';
 
-// Create Razorpay order
+
 export const createRazorpayOrder = async (req, res) => {
     try {
         const { amount, currency = 'INR', orderId } = req.body;
@@ -14,8 +14,6 @@ export const createRazorpayOrder = async (req, res) => {
                 message: 'Amount and Order ID are required'
             });
         }
-
-        // Check if Razorpay is configured
         if (!razorpay) {
             return res.status(503).json({
                 success: false,
@@ -24,7 +22,7 @@ export const createRazorpayOrder = async (req, res) => {
         }
 
         const options = {
-            amount: Math.round(amount * 100), // Convert to paise
+            amount: Math.round(amount * 100), 
             currency,
             receipt: orderId,
             payment_capture: 1

@@ -187,73 +187,98 @@ const cancelOrder = async (req, res) => {
     const orderId = req.params.orderId;
     const { reason } = req.body;
     
-    console.log('Cancellation request:', { userId, orderId, reason });
+    console.log('🔍 Cancellation request details:', { 
+      userId, 
+      orderId, 
+      reason,
+      sessionData: req.session.user 
+    });
 
+    // Validate inputs
+    if (!userId) {
+      console.error('❌ No user ID in session');
+      return res.status(401).json({
+        success: false,
+        message: 'User not authenticated'
+      });
+    }
+
+    if (!orderId) {
+      console.error('❌ No order ID provided');
+      return res.status(400).json({
+        success: false,
+        message: 'Order ID is required'
+      });
+    }
+
+    console.log('🔍 Finding order...');
     const order = await Order.findOne({ 
       _id: orderId, 
       userId 
     }).populate('items.variantId');
 
     if (!order) {
+      console.error('❌ Order not found:', { orderId, userId });
       return res.status(404).json({
         success: false,
         message: 'Order not found'
       });
     }
 
+    console.log('✅ Order found:', {
+      orderId: order.orderId,
+      orderStatus: order.orderStatus,
+      paymentMethod: order.paymentMethod,
+      paymentStatus: order.paymentStatus,
+      totalAmount: order.totalAmount,
+      walletAmountUsed: order.walletAmountUsed
+    });
+
     // Check if order can be cancelled
     if (!['Pending', 'Confirmed', 'Processing'].includes(order.orderStatus)) {
+      console.error('❌ Order cannot be cancelled:', order.orderStatus);
       return res.status(400).json({
         success: false,
-        message: 'Order cannot be cancelled at this stage'
+        message: `Order cannot be cancelled at this stage. Current status: ${order.orderStatus}`
       });
     }
 
+    console.log('🔄 Restoring stock for cancelled items...');
     // Restore stock for all items
     for (const item of order.items) {
+      const variantId = item.variantId._id || item.variantId;
+      console.log(`Restoring stock for variant ${variantId}: +${item.quantity}`);
       await Variant.findByIdAndUpdate(
-        item.variantId._id,
+        variantId,
         { $inc: { stock: item.quantity } }
       );
     }
 
+    console.log('📝 Cancelling order...');
     // Cancel the order
     await order.cancelOrder(reason);
 
+    console.log('🔄 Reloading order to get updated data...');
     // Reload the order to get the updated data
     const updatedOrder = await Order.findById(orderId);
     
     // Process automatic refund for paid orders (NOT COD)
     console.log('=== CHECKING REFUND ELIGIBILITY ===');
-    console.log('Original order details:', {
-      orderId: order.orderId,
-      paymentMethod: order.paymentMethod,
-      paymentStatus: order.paymentStatus,
-      totalAmount: order.totalAmount,
-      walletAmountUsed: order.walletAmountUsed,
-      orderStatus: order.orderStatus
-    });
-    console.log('Updated order details:', {
-      orderId: updatedOrder.orderId,
-      paymentMethod: updatedOrder.paymentMethod,
-      paymentStatus: updatedOrder.paymentStatus,
-      totalAmount: updatedOrder.totalAmount,
-      walletAmountUsed: updatedOrder.walletAmountUsed,
-      orderStatus: updatedOrder.orderStatus
-    });
     
-
-    
-    // Use the updated order for refund processing
     const orderForRefund = updatedOrder || order;
+    
+    console.log('💰 Refund eligibility check:', {
+      orderId: orderForRefund.orderId,
+      paymentMethod: orderForRefund.paymentMethod,
+      paymentStatus: orderForRefund.paymentStatus,
+      totalAmount: orderForRefund.totalAmount,
+      walletAmountUsed: orderForRefund.walletAmountUsed,
+      orderStatus: orderForRefund.orderStatus,
+      isEligible: orderForRefund.paymentStatus === 'Paid' && orderForRefund.paymentMethod !== 'COD'
+    });
     
     if (orderForRefund.paymentStatus === 'Paid' && orderForRefund.paymentMethod !== 'COD') {
       console.log('✅ Order eligible for refund - processing...');
-      console.log('DEBUG: About to call wallet service with:', {
-        userId,
-        amount: orderForRefund.totalAmount,
-        orderId: orderForRefund._id
-      });
       
       // Validate user ID
       if (!userId) {
@@ -261,23 +286,25 @@ const cancelOrder = async (req, res) => {
       }
       
       // Verify user exists
+      console.log('🔍 Verifying user exists...');
       const User = (await import('../../model/userSchema.js')).default;
       const user = await User.findById(userId);
       if (!user) {
         throw new Error(`User not found with ID: ${userId}`);
       }
       
-      console.log('DEBUG: User validation passed:', {
+      console.log('✅ User validation passed:', {
         userId: user._id,
-        userName: user.name || user.fullName || 'No name',
-        hasWallet: !!user.wallet
+        userName: user.name,
+        email: user.email,
+        hasWallet: !!user.wallet,
+        currentBalance: user.wallet ? user.wallet.balance : 0
       });
       
       try {
+        console.log('💳 Processing refund via wallet service...');
         // Use wallet service for reliable refund processing
         const walletService = (await import('../../services/walletService.js')).default;
-        
-        console.log('DEBUG: Wallet service imported successfully');
         
         const refundResult = await walletService.addMoney(
           userId,
@@ -286,22 +313,23 @@ const cancelOrder = async (req, res) => {
           orderForRefund._id
         );
 
-        console.log('DEBUG: Wallet service returned:', refundResult);
+        console.log('💳 Wallet service result:', refundResult);
 
         if (refundResult.success) {
+          console.log('📝 Updating order refund status...');
           // Update order refund status
           orderForRefund.refundStatus = 'processed';
           orderForRefund.refundAmount = orderForRefund.totalAmount;
           orderForRefund.refundProcessedAt = new Date();
           await orderForRefund.save();
           
-          console.log('✅ REFUND SUCCESSFUL:', {
+          console.log('✅ REFUND SUCCESSFUL VIA WALLET SERVICE:', {
             refundAmount: orderForRefund.totalAmount,
             newBalance: refundResult.newBalance,
             transactionId: refundResult.transactionId
           });
           
-          res.json({
+          return res.json({
             success: true,
             message: 'Order cancelled and refund processed successfully',
             refund: {
@@ -311,14 +339,14 @@ const cancelOrder = async (req, res) => {
             }
           });
         } else {
-          console.error('DEBUG: Wallet service failed, trying direct approach');
+          console.error('❌ Wallet service failed, trying direct approach');
           console.error('Wallet service error:', refundResult.error);
           
           // Fallback: Direct wallet credit - FORCE SUCCESS
-          console.log('FORCING DIRECT WALLET CREDIT...');
+          console.log('🔧 FORCING DIRECT WALLET CREDIT...');
           
           if (!user.wallet) {
-            console.log('Creating new wallet for user');
+            console.log('🔧 Creating new wallet for user');
             user.wallet = { balance: 0, transactions: [], isWalletActive: true };
           }
           
@@ -326,7 +354,7 @@ const cancelOrder = async (req, res) => {
           const newBalance = oldBalance + orderForRefund.totalAmount;
           const transactionId = `REFUND${Date.now()}`;
           
-          console.log('Direct refund calculation:', {
+          console.log('💰 Direct refund calculation:', {
             oldBalance,
             refundAmount: orderForRefund.totalAmount,
             newBalance
@@ -345,9 +373,9 @@ const cancelOrder = async (req, res) => {
           user.wallet.balance = newBalance;
           user.wallet.transactions.push(transaction);
           
-          console.log('Saving user with updated wallet...');
+          console.log('💾 Saving user with updated wallet...');
           const savedUser = await user.save();
-          console.log('User saved. New wallet balance:', savedUser.wallet.balance);
+          console.log('✅ User saved. New wallet balance:', savedUser.wallet.balance);
           
           // Update order refund status
           orderForRefund.refundStatus = 'processed';
@@ -361,7 +389,7 @@ const cancelOrder = async (req, res) => {
             transactionId: transactionId
           });
           
-          res.json({
+          return res.json({
             success: true,
             message: 'Order cancelled and refund processed successfully (direct method)',
             refund: {
@@ -374,37 +402,43 @@ const cancelOrder = async (req, res) => {
         
       } catch (refundError) {
         console.error('❌ REFUND ERROR:', refundError);
-        console.error('DEBUG: Full error details:', {
+        console.error('Full error details:', {
           name: refundError.name,
           message: refundError.message,
           stack: refundError.stack
         });
-        res.json({
+        
+        return res.json({
           success: true,
           message: 'Order cancelled successfully, but refund failed. Please contact support.',
           refundError: refundError.message
         });
       }
     } else {
-      console.log('❌ Order not eligible for refund:', {
+      console.log('ℹ️ Order not eligible for refund:', {
         paymentStatus: orderForRefund.paymentStatus,
         paymentMethod: orderForRefund.paymentMethod,
-        reason: orderForRefund.paymentStatus !== 'Paid' ? 'Not paid' : 'COD order'
+        reason: orderForRefund.paymentStatus !== 'Paid' ? 'Payment not completed' : 'COD order - no refund needed'
       });
       
-      res.json({
+      return res.json({
         success: true,
         message: 'Order cancelled successfully'
       });
     }
 
-
-
   } catch (error) {
-    console.error('Cancel order error:', error);
+    console.error('❌ CANCEL ORDER ERROR:', {
+      errorName: error.name,
+      errorMessage: error.message,
+      errorStack: error.stack,
+      userId: req.session?.user?.id,
+      orderId: req.params?.orderId
+    });
+    
     res.status(500).json({
       success: false,
-      message: 'Failed to cancel order'
+      message: 'Failed to cancel order: ' + error.message
     });
   }
 };
@@ -412,15 +446,30 @@ const cancelOrder = async (req, res) => {
 // Cancel specific items
 const cancelOrderItems = async (req, res) => {
   try {
-    console.log('Cancel items request:', { orderId: req.params.orderId, items: req.body.items, reason: req.body.reason });
-    
+    console.log('=== USER ITEM CANCELLATION STARTED ===');
     const userId = req.session.user.id;
     const orderId = req.params.orderId;
     const { items, reason } = req.body;
     
-    // Validate orderId format
+    console.log('🔍 Item cancellation request:', { 
+      userId, 
+      orderId, 
+      items, 
+      reason,
+      sessionData: req.session.user 
+    });
+
+    // Validate inputs
+    if (!userId) {
+      console.error('❌ No user ID in session');
+      return res.status(401).json({
+        success: false,
+        message: 'User not authenticated'
+      });
+    }
+
     if (!mongoose.Types.ObjectId.isValid(orderId)) {
-      console.log('Invalid orderId format in cancel items:', orderId);
+      console.error('❌ Invalid orderId format:', orderId);
       return res.status(400).json({
         success: false,
         message: 'Invalid order ID format'
@@ -428,36 +477,71 @@ const cancelOrderItems = async (req, res) => {
     }
 
     if (!items || !Array.isArray(items) || items.length === 0) {
+      console.error('❌ No items specified for cancellation');
       return res.status(400).json({
         success: false,
         message: 'No items specified for cancellation'
       });
     }
 
+    console.log('🔍 Finding order...');
     const order = await Order.findOne({ 
       _id: orderId, 
       userId 
     }).populate('items.variantId');
 
-    console.log('Order found:', order ? 'Yes' : 'No');
-
     if (!order) {
+      console.error('❌ Order not found:', { orderId, userId });
       return res.status(404).json({
         success: false,
         message: 'Order not found'
       });
     }
 
+    console.log('✅ Order found:', {
+      orderId: order.orderId,
+      orderStatus: order.orderStatus,
+      paymentMethod: order.paymentMethod,
+      paymentStatus: order.paymentStatus,
+      totalAmount: order.totalAmount,
+      itemsCount: order.items.length
+    });
+
     // Check if order can be cancelled
     if (!['Pending', 'Confirmed', 'Processing'].includes(order.orderStatus)) {
+      console.error('❌ Order items cannot be cancelled:', order.orderStatus);
       return res.status(400).json({
         success: false,
-        message: 'Order items cannot be cancelled at this stage'
+        message: `Order items cannot be cancelled at this stage. Current status: ${order.orderStatus}`
       });
     }
 
+    // Calculate refund amount BEFORE cancelling items
+    console.log('💰 Calculating refund amount before cancellation...');
+    let totalRefundAmount = 0;
+    
+    for (const item of items) {
+      const orderItem = order.items.find(oi => 
+        oi.variantId._id.toString() === item.variantId.toString()
+      );
+      
+      if (orderItem) {
+        const itemRefund = (orderItem.totalPrice / orderItem.quantity) * item.quantity;
+        totalRefundAmount += itemRefund;
+        console.log(`Item refund calculation:`, {
+          variantId: item.variantId,
+          itemTotalPrice: orderItem.totalPrice,
+          itemQuantity: orderItem.quantity,
+          cancelQuantity: item.quantity,
+          itemRefundAmount: itemRefund
+        });
+      }
+    }
+
+    console.log('💰 Total calculated refund amount:', totalRefundAmount);
+
     // Restore stock for cancelled items
-    console.log('Restoring stock for items:', items);
+    console.log('🔄 Restoring stock for cancelled items...');
     for (const item of items) {
       console.log(`Restoring stock for variant ${item.variantId}: +${item.quantity}`);
       await Variant.findByIdAndUpdate(
@@ -466,37 +550,59 @@ const cancelOrderItems = async (req, res) => {
       );
     }
 
+    // Store original total before cancellation
+    const originalTotal = order.totalAmount;
+
     // Cancel the items
-    console.log('Cancelling items in order...');
+    console.log('📝 Cancelling items in order...');
     await order.cancelItems(items, reason);
-    console.log('Items cancelled successfully');
+    console.log('✅ Items cancelled successfully');
 
     // Get updated order to see new totals
+    console.log('🔄 Reloading order to get updated totals...');
     const updatedOrder = await Order.findById(orderId);
-    console.log('Updated order totals:', {
-      originalTotal: order.totalAmount,
+    
+    console.log('📊 Order totals comparison:', {
+      originalTotal: originalTotal,
       newTotal: updatedOrder.totalAmount,
-      difference: order.totalAmount - updatedOrder.totalAmount
+      calculatedRefund: totalRefundAmount,
+      actualDifference: originalTotal - updatedOrder.totalAmount
     });
 
     // Process partial refund for cancelled items
+    console.log('=== PROCESSING ITEM REFUND ===');
+    
     try {
       if (order.paymentStatus === 'Paid' && order.paymentMethod !== 'COD') {
-        const originalTotal = order.totalAmount;
-        const newTotal = updatedOrder.totalAmount;
-        const refundAmount = originalTotal - newTotal;
+        console.log('✅ Order eligible for refund - processing...');
+        
+        // Use the calculated refund amount (more accurate)
+        const refundAmount = totalRefundAmount;
 
-        console.log('Refund calculation:', {
-          originalTotal,
-          newTotal,
-          refundAmount
+        console.log('💰 Final refund calculation:', {
+          paymentMethod: order.paymentMethod,
+          paymentStatus: order.paymentStatus,
+          refundAmount: refundAmount
         });
 
         if (refundAmount > 0) {
-          console.log('Processing user item cancellation refund:', {
+          console.log('💳 Processing item cancellation refund:', {
             userId,
             refundAmount,
             orderId: order.orderId
+          });
+          
+          // Verify user exists
+          const User = (await import('../../model/userSchema.js')).default;
+          const user = await User.findById(userId);
+          if (!user) {
+            throw new Error(`User not found with ID: ${userId}`);
+          }
+          
+          console.log('✅ User validation passed:', {
+            userId: user._id,
+            userName: user.name,
+            currentBalance: user.wallet ? user.wallet.balance : 0
           });
           
           // Use wallet service for reliable refund processing
@@ -510,18 +616,18 @@ const cancelOrderItems = async (req, res) => {
           );
 
           if (refundResult.success) {
-            console.log('Item refund successful:', {
+            console.log('✅ ITEM REFUND SUCCESSFUL VIA WALLET SERVICE:', {
               refundAmount,
               newBalance: refundResult.newBalance,
               transactionId: refundResult.transactionId
             });
 
-            res.json({
+            return res.json({
               success: true,
-              message: 'Items cancelled successfully',
+              message: 'Items cancelled and refund processed successfully',
               orderUpdate: {
                 originalTotal,
-                newTotal,
+                newTotal: updatedOrder.totalAmount,
                 refundAmount
               },
               refund: {
@@ -531,19 +637,26 @@ const cancelOrderItems = async (req, res) => {
               }
             });
           } else {
-            console.error('Wallet service failed for item refund, trying direct approach');
+            console.error('❌ Wallet service failed for item refund, trying direct approach');
+            console.error('Wallet service error:', refundResult.error);
             
             // Fallback: Direct wallet credit
-            const User = (await import('../../model/userSchema.js')).default;
-            const user = await User.findById(userId);
+            console.log('🔧 FORCING DIRECT WALLET CREDIT FOR ITEMS...');
             
             if (!user.wallet) {
+              console.log('🔧 Creating new wallet for user');
               user.wallet = { balance: 0, transactions: [], isWalletActive: true };
             }
             
             const oldBalance = user.wallet.balance || 0;
             const newBalance = oldBalance + refundAmount;
             const transactionId = `ITEMREFUND${Date.now()}`;
+            
+            console.log('💰 Direct item refund calculation:', {
+              oldBalance,
+              refundAmount,
+              newBalance
+            });
             
             const transaction = {
               type: 'credit',
@@ -557,67 +670,90 @@ const cancelOrderItems = async (req, res) => {
             
             user.wallet.balance = newBalance;
             user.wallet.transactions.push(transaction);
-            await user.save();
             
-            console.log('Direct item refund successful:', {
+            console.log('💾 Saving user with updated wallet...');
+            const savedUser = await user.save();
+            console.log('✅ User saved. New wallet balance:', savedUser.wallet.balance);
+            
+            console.log('✅ DIRECT ITEM REFUND SUCCESSFUL:', {
               refundAmount,
-              newBalance: newBalance,
+              newBalance: savedUser.wallet.balance,
               transactionId: transactionId
             });
 
-            res.json({
+            return res.json({
               success: true,
-              message: 'Items cancelled successfully',
+              message: 'Items cancelled and refund processed successfully (direct method)',
               orderUpdate: {
                 originalTotal,
-                newTotal,
+                newTotal: updatedOrder.totalAmount,
                 refundAmount
               },
               refund: {
                 amount: refundAmount,
-                newWalletBalance: newBalance,
+                newWalletBalance: savedUser.wallet.balance,
                 transactionId: transactionId
               }
             });
           }
         } else {
-          res.json({
+          console.log('ℹ️ No refund amount calculated');
+          return res.json({
             success: true,
             message: 'Items cancelled successfully',
             orderUpdate: {
               originalTotal,
-              newTotal
+              newTotal: updatedOrder.totalAmount
             }
           });
         }
       } else {
-        res.json({
+        console.log('ℹ️ Order not eligible for refund:', {
+          paymentStatus: order.paymentStatus,
+          paymentMethod: order.paymentMethod,
+          reason: order.paymentStatus !== 'Paid' ? 'Payment not completed' : 'COD order - no refund needed'
+        });
+        
+        return res.json({
           success: true,
           message: 'Items cancelled successfully',
           orderUpdate: {
-            originalTotal: order.totalAmount,
+            originalTotal: originalTotal,
             newTotal: updatedOrder.totalAmount
           }
         });
       }
     } catch (refundError) {
-      console.error('Partial refund processing error:', refundError);
-      res.json({
+      console.error('❌ ITEM REFUND ERROR:', refundError);
+      console.error('Full error details:', {
+        name: refundError.name,
+        message: refundError.message,
+        stack: refundError.stack
+      });
+      
+      return res.json({
         success: true,
         message: 'Items cancelled successfully, but refund processing failed. Please contact support.',
         refundError: refundError.message,
         orderUpdate: {
-          originalTotal: order.totalAmount,
+          originalTotal: originalTotal,
           newTotal: updatedOrder.totalAmount
         }
       });
     }
 
   } catch (error) {
-    console.error('Cancel order items error:', error);
+    console.error('❌ CANCEL ORDER ITEMS ERROR:', {
+      errorName: error.name,
+      errorMessage: error.message,
+      errorStack: error.stack,
+      userId: req.session?.user?.id,
+      orderId: req.params?.orderId
+    });
+    
     res.status(500).json({
       success: false,
-      message: 'Failed to cancel items'
+      message: 'Failed to cancel items: ' + error.message
     });
   }
 };

@@ -26,33 +26,60 @@ export const walletService = {
     // Add money to wallet (credit) - No transactions for standalone MongoDB
     addMoney: async (userId, amount, description, orderId = null, adminId = null) => {
         try {
-            console.log('=== ADD MONEY TO WALLET ===');
-            console.log('User ID:', userId);
-            console.log('Amount:', amount);
-            console.log('Description:', description);
-            console.log('Order ID:', orderId);
+            console.log('=== WALLET SERVICE ADD MONEY START ===');
+            console.log('Input parameters:', {
+                userId: userId,
+                userIdType: typeof userId,
+                amount: amount,
+                amountType: typeof amount,
+                description: description,
+                orderId: orderId,
+                adminId: adminId
+            });
 
-            if (amount <= 0) {
+            // Validate inputs
+            if (!userId) {
+                throw new Error('User ID is required');
+            }
+
+            if (!amount || amount <= 0) {
                 throw new Error('Amount must be greater than 0');
             }
 
-            const user = await User.findById(userId);
-            if (!user) {
-                throw new Error('User not found');
+            if (typeof amount !== 'number') {
+                throw new Error('Amount must be a number');
             }
 
-            console.log('User found:', user.name || user.fullName || user.email);
-            console.log('Current wallet:', user.wallet);
+            console.log('✅ Input validation passed');
+
+            // Find user with detailed logging
+            console.log('🔍 Searching for user with ID:', userId);
+            const user = await User.findById(userId);
+            
+            if (!user) {
+                console.error('❌ User not found with ID:', userId);
+                throw new Error(`User not found with ID: ${userId}`);
+            }
+
+            console.log('✅ User found:', {
+                id: user._id,
+                name: user.name,
+                email: user.email,
+                hasWallet: !!user.wallet,
+                walletBalance: user.wallet ? user.wallet.balance : 'No wallet'
+            });
 
             // Initialize wallet if it doesn't exist
             if (!user.wallet) {
-                console.log('Initializing wallet for user');
+                console.log('🔧 Initializing wallet for user');
                 user.wallet = {
                     balance: 0,
                     transactions: [],
                     isWalletActive: true
                 };
+                console.log('💾 Saving user with new wallet...');
                 await user.save();
+                console.log('✅ Wallet initialized successfully');
             }
 
             if (!user.wallet.isWalletActive) {
@@ -63,10 +90,11 @@ export const walletService = {
             const newBalance = currentBalance + amount;
             const transactionId = walletService.generateTransactionId();
 
-            console.log('Balance calculation:', {
-                currentBalance,
-                amount,
-                newBalance
+            console.log('💰 Balance calculation:', {
+                currentBalance: currentBalance,
+                addAmount: amount,
+                newBalance: newBalance,
+                transactionId: transactionId
             });
 
             // Create transaction record
@@ -81,19 +109,23 @@ export const walletService = {
                 adminId: adminId
             };
 
-            console.log('Creating transaction:', transaction);
+            console.log('📝 Creating transaction record:', transaction);
 
             // Update user wallet - use direct save method for better reliability
+            console.log('💾 Updating wallet balance and adding transaction...');
             user.wallet.balance = newBalance;
             user.wallet.transactions.push(transaction);
             
+            console.log('💾 Saving user with updated wallet...');
             const savedUser = await user.save();
 
-            console.log('Wallet updated successfully:', {
+            console.log('✅ WALLET UPDATE SUCCESSFUL:', {
+                userId: savedUser._id,
                 oldBalance: currentBalance,
                 newBalance: savedUser.wallet.balance,
-                transactionId,
-                transactionCount: savedUser.wallet.transactions.length
+                transactionId: transactionId,
+                transactionCount: savedUser.wallet.transactions.length,
+                latestTransaction: savedUser.wallet.transactions[savedUser.wallet.transactions.length - 1]
             });
 
             return {
@@ -104,7 +136,14 @@ export const walletService = {
             };
 
         } catch (error) {
-            console.error('Add money error:', error);
+            console.error('❌ WALLET SERVICE ERROR:', {
+                errorName: error.name,
+                errorMessage: error.message,
+                errorStack: error.stack,
+                userId: userId,
+                amount: amount
+            });
+            
             return {
                 success: false,
                 error: error.message,

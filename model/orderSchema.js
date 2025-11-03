@@ -340,28 +340,32 @@ orderSchema.methods.getActiveTotal = function () {
 
 // Method to cancel specific items
 orderSchema.methods.cancelItems = async function (itemsToCancel, reason) {
-  console.log('=== cancelItems method called ===');
+  console.log('=== ORDER SCHEMA cancelItems method called ===');
   console.log('Items to cancel:', itemsToCancel);
-  console.log('Original total amount:', this.totalAmount);
+  console.log('Original order totals:', {
+    subtotal: this.subtotal,
+    shippingCost: this.shippingCost,
+    taxAmount: this.taxAmount,
+    totalAmount: this.totalAmount
+  });
 
-  let cancelledAmount = 0;
+  let totalCancelledAmount = 0;
 
-  itemsToCancel.forEach(item => {
-    console.log(`Processing cancellation for variant ${item.variantId}, quantity: ${item.quantity}`);
+  // Process each item to cancel
+  for (const itemToCancel of itemsToCancel) {
+    console.log(`\n🔍 Processing cancellation for variant ${itemToCancel.variantId}, quantity: ${itemToCancel.quantity}`);
 
-    // Add to cancelled items
+    // Add to cancelled items list
     this.cancelledItems.push({
-      variantId: item.variantId,
-      quantity: item.quantity,
+      variantId: itemToCancel.variantId,
+      quantity: itemToCancel.quantity,
       reason: reason
     });
 
-    console.log('Looking for item with variantId:', item.variantId);
-
+    // Find the original item in the order
     const originalItem = this.items.find(orderItem => {
-      // Handle different variantId formats
       const orderVariantId = orderItem.variantId._id ? orderItem.variantId._id.toString() : orderItem.variantId.toString();
-      const cancelVariantId = item.variantId._id ? item.variantId._id.toString() : item.variantId.toString();
+      const cancelVariantId = itemToCancel.variantId._id ? itemToCancel.variantId._id.toString() : itemToCancel.variantId.toString();
 
       const match = orderVariantId === cancelVariantId;
       console.log(`Comparing ${orderVariantId} === ${cancelVariantId}: ${match}`);
@@ -369,83 +373,147 @@ orderSchema.methods.cancelItems = async function (itemsToCancel, reason) {
     });
 
     if (originalItem) {
-      console.log(`✅ Found original item - Setting status to Cancelled`);
-      console.log(`Before: Status = ${originalItem.status}, Price = ${originalItem.totalPrice}`);
-
-      // Calculate cancelled amount for this item
-      cancelledAmount += originalItem.totalPrice;
-
-      // Set status to Cancelled
-      originalItem.status = 'Cancelled';
-      originalItem.cancelledAt = new Date();
-      originalItem.cancellationReason = reason;
-
-      // Add to status history
-      if (!originalItem.statusHistory) {
-        originalItem.statusHistory = [];
-      }
-      originalItem.statusHistory.push({
-        status: 'Cancelled',
-        updatedAt: new Date(),
-        reason: reason
+      console.log(`✅ Found original item:`, {
+        variantId: originalItem.variantId,
+        quantity: originalItem.quantity,
+        price: originalItem.price,
+        totalPrice: originalItem.totalPrice,
+        currentStatus: originalItem.status
       });
 
-      console.log(`After: Status = ${originalItem.status}`);
+      // Handle partial or full cancellation
+      if (itemToCancel.quantity >= originalItem.quantity) {
+        // Full item cancellation
+        console.log('📝 Full item cancellation');
+        totalCancelledAmount += originalItem.totalPrice;
+
+        originalItem.status = 'Cancelled';
+        originalItem.cancelledAt = new Date();
+        originalItem.cancellationReason = reason;
+
+        // Add to status history
+        if (!originalItem.statusHistory) {
+          originalItem.statusHistory = [];
+        }
+        originalItem.statusHistory.push({
+          status: 'Cancelled',
+          updatedAt: new Date(),
+          reason: reason
+        });
+
+        console.log(`✅ Item fully cancelled. Refund amount: ₹${originalItem.totalPrice}`);
+      } else {
+        // Partial item cancellation - reduce quantity and recalculate price
+        console.log('📝 Partial item cancellation');
+
+        const pricePerUnit = originalItem.price;
+        const cancelledValue = pricePerUnit * itemToCancel.quantity;
+        totalCancelledAmount += cancelledValue;
+
+        // Update item quantity and total price
+        originalItem.quantity -= itemToCancel.quantity;
+        originalItem.totalPrice = originalItem.quantity * pricePerUnit;
+
+        console.log(`✅ Item partially cancelled:`, {
+          originalQuantity: originalItem.quantity + itemToCancel.quantity,
+          newQuantity: originalItem.quantity,
+          cancelledQuantity: itemToCancel.quantity,
+          pricePerUnit: pricePerUnit,
+          cancelledValue: cancelledValue,
+          newTotalPrice: originalItem.totalPrice
+        });
+      }
     } else {
-      console.log('❌ Original item not found with primary search!');
+      console.log('❌ Original item not found! Trying alternative search...');
 
       // Try alternative search methods
       const altItem = this.items.find(orderItem => {
-        return orderItem._id.toString() === item.itemId ||
-          orderItem.variantId.toString().includes(item.variantId) ||
-          item.variantId.toString().includes(orderItem.variantId.toString());
+        return orderItem._id.toString() === itemToCancel.itemId ||
+          orderItem.variantId.toString().includes(itemToCancel.variantId) ||
+          itemToCancel.variantId.toString().includes(orderItem.variantId.toString());
       });
 
       if (altItem) {
-        console.log('✅ Found item with alternative search - Setting status to Cancelled');
-        cancelledAmount += altItem.totalPrice;
+        console.log('✅ Found item with alternative search - processing cancellation');
 
-        altItem.status = 'Cancelled';
-        altItem.cancelledAt = new Date();
-        altItem.cancellationReason = reason;
+        if (itemToCancel.quantity >= altItem.quantity) {
+          totalCancelledAmount += altItem.totalPrice;
+          altItem.status = 'Cancelled';
+          altItem.cancelledAt = new Date();
+          altItem.cancellationReason = reason;
+        } else {
+          const pricePerUnit = altItem.price;
+          const cancelledValue = pricePerUnit * itemToCancel.quantity;
+          totalCancelledAmount += cancelledValue;
+
+          altItem.quantity -= itemToCancel.quantity;
+          altItem.totalPrice = altItem.quantity * pricePerUnit;
+        }
 
         if (!altItem.statusHistory) {
           altItem.statusHistory = [];
         }
         altItem.statusHistory.push({
-          status: 'Cancelled',
+          status: altItem.status === 'Cancelled' ? 'Cancelled' : 'Partially Cancelled',
           updatedAt: new Date(),
           reason: reason
         });
+      } else {
+        console.log('❌ Item not found in order!');
       }
     }
-  });
-
-  console.log(`Total cancelled amount: ${cancelledAmount}`);
-
-  // Recalculate total amount excluding cancelled items
-  const activeTotal = this.getActiveTotal();
-
-  // Update order totals
-  this.subtotal = activeTotal.subtotal;
-  this.shippingCost = activeTotal.shippingCost;
-  this.taxAmount = activeTotal.taxAmount;
-  this.totalAmount = activeTotal.totalAmount;
-
-  console.log(`Updated totals - Subtotal: ${this.subtotal}, Shipping: ${this.shippingCost}, Tax: ${this.taxAmount}, Total: ${this.totalAmount}`);
-
-  // Check if all items are cancelled
-  const activeItems = this.items.filter(item => item.status !== 'Cancelled');
-  console.log(`Active items remaining: ${activeItems.length}`);
-
-  if (activeItems.length === 0) {
-    console.log('All items cancelled - marking order as cancelled');
-    this.orderStatus = 'Cancelled';
-    this.cancelledAt = new Date();
-    this.totalAmount = 0;
   }
 
-  console.log('=== Saving order with updated totals ===');
+  console.log(`\n💰 Total cancelled amount: ₹${totalCancelledAmount}`);
+
+  // Recalculate order totals based on active (non-cancelled) items
+  console.log('🔄 Recalculating order totals...');
+  const activeItems = this.items.filter(item => item.status !== 'Cancelled' && item.quantity > 0);
+
+  console.log(`Active items after cancellation: ${activeItems.length}`);
+
+  if (activeItems.length === 0) {
+    console.log('🚫 All items cancelled - setting order totals to 0');
+    this.subtotal = 0;
+    this.shippingCost = 0;
+    this.taxAmount = 0;
+    this.totalAmount = 0;
+    this.orderStatus = 'Cancelled';
+    this.cancelledAt = new Date();
+  } else {
+    // Recalculate subtotal from active items only
+    const newSubtotal = activeItems.reduce((sum, item) => sum + item.totalPrice, 0);
+
+    console.log(`Subtotal calculation: ${activeItems.length} active items = ₹${newSubtotal}`);
+
+    this.subtotal = newSubtotal;
+
+    // Recalculate shipping (free shipping if subtotal > 500)
+    this.shippingCost = this.subtotal > 500 ? 0 : 50;
+
+    // Recalculate tax (18% GST)
+    this.taxAmount = Math.round(this.subtotal * 0.18);
+
+    // Recalculate total (subtract discounts if any)
+    this.totalAmount = this.subtotal + this.shippingCost + this.taxAmount - (this.discountAmount || 0) - (this.couponDiscount || 0);
+
+    // Ensure total is not negative
+    if (this.totalAmount < 0) {
+      this.totalAmount = 0;
+    }
+
+    console.log(`Recalculated totals: Subtotal=₹${this.subtotal}, Shipping=₹${this.shippingCost}, Tax=₹${this.taxAmount}, Total=₹${this.totalAmount}`);
+  }
+
+  console.log('📊 Updated order totals:', {
+    subtotal: this.subtotal,
+    shippingCost: this.shippingCost,
+    taxAmount: this.taxAmount,
+    totalAmount: this.totalAmount,
+    orderStatus: this.orderStatus
+  });
+
+  console.log('💾 Saving order with updated totals...');
   return await this.save();
 };
 
