@@ -21,8 +21,6 @@ router.use(validateAdminSession)
 //protected routes
 router.get('/dashboard', adminAuth, adminCtrl.getDashboard);
 router.get('/api/dashboard', adminAuth, adminCtrl.getDashboardAPI);
-router.get('/api/ledger-pdf', adminAuth, adminCtrl.generateLedgerPDF);
-
 
 router.get('/customer', customerCtrl.getUsers)
 router.post('/customer/:id/toggle', customerCtrl.toggleBlockStatus);
@@ -74,7 +72,6 @@ router.delete('/coupons/:id', adminAuth, couponCtrl.deleteCoupon);
 // Sales Report routes
 router.get('/sales-report', adminAuth, salesReportCtrl.getSalesReportPage);
 router.get('/api/sales-report', adminAuth, salesReportCtrl.getSalesReportData);
-router.get('/generate-ledger', adminAuth, salesReportCtrl.generateLedger);
 router.get('/reports/download/excel', adminAuth, salesReportCtrl.downloadExcelReport);
 router.get('/reports/download/pdf', adminAuth, salesReportCtrl.downloadPDFReport);
 

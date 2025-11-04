@@ -79,174 +79,174 @@ export const getSalesReportPage = async (req, res) => {
 };
 
 // Generate ledger (matching your dashboard structure)
-export const generateLedger = async (req, res) => {
-    try {
-        const { startDate, endDate } = req.query;
+// export const generateLedger = async (req, res) => {
+//     try {
+//         const { startDate, endDate } = req.query;
 
-        if (!startDate || !endDate) {
-            return res.status(400).json({
-                error: 'BAD_REQUEST',
-                message: 'Start date and end date are required'
-            });
-        }
+//         if (!startDate || !endDate) {
+//             return res.status(400).json({
+//                 error: 'BAD_REQUEST',
+//                 message: 'Start date and end date are required'
+//             });
+//         }
 
-        const ledgerData = await Order.aggregate([
-            {
-                $match: {
-                    createdAt: {
-                        $gte: new Date(startDate),
-                        $lte: new Date(endDate)
-                    },
-                    status: { $ne: 'Cancelled' }
-                }
-            },
-            {
-                $group: {
-                    _id: {
-                        date: {
-                            $dateToString: {
-                                format: "%Y-%m-%d",
-                                date: "$createdAt"
-                            }
-                        }
-                    },
-                    totalSales: { $sum: "$total" },
-                    totalOrders: { $sum: 1 },
-                    orders: { $push: "$$ROOT" }
-                }
-            },
-            { $sort: { "_id.date": 1 } }
-        ]);
+//         const ledgerData = await Order.aggregate([
+//             {
+//                 $match: {
+//                     createdAt: {
+//                         $gte: new Date(startDate),
+//                         $lte: new Date(endDate)
+//                     },
+//                     status: { $ne: 'Cancelled' }
+//                 }
+//             },
+//             {
+//                 $group: {
+//                     _id: {
+//                         date: {
+//                             $dateToString: {
+//                                 format: "%Y-%m-%d",
+//                                 date: "$createdAt"
+//                             }
+//                         }
+//                     },
+//                     totalSales: { $sum: "$total" },
+//                     totalOrders: { $sum: 1 },
+//                     orders: { $push: "$$ROOT" }
+//                 }
+//             },
+//             { $sort: { "_id.date": 1 } }
+//         ]);
 
-        const doc = new PDFDocument({
-            margin: 50,
-            bufferPages: true
-        });
+//         const doc = new PDFDocument({
+//             margin: 50,
+//             bufferPages: true
+//         });
 
-        res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', `attachment; filename=ledger_${startDate}_to_${endDate}.pdf`);
+//         res.setHeader('Content-Type', 'application/pdf');
+//         res.setHeader('Content-Disposition', `attachment; filename=ledger_${startDate}_to_${endDate}.pdf`);
 
-        doc.pipe(res);
+//         doc.pipe(res);
 
-        const pageHeight = doc.page.height;
-        const margin = 50;
-        const bottomMargin = pageHeight - margin;
+//         const pageHeight = doc.page.height;
+//         const margin = 50;
+//         const bottomMargin = pageHeight - margin;
 
-        // Header
-        doc.fontSize(24).font('Helvetica-Bold')
-            .text('MELODIA - LEDGER BOOK', { align: 'center' });
-        doc.fontSize(14).font('Helvetica')
-            .text(`Period: ${startDate} to ${endDate}`, { align: 'center' });
-        doc.moveDown(2);
+//         // Header
+//         doc.fontSize(24).font('Helvetica-Bold')
+//             .text('MELODIA - LEDGER BOOK', { align: 'center' });
+//         doc.fontSize(14).font('Helvetica')
+//             .text(`Period: ${startDate} to ${endDate}`, { align: 'center' });
+//         doc.moveDown(2);
 
-        // Summary
-        const grandTotal = ledgerData.reduce((sum, day) => sum + day.totalSales, 0);
-        const totalOrdersCount = ledgerData.reduce((sum, day) => sum + day.totalOrders, 0);
+//         // Summary
+//         const grandTotal = ledgerData.reduce((sum, day) => sum + day.totalSales, 0);
+//         const totalOrdersCount = ledgerData.reduce((sum, day) => sum + day.totalOrders, 0);
 
-        doc.fontSize(16).font('Helvetica-Bold').text('SUMMARY', { underline: true });
-        doc.moveDown(0.5);
-        doc.fontSize(12).font('Helvetica');
-        doc.text('Total Revenue:', 50, doc.y);
-        doc.text(`Rs ${grandTotal.toLocaleString('en-IN')}`, 200, doc.y - 12);
-        doc.text('Total Orders:', 50, doc.y);
-        doc.text(`${totalOrdersCount}`, 200, doc.y - 12);
-        doc.moveDown(2);
+//         doc.fontSize(16).font('Helvetica-Bold').text('SUMMARY', { underline: true });
+//         doc.moveDown(0.5);
+//         doc.fontSize(12).font('Helvetica');
+//         doc.text('Total Revenue:', 50, doc.y);
+//         doc.text(`Rs ${grandTotal.toLocaleString('en-IN')}`, 200, doc.y - 12);
+//         doc.text('Total Orders:', 50, doc.y);
+//         doc.text(`${totalOrdersCount}`, 200, doc.y - 12);
+//         doc.moveDown(2);
 
-        // Daily breakdown
-        doc.fontSize(16).font('Helvetica-Bold').text('DAILY BREAKDOWN', { underline: true });
-        doc.moveDown(1);
+//         // Daily breakdown
+//         doc.fontSize(16).font('Helvetica-Bold').text('DAILY BREAKDOWN', { underline: true });
+//         doc.moveDown(1);
 
-        ledgerData.forEach((day) => {
-            const ordersCount = day.orders.length;
-            const spaceNeeded = 80 + (ordersCount * 20) + 25;
+//         ledgerData.forEach((day) => {
+//             const ordersCount = day.orders.length;
+//             const spaceNeeded = 80 + (ordersCount * 20) + 25;
 
-            if (doc.y + spaceNeeded > bottomMargin) {
-                doc.addPage();
-            }
+//             if (doc.y + spaceNeeded > bottomMargin) {
+//                 doc.addPage();
+//             }
 
-            // Day header
-            const dayHeaderY = doc.y;
-            doc.fontSize(14).font('Helvetica-Bold').fillColor('#2563eb')
-                .text(`${day._id.date}`, 50, dayHeaderY);
-            doc.fontSize(10).font('Helvetica').fillColor('#666666')
-                .text(`Daily Total: Rs ${day.totalSales.toLocaleString('en-IN')} | Orders: ${day.totalOrders}`, 200, dayHeaderY);
-            doc.moveDown(0.5);
+//             // Day header
+//             const dayHeaderY = doc.y;
+//             doc.fontSize(14).font('Helvetica-Bold').fillColor('#2563eb')
+//                 .text(`${day._id.date}`, 50, dayHeaderY);
+//             doc.fontSize(10).font('Helvetica').fillColor('#666666')
+//                 .text(`Daily Total: Rs ${day.totalSales.toLocaleString('en-IN')} | Orders: ${day.totalOrders}`, 200, dayHeaderY);
+//             doc.moveDown(0.5);
 
-            // Table header
-            const tableTop = doc.y;
-            const orderNoX = 50;
-            const referenceX = 120;
-            const statusX = 220;
-            const amountX = 300;
-            const customerX = 380;
+//             // Table header
+//             const tableTop = doc.y;
+//             const orderNoX = 50;
+//             const referenceX = 120;
+//             const statusX = 220;
+//             const amountX = 300;
+//             const customerX = 380;
 
-            doc.rect(50, tableTop - 5, 492, 25).fillAndStroke('#f3f4f6', '#d1d5db');
-            doc.fontSize(10).font('Helvetica-Bold').fillColor('#374151');
-            doc.text('S.No', orderNoX, tableTop);
-            doc.text('Order Ref', referenceX, tableTop);
-            doc.text('Status', statusX, tableTop);
-            doc.text('Amount (Rs)', amountX, tableTop);
-            doc.text('Customer', customerX, tableTop);
-            doc.y = tableTop + 25;
+//             doc.rect(50, tableTop - 5, 492, 25).fillAndStroke('#f3f4f6', '#d1d5db');
+//             doc.fontSize(10).font('Helvetica-Bold').fillColor('#374151');
+//             doc.text('S.No', orderNoX, tableTop);
+//             doc.text('Order Ref', referenceX, tableTop);
+//             doc.text('Status', statusX, tableTop);
+//             doc.text('Amount (Rs)', amountX, tableTop);
+//             doc.text('Customer', customerX, tableTop);
+//             doc.y = tableTop + 25;
 
-            // Order rows
-            day.orders.forEach((order, orderIndex) => {
-                const currentY = doc.y;
-                if (orderIndex % 2 === 0) {
-                    doc.rect(50, currentY - 3, 492, 20).fill('#f9fafb');
-                }
+//             // Order rows
+//             day.orders.forEach((order, orderIndex) => {
+//                 const currentY = doc.y;
+//                 if (orderIndex % 2 === 0) {
+//                     doc.rect(50, currentY - 3, 492, 20).fill('#f9fafb');
+//                 }
 
-                doc.fontSize(9).font('Helvetica').fillColor('#111827');
-                doc.text(`${orderIndex + 1}`, orderNoX, currentY);
-                doc.text(order.referenceNo || 'N/A', referenceX, currentY);
+//                 doc.fontSize(9).font('Helvetica').fillColor('#111827');
+//                 doc.text(`${orderIndex + 1}`, orderNoX, currentY);
+//                 doc.text(order.referenceNo || 'N/A', referenceX, currentY);
 
-                const statusColor = getStatusColor(order.status);
-                doc.fillColor(statusColor).text(order.status, statusX, currentY);
-                doc.fillColor('#111827').text(order.total.toLocaleString('en-IN'), amountX, currentY);
+//                 const statusColor = getStatusColor(order.status);
+//                 doc.fillColor(statusColor).text(order.status, statusX, currentY);
+//                 doc.fillColor('#111827').text(order.total.toLocaleString('en-IN'), amountX, currentY);
 
-                const customerName = order.address?.name || 'Guest';
-                const truncatedName = customerName.length > 15 ? customerName.substring(0, 15) + '...' : customerName;
-                doc.text(truncatedName, customerX, currentY);
-                doc.y = currentY + 20;
-            });
+//                 const customerName = order.address?.name || 'Guest';
+//                 const truncatedName = customerName.length > 15 ? customerName.substring(0, 15) + '...' : customerName;
+//                 doc.text(truncatedName, customerX, currentY);
+//                 doc.y = currentY + 20;
+//             });
 
-            // Daily total row
-            const totalRowY = doc.y;
-            doc.rect(50, totalRowY, 492, 25).fillAndStroke('#e5e7eb', '#9ca3af');
-            doc.fontSize(10).font('Helvetica-Bold').fillColor('#1f2937');
-            doc.text('Daily Total:', referenceX, totalRowY + 5);
-            doc.text(`Rs ${day.totalSales.toLocaleString('en-IN')}`, amountX, totalRowY + 5);
-            doc.text(`${day.totalOrders} orders`, customerX, totalRowY + 5);
-            doc.y = totalRowY + 35;
-        });
+//             // Daily total row
+//             const totalRowY = doc.y;
+//             doc.rect(50, totalRowY, 492, 25).fillAndStroke('#e5e7eb', '#9ca3af');
+//             doc.fontSize(10).font('Helvetica-Bold').fillColor('#1f2937');
+//             doc.text('Daily Total:', referenceX, totalRowY + 5);
+//             doc.text(`Rs ${day.totalSales.toLocaleString('en-IN')}`, amountX, totalRowY + 5);
+//             doc.text(`${day.totalOrders} orders`, customerX, totalRowY + 5);
+//             doc.y = totalRowY + 35;
+//         });
 
-        // Grand total
-        if (doc.y + 60 > bottomMargin) {
-            doc.addPage();
-        }
+//         // Grand total
+//         if (doc.y + 60 > bottomMargin) {
+//             doc.addPage();
+//         }
 
-        const grandTotalY = doc.y + 10;
-        doc.rect(50, grandTotalY, 492, 30).fillAndStroke('#1f2937', '#111827');
-        doc.fontSize(14).font('Helvetica-Bold').fillColor('#ffffff');
-        doc.text('GRAND TOTAL:', 200, grandTotalY + 8);
-        doc.text(`Rs ${grandTotal.toLocaleString('en-IN')}`, 300, grandTotalY + 8);
-        doc.text(`${totalOrdersCount} Total Orders`, 380, grandTotalY + 8);
+//         const grandTotalY = doc.y + 10;
+//         doc.rect(50, grandTotalY, 492, 30).fillAndStroke('#1f2937', '#111827');
+//         doc.fontSize(14).font('Helvetica-Bold').fillColor('#ffffff');
+//         doc.text('GRAND TOTAL:', 200, grandTotalY + 8);
+//         doc.text(`Rs ${grandTotal.toLocaleString('en-IN')}`, 300, grandTotalY + 8);
+//         doc.text(`${totalOrdersCount} Total Orders`, 380, grandTotalY + 8);
 
-        // Footer
-        doc.fontSize(8).fillColor('#6b7280')
-            .text(`Generated on: ${new Date().toLocaleString('en-IN')} | Melodia Admin Panel`,
-                50, doc.page.height - 30, { align: 'center' });
+//         // Footer
+//         doc.fontSize(8).fillColor('#6b7280')
+//             .text(`Generated on: ${new Date().toLocaleString('en-IN')} | Melodia Admin Panel`,
+//                 50, doc.page.height - 30, { align: 'center' });
 
-        doc.end();
+//         doc.end();
 
-    } catch (error) {
-        console.error('Ledger generation error:', error);
-        res.status(500).json({
-            error: 'INTERNAL_ERROR',
-            message: 'Failed to generate ledger'
-        });
-    }
-};
+//     } catch (error) {
+//         console.error('Ledger generation error:', error);
+//         res.status(500).json({
+//             error: 'INTERNAL_ERROR',
+//             message: 'Failed to generate ledger'
+//         });
+//     }
+// };
 
 // Helper function for status colors (matching your dashboard)
 function getStatusColor(status) {
@@ -273,26 +273,15 @@ export const getSalesReportData = async (req, res) => {
     try {
         const { period = 'monthly', startDate, endDate, year, month } = req.query;
 
-        console.log('Sales report params:', { period, startDate, endDate, year, month });
-
         // Use the same date filter function as dashboard
         const dateFilter = getDateFilter(period, parseInt(year), parseInt(month), startDate, endDate);
-
-        console.log('=== DATE FILTER DEBUG ===');
-        console.log('Period:', period);
-        console.log('Year:', year);
-        console.log('Month:', month);
-        console.log('Start Date:', startDate);
-        console.log('End Date:', endDate);
-        console.log('Generated Date Filter:', dateFilter);
-        console.log('========================');
 
         // Get orders with filters (using correct field names from schema)
         const orders = await Order.find({
             ...dateFilter,
             orderStatus: { $ne: 'Cancelled' } // Using 'orderStatus' field from schema
         })
-            .populate('userId', 'name email') // Using correct user fields
+            .populate('userId', 'firstName lastName name email') // Using correct user fields
             .populate('items.variantId') // Using 'items' field from schema
             .sort({ orderDate: -1 }); // Using 'orderDate' from schema
 
@@ -584,105 +573,7 @@ export const getSalesReportData = async (req, res) => {
             };
         });
 
-        // If no chart data, provide sample data based on period
-        if (formattedChartData.length === 0) {
-
-            formattedChartData = [];
-            const today = new Date();
-            
-            switch (period) {
-                case 'daily':
-                    // Generate last 7 days
-                    for (let i = 6; i >= 0; i--) {
-                        const date = new Date(today);
-                        date.setDate(today.getDate() - i);
-                        const dayIndex = 6 - i;
-                        const baseValue = 2000 + (dayIndex * 300);
-                        formattedChartData.push({
-                            date: date.toISOString().split('T')[0],
-                            label: date.toLocaleDateString('en-IN', { month: 'short', day: 'numeric' }),
-                            sales: baseValue + Math.floor(Math.random() * 1000),
-                            orders: Math.floor(Math.random() * 20) + 10,
-                            discount: Math.floor(Math.random() * 500) + 100
-                        });
-                    }
-                    break;
-                    
-                case 'weekly':
-                    // Generate last 8 weeks
-                    for (let i = 7; i >= 0; i--) {
-                        const date = new Date(today);
-                        date.setDate(today.getDate() - (i * 7));
-                        const year = date.getFullYear();
-                        // Calculate proper week number
-                        const startOfYear = new Date(year, 0, 1);
-                        const weekNumber = Math.ceil(((date - startOfYear) / 86400000 + startOfYear.getDay() + 1) / 7);
-                        const weekIndex = 7 - i;
-                        const baseValue = 15000 + (weekIndex * 2000);
-                        formattedChartData.push({
-                            date: `${year}-W${String(weekNumber).padStart(2, '0')}`,
-                            label: `Week ${weekNumber}, ${year}`,
-                            sales: baseValue + Math.floor(Math.random() * 5000),
-                            orders: Math.floor(Math.random() * 100) + 50,
-                            discount: Math.floor(Math.random() * 2000) + 500
-                        });
-                    }
-                    break;
-                    
-                case 'monthly':
-                    // Generate last 6 months
-                    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-                    for (let i = 5; i >= 0; i--) {
-                        const date = new Date(today);
-                        date.setMonth(today.getMonth() - i);
-                        const year = date.getFullYear();
-                        const month = date.getMonth() + 1;
-                        const monthIndex = 5 - i;
-                        const baseValue = 50000 + (monthIndex * 8000);
-                        formattedChartData.push({
-                            date: `${year}-${String(month).padStart(2, '0')}`,
-                            label: `${monthNames[month - 1]} ${year}`,
-                            sales: baseValue + Math.floor(Math.random() * 15000),
-                            orders: Math.floor(Math.random() * 300) + 200,
-                            discount: Math.floor(Math.random() * 5000) + 2000
-                        });
-                    }
-                    break;
-                    
-                case 'yearly':
-                    // Generate last 3 years
-                    for (let i = 2; i >= 0; i--) {
-                        const year = today.getFullYear() - i;
-                        const yearIndex = 2 - i;
-                        const baseValue = 500000 + (yearIndex * 100000);
-                        formattedChartData.push({
-                            date: `${year}`,
-                            label: `${year}`,
-                            sales: baseValue + Math.floor(Math.random() * 100000),
-                            orders: Math.floor(Math.random() * 2000) + 1000,
-                            discount: Math.floor(Math.random() * 50000) + 20000
-                        });
-                    }
-                    break;
-                    
-                default:
-                    // Default to daily
-                    for (let i = 6; i >= 0; i--) {
-                        const date = new Date(today);
-                        date.setDate(today.getDate() - i);
-                        const dayIndex = 6 - i;
-                        const baseValue = 2000 + (dayIndex * 300);
-                        formattedChartData.push({
-                            date: date.toISOString().split('T')[0],
-                            label: date.toLocaleDateString('en-IN', { month: 'short', day: 'numeric' }),
-                            sales: baseValue + Math.floor(Math.random() * 1000),
-                            orders: Math.floor(Math.random() * 20) + 10,
-                            discount: Math.floor(Math.random() * 500) + 100
-                        });
-                    }
-            }
-
-        }
+        // Always use real data - no sample data fallback
 
         // Ensure all values are positive and properly formatted
         formattedChartData = formattedChartData.map(item => ({
@@ -827,23 +718,28 @@ export const downloadExcelReport = async (req, res) => {
         });
         currentRow++;
 
-        // Enhanced data rows
+        // Enhanced data rows with correct field names
         reportData.orders.forEach(order => {
-            const customerName = order.userId ? order.userId.name : (order.address?.name || 'N/A');
-            const subtotal = (order.total || 0) + (order.offerDiscount || 0) + (order.couponDiscount || 0);
-            const productOffers = order.productOffers || order.offerDiscount || 0;
-            const couponDiscount = order.couponDiscount || (order.coupon?.discountAmount || 0);
+            // Fix customer name field mapping
+            const customerName = order.userId ?
+                (order.userId.firstName ? `${order.userId.firstName} ${order.userId.lastName || ''}`.trim() : order.userId.name || 'N/A') :
+                'Guest Customer';
 
-            worksheet.getCell(currentRow, 1).value = order._id?.toString() || '';
-            worksheet.getCell(currentRow, 2).value = order.referenceNo || 'N/A';
-            worksheet.getCell(currentRow, 3).value = (order.createdAt || order.orderDate)?.toLocaleDateString() || '';
+            const subtotal = (order.totalAmount || order.total || 0) + (order.offerDiscount || 0) + (order.couponDiscount || 0);
+            const productOffers = order.productOffers || order.offerDiscount || 0;
+            const couponDiscount = order.couponDiscount || 0;
+            const orderRef = order.orderId || order.referenceNo || order._id.toString().slice(-8);
+
+            worksheet.getCell(currentRow, 1).value = orderRef;
+            worksheet.getCell(currentRow, 2).value = order.orderId || order.referenceNo || 'N/A';
+            worksheet.getCell(currentRow, 3).value = (order.orderDate || order.createdAt)?.toLocaleDateString() || '';
             worksheet.getCell(currentRow, 4).value = customerName;
-            worksheet.getCell(currentRow, 5).value = order.status || 'N/A';
+            worksheet.getCell(currentRow, 5).value = order.orderStatus || order.status || 'N/A';
             worksheet.getCell(currentRow, 6).value = order.paymentMethod || 'N/A';
             worksheet.getCell(currentRow, 7).value = subtotal || 0;
             worksheet.getCell(currentRow, 8).value = productOffers;
             worksheet.getCell(currentRow, 9).value = couponDiscount;
-            worksheet.getCell(currentRow, 10).value = order.totalAmount || 0;
+            worksheet.getCell(currentRow, 10).value = order.totalAmount || order.total || 0;
             worksheet.getCell(currentRow, 11).value = order.items?.length || 0;
             currentRow++;
         });
@@ -921,10 +817,17 @@ export const downloadPDFReport = async (req, res) => {
 
         doc.fontSize(10);
         reportData.orders.slice(0, 20).forEach(order => {
-            const customerName = order.userId ? order.userId.name : 'N/A';
-            const totalDiscount = (order.offerDiscount || 0) + (order.couponDiscount || 0) + (order.discountAmount || 0);
+            // Fix field names to match your order schema
+            const customerName = order.userId ?
+                (order.userId.firstName ? `${order.userId.firstName} ${order.userId.lastName || ''}`.trim() : order.userId.name || 'N/A') :
+                'Guest Customer';
 
-            doc.text(`${order.referenceNo || order._id} | ${order.createdAt.toLocaleDateString()} | ${customerName} | ₹${(order.total || 0).toFixed(2)} | Discount: ₹${totalDiscount.toFixed(2)}`);
+            const totalDiscount = (order.offerDiscount || 0) + (order.couponDiscount || 0) + (order.discountAmount || 0);
+            const orderDate = order.orderDate || order.createdAt;
+            const orderRef = order.orderId || order.referenceNo || order._id.toString().slice(-8);
+            const orderTotal = order.totalAmount || order.total || 0;
+
+            doc.text(`${orderRef} | ${orderDate ? new Date(orderDate).toLocaleDateString() : 'N/A'} | ${customerName} | ₹${orderTotal.toFixed(2)} | Discount: ₹${totalDiscount.toFixed(2)}`);
         });
 
         // Finalize PDF
@@ -949,7 +852,7 @@ const getSalesReportDataInternal = async (period, startDate, endDate) => {
         ...dateFilter,
         orderStatus: { $ne: 'Cancelled' }
     })
-        .populate('userId', 'firstName lastName email')
+        .populate('userId', 'firstName lastName name email')
         .sort({ orderDate: -1 });
 
     // Calculate summary (using correct field names)
@@ -1055,7 +958,7 @@ export const generateSalesReport = async (req, res) => {
             orderStatus: { $ne: 'Cancelled' }
         };
 
-        console.log('Sales Report Query:', baseQuery);
+
 
         // Get overall stats
         const result = await Order.aggregate([
@@ -1096,7 +999,7 @@ export const generateSalesReport = async (req, res) => {
             itemCount: order.items?.length || 0
         }));
 
-        console.log('Sales Report Results:', result);
+
 
         res.json({
             success: true,
@@ -1120,7 +1023,7 @@ export const generateSalesReport = async (req, res) => {
 export default {
     getSalesReportPage,
     getSalesReportData,
-    generateLedger,
     downloadExcelReport,
-    downloadPDFReport
+    downloadPDFReport,
+    generateSalesReport
 };

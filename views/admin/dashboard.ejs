@@ -1105,7 +1105,7 @@
                     </div>
                 </div>
 
-                <!-- Generate Ledger Book Section  -->
+                <!-- Generate Ledger Book Section 
                 <div class="ledger-section">
                     <div class="ledger-header">
                         <h3>Generate Ledger Book</h3>
@@ -1130,7 +1130,7 @@
                             </a>
                         </div>
                     </div>
-                </div>
+                </div> -->
 
                 <!-- Latest Orders Table  -->
                 <div class="table-section">
@@ -1281,24 +1281,12 @@
             // Apply filters button - MAIN TRIGGER
             applyFiltersBtn.addEventListener('click', function(e) {
                 e.preventDefault();
-                console.log('=== APPLY FILTERS CLICKED ===');
-                console.log('Current filter values:', {
-                    period: periodSelect.value,
-                    year: yearSelect.value,
-                    month: monthSelect.value
-                });
-                loadDashboardData(true); // Show success message for manual filter application
+                loadDashboardData(true);
             });
 
             // Period change handler - show/hide other filters
             periodSelect.addEventListener('change', function() {
                 const period = this.value;
-                console.log('=== PERIOD CHANGED ===');
-                console.log('New period:', period);
-                console.log('Current values before change:', {
-                    year: yearSelect.value,
-                    month: monthSelect.value
-                });
                 
                 // Get parent divs of year and month selects
                 const yearGroup = yearSelect.parentElement;
@@ -1322,20 +1310,17 @@
                         break;
                 }
                 
-                console.log('About to call loadDashboardData for period:', period);
-                // Auto-apply when period changes (no success message)
+                // Auto-apply when period changes
                 loadDashboardData(false);
             });
 
             // Year and month change handlers
             yearSelect.addEventListener('change', function() {
-                console.log('Year changed to:', this.value);
-                loadDashboardData(false); // No success message for auto-refresh
+                loadDashboardData(false);
             });
             
             monthSelect.addEventListener('change', function() {
-                console.log('Month changed to:', this.value);
-                loadDashboardData(false); // No success message for auto-refresh
+                loadDashboardData(false);
             });
 
             // Ledger generation
@@ -1358,9 +1343,7 @@
             // Initialize filter visibility
             periodSelect.dispatchEvent(new Event('change'));
             
-            console.log('Dashboard initialization complete');
-            
-            // Removed refresh button
+            // Dashboard initialization complete
         }
 
 
@@ -1369,9 +1352,6 @@
             const period = document.getElementById('periodSelect')?.value || 'monthly';
             const year = document.getElementById('yearSelect')?.value || new Date().getFullYear();
             const month = document.getElementById('monthSelect')?.value || new Date().getMonth();
-
-            console.log('=== LOADING DASHBOARD DATA ===');
-            console.log('Filter values:', { period, year, month });
 
             try {
                 // Build API URL with parameters
@@ -1387,7 +1367,6 @@
                 }
                 
                 const apiUrl = `/admin/api/dashboard?${params.toString()}`;
-                console.log('API URL:', apiUrl);
 
                 // Show loading
                 showLoadingState();
@@ -1406,19 +1385,14 @@
                 }
 
                 const result = await response.json();
-                console.log('API Response:', result);
 
                 if (result.success && result.data) {
-                    console.log('Chart data received:', result.data.chartData?.length || 0, 'points');
-                    console.log('Summary data:', result.data.summary);
                     updateDashboard(result.data);
-                    // Removed success message notifications
                 } else {
                     throw new Error(result.message || 'Invalid response format');
                 }
 
             } catch (error) {
-                console.error('Dashboard API Error:', error);
                 showErrorState(`Failed to load data: ${error.message}`);
             } finally {
                 hideLoadingState();
@@ -1426,8 +1400,6 @@
         }
 
         function showLoadingState() {
-            console.log('Showing loading state...');
-            
             // Add loading indicators to charts
             const salesChart = document.getElementById('salesChart');
             const ordersChart = document.getElementById('ordersChart');
@@ -1452,8 +1424,6 @@
         }
 
         function hideLoadingState() {
-            console.log('Hiding loading state...');
-            
             const salesChart = document.getElementById('salesChart');
             const ordersChart = document.getElementById('ordersChart');
             const applyBtn = document.getElementById('applyFilters');
@@ -1477,8 +1447,6 @@
         }
 
         function showErrorState(message) {
-            console.error('Dashboard error:', message);
-            
             // Show error message to user
             const errorDiv = document.createElement('div');
             errorDiv.style.cssText = `
@@ -1508,8 +1476,6 @@
         }
 
         function updateDashboard(data) {
-            console.log('Updating dashboard with data:', data);
-            
             // Show data type indicator
             showDataTypeIndicator(data);
             
@@ -1517,14 +1483,11 @@
             if (data && data.summary) {
                 const summary = data.summary;
                 
-                console.log('Updating stats with summary:', summary);
-                
                 // Update Total Sales
                 const totalSalesEl = document.getElementById('totalSalesValue');
                 if (totalSalesEl) {
                     const salesValue = summary.totalRevenue || 0;
                     totalSalesEl.textContent = `₹${salesValue.toLocaleString()}`;
-                    console.log('Updated total sales to:', salesValue);
                 }
 
                 // Update Delivered Orders
@@ -1532,7 +1495,6 @@
                 if (deliveredOrdersEl) {
                     const deliveredValue = summary.deliveredOrders || 0;
                     deliveredOrdersEl.textContent = deliveredValue.toLocaleString();
-                    console.log('Updated delivered orders to:', deliveredValue);
                 }
 
                 // Update Total Orders
@@ -1540,15 +1502,11 @@
                 if (totalOrdersEl) {
                     const ordersValue = summary.totalOrders || 0;
                     totalOrdersEl.textContent = ordersValue.toLocaleString();
-                    console.log('Updated total orders to:', ordersValue);
                 }
-
-                // Note: Total Users doesn't change with date filters, so we don't update it
             }
 
             // Update charts with filtered data
             const chartData = data.chartData || [];
-            console.log('Updating charts with data points:', chartData.length);
             updateSalesChart(chartData);
             updateOrdersChart(chartData);
         }
@@ -1573,8 +1531,6 @@
             let labels, salesData;
 
             if (chartData && chartData.length > 0) {
-                console.log('Chart data received:', chartData.length, 'points for period:', period);
-                
                 // Real data from API - format labels based on period
                 labels = chartData.map(item => {
                     if (period === 'daily') {
@@ -1597,11 +1553,7 @@
                     return item.date;
                 });
                 salesData = chartData.map(item => item.sales || 0);
-                
-                console.log('Chart labels:', labels);
-                console.log('Sales data:', salesData);
             } else {
-                console.log('No chart data received from API - this should not happen');
                 // Minimal fallback - should not be used if backend is working properly
                 labels = ['No Data'];
                 salesData = [0];
@@ -1672,8 +1624,6 @@
             let labels, ordersData, maxValue;
 
             if (chartData && chartData.length > 0) {
-                console.log('Orders chart data received:', chartData.length, 'points for period:', period);
-                
                 // Real data from API - format labels based on period (same as sales chart)
                 labels = chartData.map(item => {
                     if (period === 'daily') {
@@ -1693,11 +1643,7 @@
                 });
                 ordersData = chartData.map(item => item.orders || 0);
                 maxValue = Math.max(...ordersData) + 2; // Add some padding
-                
-                console.log('Orders labels:', labels);
-                console.log('Orders data:', ordersData);
             } else {
-                console.log('No orders chart data received from API - this should not happen');
                 // Minimal fallback - should not be used if backend is working properly
                 labels = ['No Data'];
                 ordersData = [0];

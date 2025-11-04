@@ -129,21 +129,10 @@ export const getDashboard = async (req, res) => {
 // API endpoint for dashboard data with filters
 export const getDashboardAPI = async (req, res) => {
   try {
-    console.log('=== DASHBOARD API CALLED ===');
     const { period, year, month } = req.query;
-    console.log('API Parameters:', { period, year, month });
 
     // Get filtered dashboard data
     const dashboardData = await getFilteredDashboardData(period, year, month);
-
-    console.log('API Response Summary:', {
-      period,
-      chartDataPoints: dashboardData.chartData?.length || 0,
-      totalRevenue: dashboardData.summary?.totalRevenue || 0,
-      totalOrders: dashboardData.summary?.totalOrders || 0,
-      deliveredOrders: dashboardData.summary?.deliveredOrders || 0,
-      sampleDataUsed: !dashboardData.isRealData
-    });
 
     // Add metadata to help frontend understand the data
     const responseData = {
@@ -634,16 +623,9 @@ const getFilteredDashboardData = async (period, year, month) => {
     const totalOrdersCount = await Order.countDocuments();
     const deliveredOrdersCount = await Order.countDocuments({ orderStatus: 'Delivered' });
 
-    console.log('=== DATABASE CHECK ===');
-    console.log('Total orders in DB:', totalOrdersCount);
-    console.log('Delivered orders in DB:', deliveredOrdersCount);
-
     let startDate, endDate;
     const currentYear = parseInt(year) || new Date().getFullYear();
     const currentMonth = parseInt(month) || new Date().getMonth();
-
-    console.log('=== FILTER CALCULATION ===');
-    console.log('Period:', period, 'Year:', currentYear, 'Month:', currentMonth);
 
     switch (period) {
       case 'daily':
@@ -653,7 +635,6 @@ const getFilteredDashboardData = async (period, year, month) => {
         startDate = new Date();
         startDate.setDate(endDate.getDate() - 6); // 7 days including today
         startDate.setHours(0, 0, 0, 0);
-        console.log('Daily range:', { startDate, endDate, days: 7 });
         break;
       case 'weekly':
         // Last 4 weeks only
@@ -662,7 +643,6 @@ const getFilteredDashboardData = async (period, year, month) => {
         startDate = new Date();
         startDate.setDate(endDate.getDate() - 27); // 4 weeks
         startDate.setHours(0, 0, 0, 0);
-        console.log('Weekly range:', { startDate, endDate, weeks: 4 });
         break;
       case 'monthly':
         // Last 6 months only
@@ -672,7 +652,6 @@ const getFilteredDashboardData = async (period, year, month) => {
         startDate.setMonth(endDate.getMonth() - 5); // 6 months
         startDate.setDate(1);
         startDate.setHours(0, 0, 0, 0);
-        console.log('Monthly range:', { startDate, endDate, months: 6 });
         break;
       case 'yearly':
         // Last 3 years only
@@ -682,13 +661,11 @@ const getFilteredDashboardData = async (period, year, month) => {
         startDate.setFullYear(endDate.getFullYear() - 2); // 3 years
         startDate.setMonth(0, 1);
         startDate.setHours(0, 0, 0, 0);
-        console.log('Yearly range:', { startDate, endDate, years: 3 });
         break;
       default:
         // Default to current month
         startDate = new Date(currentYear, currentMonth, 1);
         endDate = new Date(currentYear, currentMonth + 1, 0, 23, 59, 59, 999);
-        console.log('Default range:', { startDate, endDate });
     }
 
 
@@ -726,12 +703,7 @@ const getFilteredDashboardData = async (period, year, month) => {
       orderDate: { $gte: startDate, $lte: endDate }
     });
 
-    console.log('Orders in date range:', ordersInRange);
-
     // We'll only use real data from the database
-
-    // Fetching real data from database for the selected period
-    console.log('Fetching real data from database...');
 
     // Try to get real data but always fall back to sample data
     let realData = null;
@@ -840,23 +812,16 @@ const getFilteredDashboardData = async (period, year, month) => {
           isRealData: true
         };
 
-        console.log(`Real data found for ${period}:`, {
-          period,
-          dateRange: { startDate, endDate },
-          chartDataPoints: formattedChartData.length,
-          summary: summary[0] || { totalRevenue: 0, totalOrders: 0, deliveredOrders: 0 }
-        });
+
       }
     } catch (error) {
-      console.error('Error fetching real data:', error);
+      // Silent error handling
     }
 
     // Return real data if available, otherwise return empty data structure
     if (realData) {
-      console.log(`Using real data for ${period}`);
       return realData;
     } else {
-      console.log(`No real data found for ${period}`);
       return {
         chartData: [],
         summary: { totalRevenue: 0, totalOrders: 0, deliveredOrders: 0, avgOrderValue: 0 },
@@ -873,163 +838,9 @@ const getFilteredDashboardData = async (period, year, month) => {
 };
 
 
-// Generate sample data for testing when no real data exists
-const generateSampleData = (period, year, month, startDate, endDate) => {
-  console.log('Generating sample data for:', { period, year, month, startDate, endDate });
 
-  let chartData = [];
-  let summary = { totalRevenue: 0, totalOrders: 0, deliveredOrders: 0, avgOrderValue: 0 };
 
-  // Create a unique seed based on period and time parameters to ensure different data for each period
-  const periodMultiplier = {
-    'daily': 1,
-    'weekly': 7,
-    'monthly': 30,
-    'yearly': 365
-  };
 
-  const seedString = `${period}-${year}-${month}-${periodMultiplier[period] || 1}`;
-  const seed = seedString.split('').reduce((a, b) => {
-    a = ((a << 5) - a) + b.charCodeAt(0);
-    return a & a;
-  }, 0);
-
-  // Simple seeded random function
-  let seedValue = Math.abs(seed);
-  const seededRandom = () => {
-    seedValue = (seedValue * 9301 + 49297) % 233280;
-    return seedValue / 233280;
-  };
-
-  switch (period) {
-    case 'daily':
-      // Generate 30 days of sample data with period-specific patterns
-      for (let i = 29; i >= 0; i--) {
-        const date = new Date();
-        date.setDate(date.getDate() - i);
-        const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-
-        // Daily pattern: lower on weekends, higher mid-week
-        const dayOfWeek = date.getDay();
-        const weekendMultiplier = (dayOfWeek === 0 || dayOfWeek === 6) ? 0.6 : 1.2;
-
-        const baseOrders = Math.floor(seededRandom() * 8) + 2;
-        const orders = Math.floor(baseOrders * weekendMultiplier);
-        const baseSales = Math.floor(seededRandom() * 1500) + 800;
-        const sales = Math.floor(orders * baseSales * weekendMultiplier);
-
-        chartData.push({
-          date: dateStr,
-          sales: sales,
-          orders: orders
-        });
-
-        summary.totalRevenue += sales;
-        summary.totalOrders += orders;
-        summary.deliveredOrders += Math.floor(orders * 0.85);
-      }
-      break;
-
-    case 'weekly':
-      // Generate 12 weeks of sample data with weekly patterns
-      for (let i = 11; i >= 0; i--) {
-        const date = new Date();
-        date.setDate(date.getDate() - (i * 7));
-        const year = date.getFullYear();
-        const weekNum = Math.ceil((date.getDate() + new Date(year, date.getMonth(), 1).getDay()) / 7);
-
-        // Weekly pattern: seasonal variations
-        const seasonMultiplier = Math.sin((date.getMonth() / 12) * Math.PI * 2) * 0.3 + 1;
-
-        const baseOrders = Math.floor(seededRandom() * 25) + 15;
-        const orders = Math.floor(baseOrders * seasonMultiplier);
-        const baseSales = Math.floor(seededRandom() * 1200) + 1000;
-        const sales = Math.floor(orders * baseSales * seasonMultiplier);
-
-        chartData.push({
-          date: `${year}-W${weekNum}`,
-          sales: sales,
-          orders: orders
-        });
-
-        summary.totalRevenue += sales;
-        summary.totalOrders += orders;
-        summary.deliveredOrders += Math.floor(orders * 0.82);
-      }
-      break;
-
-    case 'monthly':
-      // Generate 12 months of sample data for the specific year
-      for (let i = 0; i < 12; i++) {
-        // Monthly pattern: holiday seasons (Nov-Dec) are higher
-        const holidayMultiplier = (i === 10 || i === 11) ? 1.5 :
-          (i >= 5 && i <= 8) ? 1.2 : 1.0; // Summer boost
-
-        const baseOrders = Math.floor(seededRandom() * 40) + 30;
-        const orders = Math.floor(baseOrders * holidayMultiplier);
-        const baseSales = Math.floor(seededRandom() * 1000) + 800;
-        const sales = Math.floor(orders * baseSales * holidayMultiplier);
-
-        chartData.push({
-          date: `${year}-${String(i + 1).padStart(2, '0')}`,
-          sales: sales,
-          orders: orders
-        });
-
-        summary.totalRevenue += sales;
-        summary.totalOrders += orders;
-        summary.deliveredOrders += Math.floor(orders * 0.88);
-      }
-      break;
-
-    case 'yearly':
-      // Generate 5 years of sample data with growth trend
-      const currentYear = parseInt(year);
-      for (let i = 4; i >= 0; i--) {
-        const yearData = currentYear - i;
-
-        // Yearly pattern: growth over time
-        const growthMultiplier = 1 + (4 - i) * 0.15; // 15% growth per year
-
-        const baseOrders = Math.floor(seededRandom() * 150) + 200;
-        const orders = Math.floor(baseOrders * growthMultiplier);
-        const baseSales = Math.floor(seededRandom() * 800) + 600;
-        const sales = Math.floor(orders * baseSales * growthMultiplier);
-
-        chartData.push({
-          date: yearData.toString(),
-          sales: sales,
-          orders: orders
-        });
-
-        summary.totalRevenue += sales;
-        summary.totalOrders += orders;
-        summary.deliveredOrders += Math.floor(orders * 0.90);
-      }
-      break;
-  }
-
-  summary.avgOrderValue = summary.totalOrders > 0 ? Math.floor(summary.totalRevenue / summary.totalOrders) : 0;
-
-  console.log('Generated sample data:', {
-    period,
-    chartDataPoints: chartData.length,
-    totalRevenue: summary.totalRevenue,
-    totalOrders: summary.totalOrders,
-    avgOrderValue: summary.avgOrderValue,
-    firstFewDataPoints: chartData.slice(0, 3),
-    seed: Math.abs(seed) % 1000
-  });
-
-  return {
-    chartData,
-    summary,
-    isRealData: false
-  };
-};
-
-// Export the function for testing
-export { getFilteredDashboardData };
 
 // Default export for compatibility
 export default {

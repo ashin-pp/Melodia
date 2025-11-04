@@ -892,12 +892,7 @@
         function updateCharts(data) {
 
             
-            // Check if chart data exists
-            if (!data.chartData || data.chartData.length === 0) {
-
-                // Don't hide charts, show sample data instead
-                data.chartData = generateSampleData();
-            }
+            // Always use real data from API
             
             // 1. Enhanced Sales & Revenue Chart
             updateSalesChart(data);
@@ -913,7 +908,7 @@
             
             const labels = data.chartData.map(item => item.label || item.date);
             const salesData = data.chartData.map(item => item.sales || 0);
-            const ordersData = data.chartData.map(item => item.orderCount || 0);
+            const ordersData = data.chartData.map(item => item.orders || item.orderCount || 0);
             
             let datasets = [];
             
@@ -1022,10 +1017,10 @@
             const counts = Object.values(paymentStats).map(item => item.count || 0);
             
             if (labels.length === 0) {
-                // Sample data if no payment data
-                labels.push('Razorpay', 'Wallet', 'COD');
-                amounts.push(15000, 8000, 12000);
-                counts.push(25, 15, 30);
+                // Show empty chart message instead of sample data
+                labels.push('No Data');
+                amounts.push(0);
+                counts.push(0);
             }
             
             paymentChart = new Chart(ctx, {
