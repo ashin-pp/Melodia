@@ -2,14 +2,12 @@ import User from '../model/userSchema.js';
 import Order from '../model/orderSchema.js';
 
 export const walletService = {
-    // Generate unique transaction ID
     generateTransactionId: () => {
         const timestamp = Date.now().toString();
         const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
         return `TXN${timestamp}${random}`;
     },
 
-    // Get wallet balance for a user
     getBalance: async (userId) => {
         try {
             const user = await User.findById(userId).select('wallet.balance');
@@ -23,10 +21,8 @@ export const walletService = {
         }
     },
 
-    // Add money to wallet (credit) - No transactions for standalone MongoDB
     addMoney: async (userId, amount, description, orderId = null, adminId = null) => {
         try {
-            console.log('=== WALLET SERVICE ADD MONEY START ===');
             console.log('Input parameters:', {
                 userId: userId,
                 userIdType: typeof userId,
@@ -37,7 +33,6 @@ export const walletService = {
                 adminId: adminId
             });
 
-            // Validate inputs
             if (!userId) {
                 throw new Error('User ID is required');
             }
@@ -50,18 +45,16 @@ export const walletService = {
                 throw new Error('Amount must be a number');
             }
 
-            console.log('✅ Input validation passed');
+            console.log('Input validation passed');
 
-            // Find user with detailed logging
-            console.log('🔍 Searching for user with ID:', userId);
             const user = await User.findById(userId);
             
             if (!user) {
-                console.error('❌ User not found with ID:', userId);
+                console.error(' User not found with ID:', userId);
                 throw new Error(`User not found with ID: ${userId}`);
             }
 
-            console.log('✅ User found:', {
+            console.log(' User found:', {
                 id: user._id,
                 name: user.name,
                 email: user.email,
@@ -69,17 +62,16 @@ export const walletService = {
                 walletBalance: user.wallet ? user.wallet.balance : 'No wallet'
             });
 
-            // Initialize wallet if it doesn't exist
             if (!user.wallet) {
-                console.log('🔧 Initializing wallet for user');
+                console.log('Initializing wallet for user');
                 user.wallet = {
                     balance: 0,
                     transactions: [],
                     isWalletActive: true
                 };
-                console.log('💾 Saving user with new wallet...');
+
                 await user.save();
-                console.log('✅ Wallet initialized successfully');
+                console.log(' Wallet initialized successfully');
             }
 
             if (!user.wallet.isWalletActive) {
@@ -90,7 +82,7 @@ export const walletService = {
             const newBalance = currentBalance + amount;
             const transactionId = walletService.generateTransactionId();
 
-            console.log('💰 Balance calculation:', {
+            console.log(' Balance calculation:', {
                 currentBalance: currentBalance,
                 addAmount: amount,
                 newBalance: newBalance,
@@ -109,17 +101,14 @@ export const walletService = {
                 adminId: adminId
             };
 
-            console.log('📝 Creating transaction record:', transaction);
 
-            // Update user wallet - use direct save method for better reliability
-            console.log('💾 Updating wallet balance and adding transaction...');
             user.wallet.balance = newBalance;
             user.wallet.transactions.push(transaction);
             
-            console.log('💾 Saving user with updated wallet...');
+            console.log(' Saving user with updated wallet...');
             const savedUser = await user.save();
 
-            console.log('✅ WALLET UPDATE SUCCESSFUL:', {
+            console.log(' WALLET UPDATE SUCCESSFUL:', {
                 userId: savedUser._id,
                 oldBalance: currentBalance,
                 newBalance: savedUser.wallet.balance,
@@ -136,7 +125,7 @@ export const walletService = {
             };
 
         } catch (error) {
-            console.error('❌ WALLET SERVICE ERROR:', {
+            console.error(' WALLET SERVICE ERROR:', {
                 errorName: error.name,
                 errorMessage: error.message,
                 errorStack: error.stack,
@@ -153,7 +142,6 @@ export const walletService = {
         }
     },
 
-    // Deduct money from wallet (debit) - No transactions for standalone MongoDB
     deductMoney: async (userId, amount, description, orderId = null) => {
         try {
             if (amount <= 0) {
@@ -327,7 +315,6 @@ export const walletService = {
         }
     },
 
-    // Process order cancellation refund
     processOrderCancellationRefund: async (orderId, userId) => {
         try {
             const order = await Order.findById(orderId);
@@ -339,7 +326,6 @@ export const walletService = {
                 return { success: false, message: 'Unauthorized access to order' };
             }
 
-            // Only refund if payment was made (not COD) and payment was successful
             if (order.paymentMethod === 'COD') {
                 return { success: false, message: 'No refund needed for COD orders' };
             }
@@ -348,7 +334,6 @@ export const walletService = {
                 return { success: false, message: 'No refund needed for unpaid orders' };
             }
 
-            // Calculate refund amount based on payment method
             let refundAmount = 0;
 
             console.log('Order details for refund:', {
@@ -360,24 +345,23 @@ export const walletService = {
             });
 
             if (order.paymentMethod === 'WALLET') {
-                // For pure wallet payments, refund the total amount
-                // The walletAmountUsed should equal totalAmount for pure wallet payments
+                
                 refundAmount = order.totalAmount;
                 console.log('Wallet payment detected - refunding total amount:', refundAmount);
             } else if (order.paymentMethod === 'RAZORPAY') {
-                // For Razorpay payments, refund the amount paid via Razorpay
+
                 refundAmount = order.totalAmount;
                 if (order.walletAmountUsed && order.walletAmountUsed > 0) {
-                    // If wallet was also used in combination, only refund the Razorpay portion
+
                     refundAmount = order.totalAmount - order.walletAmountUsed;
                     console.log('Combined payment detected - refunding Razorpay portion:', refundAmount);
                 }
             } else if (order.walletAmountUsed && order.walletAmountUsed > 0) {
-                // If wallet was used with other payment methods (like COD + wallet)
+
                 refundAmount = order.walletAmountUsed;
                 console.log('Partial wallet payment detected - refunding wallet portion:', refundAmount);
             } else {
-                // For other payment methods, refund the total amount
+
                 refundAmount = order.totalAmount;
                 console.log('Other payment method detected - refunding total amount:', refundAmount);
             }
@@ -425,7 +409,6 @@ export const walletService = {
         }
     },
 
-    // Process return refund (admin approved)
     processReturnRefund: async (orderId, itemId, userId, adminId) => {
         try {
             const order = await Order.findById(orderId);
@@ -433,7 +416,6 @@ export const walletService = {
                 throw new Error('Order not found');
             }
 
-            // Find the return request
             const returnRequest = order.returnRequests.find(
                 req => req.itemId.toString() === itemId.toString() && req.status === 'approved'
             );
@@ -447,7 +429,6 @@ export const walletService = {
                 throw new Error('Invalid refund amount');
             }
 
-            // Process refund to wallet
             const refundResult = await walletService.addMoney(
                 userId,
                 refundAmount,
@@ -456,7 +437,6 @@ export const walletService = {
                 adminId
             );
 
-            // Update return request status
             await Order.findOneAndUpdate(
                 { _id: orderId, 'returnRequests.itemId': itemId },
                 {
@@ -480,7 +460,6 @@ export const walletService = {
         }
     },
 
-    // Admin: Adjust wallet balance
     adjustWalletBalance: async (userId, amount, reason, adminId) => {
         try {
             if (amount === 0) {
@@ -503,7 +482,6 @@ export const walletService = {
 
 
 
-    // Get wallet statistics for admin
     getWalletStats: async () => {
         try {
             const stats = await User.aggregate([

@@ -84,18 +84,15 @@ export const getDashboard = async (req, res) => {
     const admin = req.session.admin;
     console.log('Rendering dashboard for admin:', admin.email || 'Unknown');
 
-    // Get dashboard statistics
     const stats = await getDashboardStats();
 
-    // Get recent orders for dashboard - fetch all statuses, not just cancelled
     const Order = (await import('../../model/orderSchema.js')).default;
     const recentOrders = await Order.find({
-      // Don't filter by status - show all orders
     })
       .populate({
         path: 'userId',
         select: 'firstName lastName email',
-        match: { isBlocked: { $ne: true } } // Only get non-blocked users
+        match: { isBlocked: { $ne: true } } 
       })
       .populate({
         path: 'items.variantId',
@@ -107,7 +104,6 @@ export const getDashboard = async (req, res) => {
       .sort({ orderDate: -1 })
       .limit(10);
 
-    // Get best selling data
     const bestSellingData = await getBestSellingData();
 
     // Get initial chart data for current month
@@ -126,15 +122,13 @@ export const getDashboard = async (req, res) => {
   }
 };
 
-// API endpoint for dashboard data with filters
+
 export const getDashboardAPI = async (req, res) => {
   try {
     const { period, year, month } = req.query;
 
-    // Get filtered dashboard data
     const dashboardData = await getFilteredDashboardData(period, year, month);
 
-    // Add metadata to help frontend understand the data
     const responseData = {
       ...dashboardData,
       metadata: {
@@ -164,40 +158,34 @@ export const getDashboardAPI = async (req, res) => {
 
 
 
-// Function to get dashboard statistics
 const getDashboardStats = async () => {
   try {
-    // Import models
     const Order = (await import('../../model/orderSchema.js')).default;
     const User = (await import('../../model/userSchema.js')).default;
     const Product = (await import('../../model/productSchema.js')).default;
     const Coupon = (await import('../../model/couponSchema.js')).default;
 
-    // Get total users count
     const totalUsers = await User.countDocuments({ isBlocked: false });
 
-    // Get total orders count
-    const totalOrders = await Order.countDocuments();
+   const totalOrders = await Order.countDocuments();
 
-    // Get delivered orders count
-    const deliveredOrders = await Order.countDocuments({ orderStatus: 'Delivered' });
+
+const deliveredOrders = await Order.countDocuments({ orderStatus: 'Delivered' });
 
     // Get pending orders count
     const pendingOrders = await Order.countDocuments({
       orderStatus: { $in: ['Pending', 'Confirmed', 'Processing'] }
     });
 
-    // Get cancelled orders count
+    
     const cancelledOrders = await Order.countDocuments({ orderStatus: 'Cancelled' });
 
-    // Get total sales (sum of delivered orders)
     const totalSalesResult = await Order.aggregate([
       { $match: { orderStatus: 'Delivered' } },
       { $group: { _id: null, totalSales: { $sum: '$totalAmount' } } }
     ]);
     const totalSales = totalSalesResult.length > 0 ? totalSalesResult[0].totalSales : 0;
 
-    // Get total discounts given
     const totalDiscountResult = await Order.aggregate([
       { $match: { orderStatus: 'Delivered' } },
       {
@@ -217,29 +205,29 @@ const getDashboardStats = async () => {
     ]);
     const totalDiscount = totalDiscountResult.length > 0 ? totalDiscountResult[0].totalDiscount : 0;
 
-    // Get this month's statistics for comparison
+
     const currentDate = new Date();
     const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
     const lastMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
     const firstDayOfLastMonth = new Date(lastMonth.getFullYear(), lastMonth.getMonth(), 1);
 
-    // This month's orders
+
     const thisMonthOrders = await Order.countDocuments({
       orderDate: { $gte: firstDayOfMonth }
     });
 
-    // Last month's orders
+
     const lastMonthOrders = await Order.countDocuments({
       orderDate: { $gte: firstDayOfLastMonth, $lt: firstDayOfMonth }
     });
 
-    // Calculate percentage change for orders
+
     const orderChange = lastMonthOrders > 0
       ? ((thisMonthOrders - lastMonthOrders) / lastMonthOrders * 100).toFixed(1)
       : 0;
 
-    // This month's sales
-    const thisMonthSalesResult = await Order.aggregate([
+
+      const thisMonthSalesResult = await Order.aggregate([
       {
         $match: {
           orderStatus: 'Delivered',
@@ -250,7 +238,7 @@ const getDashboardStats = async () => {
     ]);
     const thisMonthSales = thisMonthSalesResult.length > 0 ? thisMonthSalesResult[0].totalSales : 0;
 
-    // Last month's sales
+
     const lastMonthSalesResult = await Order.aggregate([
       {
         $match: {
@@ -262,13 +250,13 @@ const getDashboardStats = async () => {
     ]);
     const lastMonthSales = lastMonthSalesResult.length > 0 ? lastMonthSalesResult[0].totalSales : 0;
 
-    // Calculate percentage change for sales
+
     const salesChange = lastMonthSales > 0
       ? ((thisMonthSales - lastMonthSales) / lastMonthSales * 100).toFixed(1)
       : 0;
 
-    // Get top selling products (last 30 days)
-    const thirtyDaysAgo = new Date();
+
+      const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
     const topProducts = await Order.aggregate([
@@ -839,10 +827,6 @@ const getFilteredDashboardData = async (period, year, month) => {
 
 
 
-
-
-
-// Default export for compatibility
 export default {
   getLogin,
   postLogin,

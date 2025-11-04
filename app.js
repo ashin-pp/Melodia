@@ -49,8 +49,6 @@ app.use(passport.session());
 app.use(flash());
 
 
-
-// Logging middleware AFTER session
 app.use((req, res, next) => {
   console.log(req.url, "url<<<")
   console.log(req.method, "<method<<");
@@ -63,7 +61,7 @@ app.use((req, res, next) => {
 app.set('view engine', 'ejs');
 app.set('views', 'views');
 
-// Prevent admin users from accessing user routes
+
 app.use((req, res, next) => {
   if (req.session && req.session.admin) {
     if (req.originalUrl.startsWith('/user') || req.originalUrl === '/' || req.originalUrl === '/login' || req.originalUrl === '/signUp') {
@@ -84,7 +82,7 @@ app.use((req, res) => {
 });
 app.use((err, req, res, next) => {
   console.error('Global error handler:', err);
-  res.status(500).render('error/500', { title: 'Server Error' });
+  res.status(500).render('error/500');
 });
 
 const port = process.env.PORT || 3000;

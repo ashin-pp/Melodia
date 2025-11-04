@@ -63,11 +63,6 @@ router.put('/coupons/:id', adminAuth, couponCtrl.updateCoupon);
 router.post('/coupons/:id/toggle', adminAuth, couponCtrl.toggleCouponStatus);
 router.delete('/coupons/:id', adminAuth, couponCtrl.deleteCoupon);
 
-// Offer routes removed - using existing offer system
-
-
-
-
 
 // Sales Report routes
 router.get('/sales-report', adminAuth, salesReportCtrl.getSalesReportPage);
@@ -75,40 +70,12 @@ router.get('/api/sales-report', adminAuth, salesReportCtrl.getSalesReportData);
 router.get('/reports/download/excel', adminAuth, salesReportCtrl.downloadExcelReport);
 router.get('/reports/download/pdf', adminAuth, salesReportCtrl.downloadPDFReport);
 
-// Return Management routes (moved to order controller)
 router.put('/api/orders/items/:itemId/return/approve', adminAuth, adminOrderCtrl.approveReturnRequest);
 router.put('/api/orders/items/:itemId/return/reject', adminAuth, adminOrderCtrl.rejectReturnRequest);
 
 
-// Legacy route for existing frontend (uses returnRequestId instead of itemId)
 router.put('/api/return-requests/:returnRequestId/process', adminAuth, adminOrderCtrl.processReturnRequestLegacy);
 
 
-
-
-
-
-
-// Referral Analytics routes
-router.get('/api/referral/analytics', adminAuth, async (req, res) => {
-  try {
-    const analytics = await referralService.getReferralAnalytics();
-    res.json(analytics);
-  } catch (error) {
-    console.error('Error getting referral analytics:', error);
-    res.status(500).json({ success: false, message: 'Failed to get analytics' });
-  }
-});
-
-router.get('/api/referral/leaderboard', adminAuth, async (req, res) => {
-  try {
-    const limit = parseInt(req.query.limit) || 10;
-    const leaderboard = await referralService.getReferralLeaderboard(limit);
-    res.json(leaderboard);
-  } catch (error) {
-    console.error('Error getting referral leaderboard:', error);
-    res.status(500).json({ success: false, message: 'Failed to get leaderboard' });
-  }
-});
 
 export default router;

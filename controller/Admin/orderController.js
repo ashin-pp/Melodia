@@ -17,7 +17,6 @@ export const listOrder = async (req, res) => {
         if (search && search.trim()) {
 
             
-            // Search for users by name, email, or phone
             const users = await User.find({
                 $or: [
                     { fullName: { $regex: search.trim(), $options: 'i' } },
@@ -32,7 +31,6 @@ export const listOrder = async (req, res) => {
                 { orderId: { $regex: search.trim(), $options: 'i' } }
             ];
 
-            // Add user-based search if users found
             if (users.length > 0) {
                 searchConditions.push({ userId: { $in: users.map(u => u._id) } });
             }
@@ -42,26 +40,23 @@ export const listOrder = async (req, res) => {
 
         if (status && status !== 'all') {
             if (status === 'Cancelled') {
-                // For cancelled status, check both order-level and item-level cancellations
                 statusConditions = [
                     { orderStatus: 'Cancelled' },
                     { 'items.status': 'Cancelled' },
-                    { 'cancelledItems.0': { $exists: true } } // Orders with cancelled items
+                    { 'cancelledItems.0': { $exists: true } } 
                 ];
 
             } else if (status === 'Partially Cancelled') {
-                // For partially cancelled, find orders with some cancelled items but not fully cancelled
                 statusConditions = [
                     {
                         $and: [
-                            { 'cancelledItems.0': { $exists: true } }, // Has cancelled items
-                            { orderStatus: { $ne: 'Cancelled' } } // But order is not fully cancelled
+                            { 'cancelledItems.0': { $exists: true } }, 
+                            { orderStatus: { $ne: 'Cancelled' } } 
                         ]
                     }
                 ];
 
             } else {
-                // Check both order-level status and item-level status
                 statusConditions = [
                     { orderStatus: status },
                     { 'items.status': status }
@@ -70,7 +65,6 @@ export const listOrder = async (req, res) => {
 
         }
 
-        // Combine search and status conditions
         if (searchConditions.length > 0 && statusConditions.length > 0) {
             query = {
                 $and: [
@@ -99,14 +93,11 @@ export const listOrder = async (req, res) => {
 
 
         const processedOrders = orders.map(order => {
-            // Check if order has cancelled items but order status is not cancelled
             const hasCancelledItems = (order.cancelledItems && order.cancelledItems.length > 0) ||
                 (order.items && order.items.some(item => item.status === 'Cancelled'));
 
-            // Determine display status
             let displayStatus = order.orderStatus;
             if (hasCancelledItems && order.orderStatus !== 'Cancelled') {
-                // If order has cancelled items but order status is not cancelled, show as "Partially Cancelled"
                 const allItemsCancelled = order.items && order.items.every(item => item.status === 'Cancelled' || item.quantity === 0);
                 if (allItemsCancelled) {
                     displayStatus = 'Cancelled';
@@ -115,7 +106,6 @@ export const listOrder = async (req, res) => {
                 }
             }
 
-            // Calculate correct display total (for wallet payments, add back wallet amount)
             const displayTotal = order.paymentMethod === 'WALLET' && order.totalAmount === 0
                 ? (order.walletAmountUsed || 0)
                 : order.totalAmount;
@@ -125,7 +115,7 @@ export const listOrder = async (req, res) => {
                 referenceNo: order.orderId,
                 orderDate: order.orderDate,
                 status: displayStatus,
-                originalStatus: order.orderStatus, // Keep original for debugging
+                originalStatus: order.orderStatus,
                 total: displayTotal,
                 paymentMethod: order.paymentMethod,
                 itemCount: order.items ? order.items.length : 0,
@@ -141,7 +131,6 @@ export const listOrder = async (req, res) => {
             };
         });
 
-        // Get overall statistics (not just current page)
         const stats = await getOrderStatistics();
 
         return res.json({
@@ -186,17 +175,13 @@ export const renderOrdersPage = async (req, res) => {
 // Function to get order statistics
 const getOrderStatistics = async () => {
     try {
-        console.log('=== Getting Order Statistics ===');
 
-        // First, let's see what order statuses exist in the database
         const allStatuses = await Order.distinct('orderStatus');
         console.log('All order statuses in database:', allStatuses);
 
-        // Check item-level statuses
         const allItemStatuses = await Order.distinct('items.status');
         console.log('All item statuses in database:', allItemStatuses);
 
-        // Find orders with delivered items
         const ordersWithDeliveredItems = await Order.find({ 'items.status': 'Delivered' })
             .select('orderId orderStatus items.status')
             .limit(5);
@@ -206,51 +191,41 @@ const getOrderStatistics = async () => {
             itemStatuses: o.items.map(item => item.status)
         })));
 
-        // Get total orders count
         const totalOrders = await Order.countDocuments();
         console.log('Total orders:', totalOrders);
 
-        // Get delivered orders count (both order-level and item-level)
         const deliveredOrdersByOrderStatus = await Order.countDocuments({ orderStatus: 'Delivered' });
         console.log('Delivered orders (order status):', deliveredOrdersByOrderStatus);
 
-        // Count orders that have at least one delivered item
         const deliveredOrdersByItemStatus = await Order.countDocuments({
             'items.status': 'Delivered'
         });
         console.log('Orders with delivered items:', deliveredOrdersByItemStatus);
 
-        // Let's also check for case-sensitive issues
         const deliveredOrdersInsensitive = await Order.countDocuments({
             orderStatus: { $regex: /^delivered$/i }
         });
         console.log('Delivered orders (case insensitive):', deliveredOrdersInsensitive);
 
-        // Use the maximum of both counts
         const deliveredOrders = Math.max(deliveredOrdersByOrderStatus, deliveredOrdersByItemStatus, deliveredOrdersInsensitive);
         console.log('Final delivered orders count:', deliveredOrders);
 
-        // Get pending orders count (including Confirmed and Processing)
         const pendingOrders = await Order.countDocuments({
             orderStatus: { $in: ['Pending', 'Confirmed', 'Processing'] }
         });
         console.log('Pending orders:', pendingOrders);
 
-        // Get cancelled orders count
         const cancelledOrders = await Order.countDocuments({ orderStatus: 'Cancelled' });
         console.log('Cancelled orders:', cancelledOrders);
 
-        // Debug: Let's see what cancelled orders exist
         const cancelledOrdersList = await Order.find({ orderStatus: 'Cancelled' })
             .select('orderId orderStatus cancelledAt')
             .limit(5);
         console.log('Sample cancelled orders:', cancelledOrdersList);
 
-        // Get shipped orders count
         const shippedOrders = await Order.countDocuments({ orderStatus: 'Shipped' });
         console.log('Shipped orders:', shippedOrders);
 
-        // Get out for delivery orders count
         const outForDeliveryOrders = await Order.countDocuments({ orderStatus: 'Out for Delivery' });
         console.log('Out for delivery orders:', outForDeliveryOrders);
 
@@ -331,13 +306,13 @@ export const getAdminOrderDetails = async (req, res) => {
         }
 
 
-        console.log('📊 Database query result:', order ? 'ORDER FOUND' : 'ORDER NOT FOUND');
+        console.log(' Database query result:', order ? 'ORDER FOUND' : 'ORDER NOT FOUND');
 
         if (order) {
 
             // Debug item statuses
             if (order.items && order.items.length > 0) {
-                console.log('📦 Item statuses:');
+                console.log(' Item statuses:');
                 order.items.forEach((item, index) => {
                     console.log(`  Item ${index}: status=${item.status || 'undefined'}, variantId=${item.variantId?._id}`);
                 });
@@ -345,7 +320,7 @@ export const getAdminOrderDetails = async (req, res) => {
 
             // Debug cancelled items
             if (order.cancelledItems && order.cancelledItems.length > 0) {
-                console.log('❌ Cancelled items:');
+                console.log(' Cancelled items:');
                 order.cancelledItems.forEach((cancelled, index) => {
                     console.log(`  Cancelled ${index}: variantId=${cancelled.variantId?._id}, quantity=${cancelled.quantity}, reason=${cancelled.reason}`);
                 });
@@ -353,12 +328,12 @@ export const getAdminOrderDetails = async (req, res) => {
         }
 
         if (!order) {
-            console.log('❌ Order not found in database');
+            console.log(' Order not found in database');
             return res.send(`
                 <html>
                 <head><title>Order Not Found</title></head>
                 <body style="font-family: Arial; padding: 20px;">
-                    <h1>❌ Order Not Found</h1>
+                    <h1> Order Not Found</h1>
                     <p>Order ID: ${orderId}</p>
                     <p>No order exists with this ID in the database</p>
                     <a href="/admin/orders">← Back to Orders</a>
@@ -390,7 +365,7 @@ export const getAdminOrderDetails = async (req, res) => {
                 order.orderStatus = 'Partially Cancelled';
             }
             
-            console.log('📊 Order status updated to:', order.orderStatus);
+            console.log(' Order status updated to:', order.orderStatus);
         }
 
         console.log(' Rendering original EJS template with full functionality');
@@ -438,11 +413,11 @@ export const updateOrderStatus = async (req, res) => {
         const { orderId } = req.params;
         const { status, reason } = req.body;
 
-        console.log('🔍 Status update request:', { orderId, status, reason });
+        console.log('Status update request:', { orderId, status, reason });
 
         // Validate inputs
         if (!orderId) {
-            console.error('❌ No order ID provided');
+            console.error(' No order ID provided');
             return res.status(400).json({
                 success: false,
                 error: 'Order ID is required'
@@ -450,18 +425,18 @@ export const updateOrderStatus = async (req, res) => {
         }
 
         if (!status) {
-            console.error('❌ No status provided');
+            console.error(' No status provided');
             return res.status(400).json({
                 success: false,
                 error: 'Status is required'
             });
         }
 
-        console.log('🔍 Finding order...');
+        console.log(' Finding order...');
         // Find the order with user details
         const order = await Order.findById(orderId).populate('userId', 'name email');
         if (!order) {
-            console.error('❌ Order not found:', orderId);
+            console.error(' Order not found:', orderId);
             return res.status(404).json({
                 success: false,
                 error: 'Order not found'
@@ -469,7 +444,7 @@ export const updateOrderStatus = async (req, res) => {
         }
 
         const oldStatus = order.orderStatus;
-        console.log('✅ Order found:', {
+        console.log(' Order found:', {
             orderId: order.orderId,
             currentStatus: oldStatus,
             newStatus: status,
@@ -480,7 +455,7 @@ export const updateOrderStatus = async (req, res) => {
 
         // Check if status is actually changing
         if (oldStatus === status) {
-            console.log('ℹ️ Status is the same, no change needed');
+            console.log(' Status is the same, no change needed');
             return res.json({
                 success: true,
                 message: `Order status is already ${status}`,
@@ -1101,13 +1076,13 @@ export const downloadInvoice = async (req, res) => {
                     select: 'productName brand'
                 }
             })
-            .lean(); // Use lean() for faster queries
+            .lean(); 
 
         if (!order) {
             return res.status(404).json({ success: false, error: 'Order not found' });
         }
 
-        // Generate optimized HTML for invoice (removed heavy styling for speed)
+
         const invoiceHTML = `
     <!DOCTYPE html>
     <html>
@@ -1259,14 +1234,14 @@ export const downloadInvoice = async (req, res) => {
     </html>
     `;
 
-        // Generate PDF using optimized browser instance
+       
         const browser = await getBrowser();
         const page = await browser.newPage();
 
-        // Optimize page settings for speed
+       
         await page.setViewport({ width: 794, height: 1123 }); // A4 size
         await page.setContent(invoiceHTML, {
-            waitUntil: 'domcontentloaded', // Faster than networkidle0
+            waitUntil: 'domcontentloaded', 
             timeout: 10000
         });
 
@@ -1277,16 +1252,16 @@ export const downloadInvoice = async (req, res) => {
             preferCSSPageSize: false
         });
 
-        await page.close(); // Close page but keep browser open for reuse
+        await page.close(); 
 
-        // Send PDF buffer to client
+
         res.setHeader('Content-Length', pdfBuffer.length);
         res.end(pdfBuffer);
 
     } catch (error) {
         console.error('Invoice generation error:', error.message);
 
-        // Provide appropriate error response
+
         if (error.message.includes('puppeteer') || error.message.includes('browser')) {
             res.status(500).json({
                 success: false,
@@ -1301,7 +1276,7 @@ export const downloadInvoice = async (req, res) => {
     }
 };
 
-// ============ RETURN REQUEST PROCESSING ============
+
 export const processReturnRequest = async (req, res) => {
     try {
         const { itemId } = req.params;
@@ -1351,20 +1326,12 @@ export const processReturnRequest = async (req, res) => {
     }
 };
 
-// ============ RETURN REQUEST APPROVAL/REJECTION ============
-// Approve return request - automatically credits funds to user wallet
+
 export const approveReturnRequest = async (req, res) => {
     try {
         const { itemId } = req.params;
         const { reason } = req.body;
 
-        console.log('=== APPROVE RETURN REQUEST DEBUG ===');
-        console.log('Item ID:', itemId);
-        console.log('Reason:', reason);
-        console.log('Request body:', req.body);
-        console.log('Request params:', req.params);
-
-        // Find the order containing this item
         const order = await Order.findOne({ 'items._id': itemId }).populate('userId', 'name email');
         if (!order) {
             return res.status(404).json({
@@ -1373,7 +1340,7 @@ export const approveReturnRequest = async (req, res) => {
             });
         }
 
-        // Find the specific item in the order
+
         const item = order.items.id(itemId);
         if (!item) {
             return res.status(404).json({
@@ -1384,7 +1351,7 @@ export const approveReturnRequest = async (req, res) => {
 
         console.log('Current item status:', item.status);
 
-        // Check if item is delivered (can be returned) or already cancelled
+
         if (item.status !== 'Delivered' && item.status !== 'Cancelled') {
             return res.status(400).json({
                 success: false,
@@ -1397,10 +1364,10 @@ export const approveReturnRequest = async (req, res) => {
         item.returnedAt = new Date();
         item.returnReason = reason || 'Return approved by admin';
 
-        // Calculate refund amount (item's total price)
+
         const refundAmount = item.totalPrice;
 
-        // Process refund using wallet service
+
         const walletService = (await import('../../services/walletService.js')).default;
         
         const refundResult = await walletService.addMoney(
@@ -1464,13 +1431,8 @@ export const rejectReturnRequest = async (req, res) => {
         const { itemId } = req.params;
         const { reason } = req.body;
 
-        console.log('=== REJECT RETURN REQUEST DEBUG ===');
-        console.log('Item ID:', itemId);
-        console.log('Reason:', reason);
-        console.log('Request body:', req.body);
-        console.log('Request params:', req.params);
+      
 
-        // Find the order containing this item
         const order = await Order.findOne({ 'items._id': itemId });
         if (!order) {
             return res.status(404).json({
@@ -1479,7 +1441,7 @@ export const rejectReturnRequest = async (req, res) => {
             });
         }
 
-        // Find the specific item in the order
+
         const item = order.items.id(itemId);
         if (!item) {
             return res.status(404).json({
@@ -1490,7 +1452,7 @@ export const rejectReturnRequest = async (req, res) => {
 
         console.log('Current item status:', item.status);
 
-        // Check if item is in a state that can be rejected
+
         if (item.status !== 'Delivered' && item.status !== 'Cancelled' && item.status !== 'Returned') {
             return res.status(400).json({
                 success: false,
@@ -1498,13 +1460,13 @@ export const rejectReturnRequest = async (req, res) => {
             });
         }
 
-        // Keep item status as delivered (don't change if already delivered)
+
         if (item.status === 'Returned') {
-            item.status = 'Delivered'; // Revert back to delivered
+            item.status = 'Delivered'; 
         }
         item.returnReason = reason || 'Return rejected by admin';
 
-        // Update any pending return request for this item
+
         if (order.returnRequests && order.returnRequests.length > 0) {
             const returnRequest = order.returnRequests.find(req =>
                 req.itemId && req.itemId.toString() === itemId
@@ -1541,18 +1503,12 @@ export const rejectReturnRequest = async (req, res) => {
     }
 };
 
-// Legacy function for existing frontend compatibility
+
 export const processReturnRequestLegacy = async (req, res) => {
     try {
         const { returnRequestId } = req.params;
         const { action, rejectionReason } = req.body;
 
-        console.log('=== LEGACY RETURN REQUEST PROCESSING ===');
-        console.log('Return Request ID:', returnRequestId);
-        console.log('Action:', action);
-        console.log('Rejection Reason:', rejectionReason);
-
-        // Find the order containing this return request
         const order = await Order.findOne({
             'returnRequests._id': returnRequestId
         }).populate('userId', 'name email');
@@ -1564,7 +1520,7 @@ export const processReturnRequestLegacy = async (req, res) => {
             });
         }
 
-        // Find the specific return request
+
         const returnRequest = order.returnRequests.id(returnRequestId);
         if (!returnRequest) {
             return res.status(404).json({
@@ -1573,7 +1529,7 @@ export const processReturnRequestLegacy = async (req, res) => {
             });
         }
 
-        // Find the item associated with this return request
+
         const item = order.items.id(returnRequest.itemId);
         if (!item) {
             return res.status(404).json({
@@ -1585,20 +1541,20 @@ export const processReturnRequestLegacy = async (req, res) => {
         console.log('Found item:', item._id, 'with status:', item.status);
 
         if (action === 'approved') {
-            // Update return request
+
             returnRequest.status = 'approved';
             returnRequest.processedAt = new Date();
             returnRequest.adminReason = 'Return approved by admin';
 
-            // Update item status
+
             item.status = 'Returned';
             item.returnedAt = new Date();
             item.returnReason = 'Return approved by admin';
 
-            // Calculate refund amount
+
             const refundAmount = item.totalPrice;
 
-            // Process refund using wallet service
+
             const walletService = (await import('../../services/walletService.js')).default;
             
             const refundResult = await walletService.addMoney(
@@ -1628,12 +1584,10 @@ export const processReturnRequestLegacy = async (req, res) => {
             });
 
         } else if (action === 'rejected') {
-            // Update return request
             returnRequest.status = 'rejected';
             returnRequest.processedAt = new Date();
             returnRequest.adminReason = rejectionReason || 'Return rejected by admin';
 
-            // Keep item status as delivered (don't change)
             item.returnReason = rejectionReason || 'Return rejected by admin';
 
             await order.save();
@@ -1663,20 +1617,18 @@ export const processReturnRequestLegacy = async (req, res) => {
     }
 };
 
-// ============ ORDER CANCELLATION METHODS ============
 
-// Cancel entire order (Admin)
+
+
 export const adminCancelOrder = async (req, res) => {
     try {
-        console.log('=== ADMIN CANCEL ORDER STARTED ===');
+
         const { orderId } = req.params;
         const { reason } = req.body;
 
-        console.log('🔍 Admin cancellation request:', { orderId, reason });
 
-        // Validate inputs
         if (!orderId) {
-            console.error('❌ No order ID provided');
+            console.error('No order ID provided');
             return res.status(400).json({
                 success: false,
                 message: 'Order ID is required'
@@ -1684,24 +1636,24 @@ export const adminCancelOrder = async (req, res) => {
         }
 
         if (!reason || reason.trim() === '') {
-            console.error('❌ No cancellation reason provided');
+            console.error(' No cancellation reason provided');
             return res.status(400).json({
                 success: false,
                 message: 'Cancellation reason is required'
             });
         }
 
-        console.log('🔍 Finding order...');
+        console.log('Finding order...');
         const order = await Order.findById(orderId).populate('userId', 'name email');
         if (!order) {
-            console.error('❌ Order not found:', orderId);
+            console.error(' Order not found:', orderId);
             return res.status(404).json({
                 success: false,
                 message: 'Order not found'
             });
         }
 
-        console.log('✅ Order found:', {
+        console.log(' Order found:', {
             orderId: order.orderId,
             orderStatus: order.orderStatus,
             paymentMethod: order.paymentMethod,
@@ -1713,14 +1665,14 @@ export const adminCancelOrder = async (req, res) => {
 
         // Check if order can be cancelled
         if (!['Pending', 'Confirmed', 'Processing'].includes(order.orderStatus)) {
-            console.error('❌ Order cannot be cancelled:', order.orderStatus);
+            console.error(' Order cannot be cancelled:', order.orderStatus);
             return res.status(400).json({
                 success: false,
                 message: `Order cannot be cancelled at this stage. Current status: ${order.orderStatus}`
             });
         }
 
-        console.log('🔄 Restoring stock for all items...');
+        console.log(' Restoring stock for all items...');
         // Restore stock for all items
         for (const item of order.items) {
             const variantId = item.variantId._id || item.variantId;
@@ -1731,7 +1683,7 @@ export const adminCancelOrder = async (req, res) => {
             );
         }
 
-        console.log('📝 Cancelling order...');
+        console.log('Cancelling order...');
         // Cancel the order
         order.orderStatus = 'Cancelled';
         order.cancellationReason = reason;
@@ -1754,14 +1706,14 @@ export const adminCancelOrder = async (req, res) => {
             });
         });
 
-        console.log('💾 Saving cancelled order...');
+        console.log(' Saving cancelled order...');
         await order.save();
 
         // Process refund if payment was made (NOT COD)
         console.log('=== PROCESSING ADMIN REFUND ===');
         let refundResult = null;
         
-        console.log('💰 Admin cancellation - checking refund eligibility:', {
+        console.log(' Admin cancellation - checking refund eligibility:', {
             orderId: order.orderId,
             paymentMethod: order.paymentMethod,
             paymentStatus: order.paymentStatus,
@@ -1771,7 +1723,7 @@ export const adminCancelOrder = async (req, res) => {
         });
 
         if (order.paymentStatus === 'Paid' && order.paymentMethod !== 'COD') {
-            console.log('✅ Order eligible for refund - processing...');
+            console.log(' Order eligible for refund - processing...');
             
             try {
                 // Verify user exists
@@ -1781,7 +1733,7 @@ export const adminCancelOrder = async (req, res) => {
                     throw new Error(`User not found with ID: ${order.userId._id}`);
                 }
                 
-                console.log('✅ User validation passed:', {
+                console.log(' User validation passed:', {
                     userId: user._id,
                     userName: user.name,
                     currentBalance: user.wallet ? user.wallet.balance : 0
@@ -1798,7 +1750,7 @@ export const adminCancelOrder = async (req, res) => {
                 );
 
                 if (refundResult.success) {
-                    console.log('✅ ADMIN REFUND SUCCESSFUL:', {
+                    console.log(' ADMIN REFUND SUCCESSFUL:', {
                         refundAmount: order.totalAmount,
                         newBalance: refundResult.newBalance,
                         transactionId: refundResult.transactionId
@@ -1810,14 +1762,9 @@ export const adminCancelOrder = async (req, res) => {
                     order.refundProcessedAt = new Date();
                     await order.save();
                     
-                    console.log('📝 Order refund status updated');
+                    console.log(' Order refund status updated');
                 } else {
-                    console.error('❌ Wallet service failed, trying direct approach');
-                    console.error('Wallet service error:', refundResult.error);
-                    
-                    // Fallback: Direct wallet credit
-                    console.log('🔧 FORCING DIRECT WALLET CREDIT...');
-                    
+                   
                     if (!user.wallet) {
                         console.log('🔧 Creating new wallet for user');
                         user.wallet = { balance: 0, transactions: [], isWalletActive: true };
@@ -1826,8 +1773,8 @@ export const adminCancelOrder = async (req, res) => {
                     const oldBalance = user.wallet.balance || 0;
                     const newBalance = oldBalance + order.totalAmount;
                     const transactionId = `ADMINREFUND${Date.now()}`;
-                    
-                    console.log('💰 Direct admin refund calculation:', {
+                
+                    console.log(' Direct admin refund calculation:', {
                         oldBalance,
                         refundAmount: order.totalAmount,
                         newBalance
@@ -1846,9 +1793,9 @@ export const adminCancelOrder = async (req, res) => {
                     user.wallet.balance = newBalance;
                     user.wallet.transactions.push(transaction);
                     
-                    console.log('💾 Saving user with updated wallet...');
+                    console.log(' Saving user with updated wallet...');
                     const savedUser = await user.save();
-                    console.log('✅ User saved. New wallet balance:', savedUser.wallet.balance);
+                    console.log('User saved. New wallet balance:', savedUser.wallet.balance);
                     
                     // Update order refund status
                     order.refundStatus = 'processed';
@@ -1856,7 +1803,7 @@ export const adminCancelOrder = async (req, res) => {
                     order.refundProcessedAt = new Date();
                     await order.save();
                     
-                    console.log('✅ DIRECT ADMIN REFUND SUCCESSFUL:', {
+                    console.log('DIRECT ADMIN REFUND SUCCESSFUL:', {
                         refundAmount: order.totalAmount,
                         newBalance: savedUser.wallet.balance,
                         transactionId: transactionId
@@ -1870,7 +1817,7 @@ export const adminCancelOrder = async (req, res) => {
                     };
                 }
             } catch (refundError) {
-                console.error('❌ ADMIN REFUND ERROR:', refundError);
+                console.error('ADMIN REFUND ERROR:', refundError);
                 console.error('Full error details:', {
                     name: refundError.name,
                     message: refundError.message,
@@ -1885,14 +1832,14 @@ export const adminCancelOrder = async (req, res) => {
                 });
             }
         } else {
-            console.log('ℹ️ Admin cancellation - no refund needed:', {
+            console.log(' Admin cancellation - no refund needed:', {
                 paymentStatus: order.paymentStatus,
                 paymentMethod: order.paymentMethod,
                 reason: order.paymentStatus !== 'Paid' ? 'Payment not completed' : 'COD order - no refund needed'
             });
         }
 
-        console.log('🎉 ADMIN ORDER CANCELLATION COMPLETED SUCCESSFULLY!');
+        console.log(' ADMIN ORDER CANCELLATION COMPLETED SUCCESSFULLY!');
 
         return res.json({
             success: true,
@@ -1905,7 +1852,7 @@ export const adminCancelOrder = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('❌ ADMIN CANCEL ORDER ERROR:', {
+        console.error(' ADMIN CANCEL ORDER ERROR:', {
             errorName: error.name,
             errorMessage: error.message,
             errorStack: error.stack,
@@ -2267,7 +2214,7 @@ export const processManualRefund = async (req, res) => {
     }
 };
 
-// Default export for compatibility
+
 export default {
     listOrder,
     renderOrdersPage,
