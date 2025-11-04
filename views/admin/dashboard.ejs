@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -126,7 +127,17 @@
             padding: 20px;
             background: white;
             border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            flex-wrap: wrap;
+        }
+
+        .period-filter .filter-group {
+            min-width: 120px;
+        }
+
+        .period-filter .filter-group:nth-child(3),
+        .period-filter .filter-group:nth-child(4) {
+            transition: all 0.3s ease;
         }
 
         .filter-group {
@@ -167,7 +178,7 @@
             background: white;
             border-radius: 12px;
             padding: 25px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             text-align: left;
         }
 
@@ -220,7 +231,7 @@
             background: white;
             border-radius: 12px;
             padding: 25px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
         .chart-header {
@@ -275,7 +286,7 @@
             border-radius: 12px;
             padding: 25px;
             margin-bottom: 30px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
         .ledger-header h3 {
@@ -323,7 +334,8 @@
             flex-wrap: wrap;
         }
 
-        .btn-generate-ledger, .btn-detailed-report {
+        .btn-generate-ledger,
+        .btn-detailed-report {
             background: #28a745;
             color: white;
             border: none;
@@ -355,7 +367,8 @@
             color: white;
         }
 
-        .btn-generate-ledger i, .btn-detailed-report i {
+        .btn-generate-ledger i,
+        .btn-detailed-report i {
             font-size: 16px;
         }
 
@@ -421,7 +434,7 @@
             border-radius: 12px;
             padding: 25px;
             margin-bottom: 30px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
         .chart-header {
@@ -488,7 +501,7 @@
             background: white;
             border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
         .orders-table {
@@ -538,12 +551,12 @@
             background-color: #f8d7da;
             color: #721c24;
         }
-        
+
         .status.pending {
             background-color: #fff3cd;
             color: #856404;
         }
-        
+
         .payment-method {
             padding: 4px 8px;
             border-radius: 12px;
@@ -551,17 +564,17 @@
             font-weight: 600;
             text-transform: uppercase;
         }
-        
+
         .payment-method.cod {
             background-color: #d4edda;
             color: #155724;
         }
-        
+
         .payment-method.razorpay {
             background-color: #cce5ff;
             color: #004085;
         }
-        
+
         .payment-method.wallet {
             background-color: #e2e3e5;
             color: #383d41;
@@ -585,42 +598,42 @@
             cursor: pointer;
             transition: background 0.3s;
         }
-        
+
         .btn-generate:hover {
             background: #0056b3;
         }
-        
+
         .report-summary {
             margin: 20px 0;
         }
-        
+
         .summary-cards {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 15px;
             margin-bottom: 20px;
         }
-        
+
         .summary-card {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             padding: 20px;
             border-radius: 10px;
             text-align: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
-        
+
         .summary-value {
             font-size: 24px;
             font-weight: bold;
             margin-bottom: 5px;
         }
-        
+
         .summary-label {
             font-size: 12px;
             opacity: 0.9;
         }
-        
+
         .download-section {
             margin-top: 20px;
             text-align: center;
@@ -628,7 +641,7 @@
             background: #f8f9fa;
             border-radius: 8px;
         }
-        
+
         .btn-download {
             background: #28a745;
             color: white;
@@ -640,72 +653,197 @@
             margin: 0 10px;
             transition: background 0.3s;
         }
-        
+
         .btn-download:hover {
             background: #218838;
         }
-        
+
         .btn-download i {
             margin-right: 5px;
+        }
+
+        /* Best Selling Sections Styles */
+        .best-selling-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background-color 0.2s;
+        }
+
+        .best-selling-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .best-selling-item:last-child {
+            border-bottom: none;
+        }
+
+        .rank-badge {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .rank-badge.gold {
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            color: #333;
+        }
+
+        .rank-badge.silver {
+            background: linear-gradient(135deg, #c0c0c0 0%, #e8e8e8 100%);
+            color: #333;
+        }
+
+        .rank-badge.bronze {
+            background: linear-gradient(135deg, #cd7f32 0%, #daa520 100%);
+        }
+
+        .rank-badge.default {
+            background: #007bff;
+        }
+
+        .item-info {
+            flex: 1;
+            margin-left: 12px;
+        }
+
+        .item-name {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 2px;
+        }
+
+        .item-details {
+            font-size: 12px;
+            color: #6c757d;
+        }
+
+        .item-stats {
+            text-align: right;
+        }
+
+        .quantity-sold {
+            font-weight: 600;
+            color: #28a745;
+            margin-bottom: 2px;
+        }
+
+        .revenue-amount {
+            font-size: 12px;
+            color: #6c757d;
+        }
+
+        .brand-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .brand-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+
+        .brand-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .brand-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .brand-quantity {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 4px;
+        }
+
+        .brand-revenue {
+            font-size: 12px;
+            opacity: 0.8;
         }
 
         @media (max-width: 768px) {
             .main-content {
                 flex-direction: column;
             }
-            
+
             .sidebar {
                 width: 100%;
                 min-height: auto;
             }
-            
+
             .sidebar nav ul {
                 display: flex;
                 overflow-x: auto;
                 padding: 10px;
             }
-            
+
             .sidebar nav li {
                 margin: 0 5px;
                 white-space: nowrap;
             }
-            
+
             .stats-grid {
                 grid-template-columns: 1fr;
             }
-            
+
             .chart-header {
                 flex-direction: column;
                 align-items: flex-start;
                 gap: 15px;
             }
-            
+
             .orders-table {
                 font-size: 12px;
             }
-            
+
             .orders-table th,
             .orders-table td {
                 padding: 10px 8px;
             }
-            
+
             .summary-cards {
                 grid-template-columns: repeat(2, 1fr);
             }
-            
+
             .btn-download {
                 display: block;
                 width: 100%;
                 margin: 5px 0;
             }
+
+            .brand-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .charts-container {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
+
 <body>
     <div class="admin-container">
         <!-- Header -->
         <div class="header">
-          
+
             <div class="header-main">
                 <h1 class="brand">Melodia</h1>
                 <div class="user-profile">
@@ -720,7 +858,8 @@
             <div class="sidebar">
                 <nav>
                     <ul>
-                        <li class="active"><a href="/admin/dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                        <li class="active"><a href="/admin/dashboard"><i class="fas fa-tachometer-alt"></i>
+                                Dashboard</a></li>
                         <li><a href="/admin/products"><i class="fas fa-box"></i> Products</a></li>
                         <li><a href="/admin/orders"><i class="fas fa-list"></i> Order Management</a></li>
                         <li><a href="/admin/customer"><i class="fas fa-users"></i> Users</a></li>
@@ -772,42 +911,51 @@
                             <option value="11">December</option>
                         </select>
                     </div>
-                    <button id="applyFilters" class="btn-apply">Apply Filters</button>
+                    <button id="applyFilters" class="btn-apply" style="background: #28a745; font-weight: bold;">Apply Filters</button>
                 </div>
+
+
 
                 <!-- Stats Cards -->
                 <div class="stats-grid">
                     <div class="stat-card total-sales">
                         <div class="stat-content">
                             <div class="stat-label">Total Sales</div>
-                            <div class="stat-number" id="totalSalesValue">₹<%= stats.totalSales.toLocaleString() %></div>
+                            <div class="stat-number" id="totalSalesValue">₹<%= stats.totalSales.toLocaleString() %>
+                            </div>
                         </div>
                     </div>
 
                     <div class="stat-card visitors">
                         <div class="stat-content">
-                            <div class="stat-label">Visitors</div>
-                            <div class="stat-number" id="visitorsValue"><%= stats.totalUsers.toLocaleString() %></div>
+                            <div class="stat-label">Delivered Orders</div>
+                            <div class="stat-number" id="visitorsValue">
+                                <%= stats.deliveredOrders.toLocaleString() %>
+                            </div>
                         </div>
                     </div>
 
                     <div class="stat-card total-orders">
                         <div class="stat-content">
                             <div class="stat-label">Total Orders</div>
-                            <div class="stat-number" id="totalOrdersValue"><%= stats.totalOrders.toLocaleString() %></div>
+                            <div class="stat-number" id="totalOrdersValue">
+                                <%= stats.totalOrders.toLocaleString() %>
+                            </div>
                         </div>
                     </div>
 
                     <div class="stat-card users">
                         <div class="stat-content">
-                            <div class="stat-label">Users</div>
-                            <div class="stat-number" id="usersValue"><%= stats.totalUsers.toLocaleString() %></div>
+                            <div class="stat-label">Total Users</div>
+                            <div class="stat-number" id="usersValue">
+                                <%= stats.totalUsers.toLocaleString() %>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Charts Section  -->
-                 <div class="charts-container">
+                <div class="charts-container">
                     <div class="chart-section sales-overview">
                         <div class="chart-header">
                             <h3>Sales Overview</h3>
@@ -841,8 +989,124 @@
 
 
 
-                 <!-- Generate Ledger Book Section  -->
-             <div class="ledger-section">
+                <!-- Best Selling Sections -->
+                <div class="charts-container">
+                    <!-- Best Selling Products -->
+                    <div class="chart-section">
+                        <div class="chart-header">
+                            <h3>Best Selling Products (Top 10)</h3>
+                        </div>
+                        <div style="max-height: 300px; overflow-y: auto;">
+                            <% if (bestSelling && bestSelling.products && bestSelling.products.length> 0) { %>
+                                <% bestSelling.products.forEach((product, index)=> { %>
+                                    <div class="best-selling-item">
+                                        <div style="display: flex; align-items: center; gap: 12px;">
+                                            <span
+                                                class="rank-badge <%= index === 0 ? 'gold' : index === 1 ? 'silver' : index === 2 ? 'bronze' : 'default' %>">
+                                                <%= index + 1 %>
+                                            </span>
+                                            <div class="item-info">
+                                                <div class="item-name">
+                                                    <%= product.productName %>
+                                                </div>
+                                                <div class="item-details">
+                                                    <%= product.brand %> • <%= product.color %>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="item-stats">
+                                            <div class="quantity-sold">
+                                                <%= product.totalQuantity %> sold
+                                            </div>
+                                            <div class="revenue-amount">₹<%= product.totalRevenue.toFixed(2) %>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <% }); %>
+                                        <% } else { %>
+                                            <div style="text-align: center; padding: 40px; color: #6c757d;">
+                                                <i class="fas fa-box"
+                                                    style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
+                                                <br>No product data available
+                                            </div>
+                                            <% } %>
+                        </div>
+                    </div>
+
+                    <!-- Best Selling Categories -->
+                    <div class="chart-section">
+                        <div class="chart-header">
+                            <h3>Best Selling Categories (Top 10)</h3>
+                        </div>
+                        <div style="max-height: 300px; overflow-y: auto;">
+                            <% if (bestSelling && bestSelling.categories && bestSelling.categories.length> 0) { %>
+                                <% bestSelling.categories.forEach((category, index)=> { %>
+                                    <div class="best-selling-item">
+                                        <div style="display: flex; align-items: center; gap: 12px;">
+                                            <span
+                                                class="rank-badge <%= index === 0 ? 'gold' : index === 1 ? 'silver' : index === 2 ? 'bronze' : 'default' %>"
+                                                style="background: #28a745;">
+                                                <%= index + 1 %>
+                                            </span>
+                                            <div class="item-info">
+                                                <div class="item-name">
+                                                    <%= category.categoryName %>
+                                                </div>
+                                                <div class="item-details">Category</div>
+                                            </div>
+                                        </div>
+                                        <div class="item-stats">
+                                            <div class="quantity-sold">
+                                                <%= category.totalQuantity %> sold
+                                            </div>
+                                            <div class="revenue-amount">₹<%= category.totalRevenue.toFixed(2) %>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <% }); %>
+                                        <% } else { %>
+                                            <div style="text-align: center; padding: 40px; color: #6c757d;">
+                                                <i class="fas fa-folder"
+                                                    style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
+                                                <br>No category data available
+                                            </div>
+                                            <% } %>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Best Selling Brands -->
+                <div class="chart-section">
+                    <div class="chart-header">
+                        <h3>Best Selling Brands (Top 10)</h3>
+                    </div>
+                    <div style="max-height: 300px; overflow-y: auto;">
+                        <% if (bestSelling && bestSelling.brands && bestSelling.brands.length> 0) { %>
+                            <div class="brand-grid">
+                                <% bestSelling.brands.forEach((brand, index)=> { %>
+                                    <div class="brand-card">
+                                        <div class="brand-name">#<%= index + 1 %>
+                                                <%= brand.brandName %>
+                                        </div>
+                                        <div class="brand-quantity">
+                                            <%= brand.totalQuantity %> items sold
+                                        </div>
+                                        <div class="brand-revenue">₹<%= brand.totalRevenue.toFixed(2) %> revenue</div>
+                                    </div>
+                                    <% }); %>
+                            </div>
+                            <% } else { %>
+                                <div style="text-align: center; padding: 40px; color: #6c757d;">
+                                    <i class="fas fa-tags"
+                                        style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
+                                    <br>No brand data available
+                                </div>
+                                <% } %>
+                    </div>
+                </div>
+
+                <!-- Generate Ledger Book Section  -->
+                <div class="ledger-section">
                     <div class="ledger-header">
                         <h3>Generate Ledger Book</h3>
                     </div>
@@ -868,7 +1132,7 @@
                     </div>
                 </div>
 
-                 <!-- Latest Orders Table  -->
+                <!-- Latest Orders Table  -->
                 <div class="table-section">
                     <div style="padding: 20px; border-bottom: 1px solid #e9ecef;">
                         <h3 style="margin: 0; color: #2c3e50;">Latest Orders</h3>
@@ -887,155 +1151,463 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <% if (recentOrders && recentOrders.length > 0) { %>
-                                <% recentOrders.forEach(order => { %>
+                            <% if (recentOrders && recentOrders.length> 0) { %>
+                                <% recentOrders.forEach(order=> { %>
                                     <tr>
                                         <td>
-                                            <a href="/admin/orders/<%= order.orderId %>" style="color: #007bff; text-decoration: none;">
+                                            <a href="/admin/orders/<%= order.orderId %>"
+                                                style="color: #007bff; text-decoration: none;">
                                                 <%= order.orderId %>
                                             </a>
                                         </td>
                                         <td>
-                                            <% if (order.userId) { %>
-                                                <%= order.userId.firstName %> <%= order.userId.lastName %>
-                                                <br><small style="color: #6c757d;"><%= order.userId.email %></small>
-                                            <% } else { %>
-                                                Guest User
-                                            <% } %>
+                                            <% if (order.userId && order.userId.firstName) { %>
+                                                <%= order.userId.firstName %>
+                                                    <%= order.userId.lastName || '' %>
+                                                        <br><small style="color: #6c757d;">
+                                                            <%= order.userId.email %>
+                                                        </small>
+                                                        <% } else { %>
+                                                            Guest User
+                                                            <% } %>
                                         </td>
-                                        <td><%= new Date(order.orderDate).toLocaleDateString() %></td>
-                                        <td><%= order.items.length %> items</td>
-                                        <td>₹<%= order.totalAmount.toFixed(2) %></td>
                                         <td>
-                                            <span class="payment-method <%= order.paymentMethod.toLowerCase() %>">
-                                                <%= order.paymentMethod %>
+                                            <%= new Date(order.orderDate).toLocaleDateString() %>
+                                        </td>
+                                        <td>
+                                            <%= order.items ? order.items.length : 0 %> items
+                                        </td>
+                                        <td>₹<%= (order.totalAmount || 0).toFixed(2) %>
+                                        </td>
+                                        <td>
+                                            <span
+                                                class="payment-method <%= (order.paymentMethod || 'cod').toLowerCase() %>">
+                                                <%= order.paymentMethod || 'COD' %>
                                             </span>
                                         </td>
                                         <td>
-                                            <% 
-                                            let statusClass = 'processing';
-                                            if (order.orderStatus === 'Delivered') statusClass = 'completed';
-                                            else if (order.orderStatus === 'Cancelled') statusClass = 'rejected';
-                                            else if (order.orderStatus === 'Shipped') statusClass = 'processing';
-                                            else if (order.orderStatus === 'Pending') statusClass = 'pending';
-                                            %>
-                                            <span class="status <%= statusClass %>"><%= order.orderStatus %></span>
+                                            <% let statusClass='processing' ; const status=order.orderStatus
+                                                || 'Pending' ; if (status==='Delivered' ) statusClass='completed' ; else
+                                                if (status==='Cancelled' ) statusClass='rejected' ; else if
+                                                (status==='Shipped' ) statusClass='processing' ; else if
+                                                (status==='Pending' ) statusClass='pending' ; %>
+                                                <span class="status <%= statusClass %>">
+                                                    <%= status %>
+                                                </span>
                                         </td>
                                         <td>
                                             <div style="display: flex; gap: 5px;">
-                                                <a href="/admin/orders/<%= order.orderId %>" 
-                                                   style="color: #007bff; text-decoration: none; padding: 4px 8px; border: 1px solid #007bff; border-radius: 4px; font-size: 12px;"
-                                                   title="View Order Details">
+                                                <a href="/admin/orders/<%= order.orderId %>"
+                                                    style="color: #007bff; text-decoration: none; padding: 4px 8px; border: 1px solid #007bff; border-radius: 4px; font-size: 12px;"
+                                                    title="View Order Details">
                                                     <i class="fas fa-eye"></i>
                                                 </a>
-                                                <a href="/admin/orders" 
+                                                <!-- <a href="/admin/orders" 
                                                    style="color: #28a745; text-decoration: none; padding: 4px 8px; border: 1px solid #28a745; border-radius: 4px; font-size: 12px;"
                                                    title="Manage Orders">
                                                     <i class="fas fa-edit"></i>
-                                                </a>
+                                                </a> -->
                                             </div>
                                         </td>
                                     </tr>
-                                <% }) %>
-                            <% } else { %>
-                                <tr>
-                                    <td colspan="8" style="text-align: center; padding: 40px; color: #6c757d;">
-                                        <i class="fas fa-shopping-cart" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
-                                        <br>No orders found
-                                    </td>
-                                </tr>
-                            <% } %>
+                                    <% }) %>
+                                        <% } else { %>
+                                            <tr>
+                                                <td colspan="8"
+                                                    style="text-align: center; padding: 40px; color: #6c757d;">
+                                                    <i class="fas fa-shopping-cart"
+                                                        style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
+                                                    <br>No orders found
+                                                </td>
+                                            </tr>
+                                            <% } %>
                         </tbody>
                     </table>
                 </div>
             </div>
-        </div> 
-    </div> 
+        </div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         let salesChart = null;
         let ordersChart = null;
-        
+
         // Initialize dashboard
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             initializeDashboard();
-            loadDashboardData();
+
+            // Load initial chart data if available
+            <% if (typeof initialChartData !== 'undefined' && initialChartData) { %>
+                const initialData = <%- JSON.stringify(initialChartData) %>;
+                updateDashboard(initialData);
+            <% } else { %>
+                // Load dashboard data via API (no success message on initial load)
+                loadDashboardData(false);
+            <% } %>
         });
-        
+
         function initializeDashboard() {
-            // Apply filters button
-            document.getElementById('applyFilters').addEventListener('click', loadDashboardData);
+            console.log('Initializing dashboard...');
             
+            // Get all filter elements
+            const periodSelect = document.getElementById('periodSelect');
+            const yearSelect = document.getElementById('yearSelect');
+            const monthSelect = document.getElementById('monthSelect');
+            const applyFiltersBtn = document.getElementById('applyFilters');
+            
+            // Check if all elements exist
+            if (!periodSelect || !yearSelect || !monthSelect || !applyFiltersBtn) {
+                console.error('Filter elements missing:', {
+                    periodSelect: !!periodSelect,
+                    yearSelect: !!yearSelect,
+                    monthSelect: !!monthSelect,
+                    applyFiltersBtn: !!applyFiltersBtn
+                });
+                return;
+            }
+
+            // Set current date as default
+            const currentDate = new Date();
+            yearSelect.value = currentDate.getFullYear();
+            monthSelect.value = currentDate.getMonth();
+            
+            console.log('Set default values:', {
+                year: yearSelect.value,
+                month: monthSelect.value,
+                period: periodSelect.value
+            });
+
+            // Apply filters button - MAIN TRIGGER
+            applyFiltersBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log('=== APPLY FILTERS CLICKED ===');
+                console.log('Current filter values:', {
+                    period: periodSelect.value,
+                    year: yearSelect.value,
+                    month: monthSelect.value
+                });
+                loadDashboardData(true); // Show success message for manual filter application
+            });
+
+            // Period change handler - show/hide other filters
+            periodSelect.addEventListener('change', function() {
+                const period = this.value;
+                console.log('=== PERIOD CHANGED ===');
+                console.log('New period:', period);
+                console.log('Current values before change:', {
+                    year: yearSelect.value,
+                    month: monthSelect.value
+                });
+                
+                // Get parent divs of year and month selects
+                const yearGroup = yearSelect.parentElement;
+                const monthGroup = monthSelect.parentElement;
+
+                // Show/hide based on period
+                switch(period) {
+                    case 'monthly':
+                        yearGroup.style.display = 'flex';
+                        monthGroup.style.display = 'flex';
+                        break;
+                    case 'yearly':
+                        yearGroup.style.display = 'flex';
+                        monthGroup.style.display = 'none';
+                        break;
+                    case 'daily':
+                    case 'weekly':
+                    default:
+                        yearGroup.style.display = 'none';
+                        monthGroup.style.display = 'none';
+                        break;
+                }
+                
+                console.log('About to call loadDashboardData for period:', period);
+                // Auto-apply when period changes (no success message)
+                loadDashboardData(false);
+            });
+
+            // Year and month change handlers
+            yearSelect.addEventListener('change', function() {
+                console.log('Year changed to:', this.value);
+                loadDashboardData(false); // No success message for auto-refresh
+            });
+            
+            monthSelect.addEventListener('change', function() {
+                console.log('Month changed to:', this.value);
+                loadDashboardData(false); // No success message for auto-refresh
+            });
+
             // Ledger generation
-            document.getElementById('generateLedgerPDF').addEventListener('click', generateLedgerPDF);
-            
-            // Set default dates (last 30 days)
+            const ledgerBtn = document.getElementById('generateLedgerPDF');
+            if (ledgerBtn) {
+                ledgerBtn.addEventListener('click', generateLedgerPDF);
+            }
+
+            // Set default dates for ledger
             const today = new Date();
             const thirtyDaysAgo = new Date();
             thirtyDaysAgo.setDate(today.getDate() - 30);
+
+            const ledgerStartDate = document.getElementById('ledgerStartDate');
+            const ledgerEndDate = document.getElementById('ledgerEndDate');
             
-            document.getElementById('ledgerEndDate').value = today.toISOString().split('T')[0];
-            document.getElementById('ledgerStartDate').value = thirtyDaysAgo.toISOString().split('T')[0];
+            if (ledgerStartDate) ledgerStartDate.value = thirtyDaysAgo.toISOString().split('T')[0];
+            if (ledgerEndDate) ledgerEndDate.value = today.toISOString().split('T')[0];
+
+            // Initialize filter visibility
+            periodSelect.dispatchEvent(new Event('change'));
+            
+            console.log('Dashboard initialization complete');
+            
+            // Removed refresh button
         }
-        
-        async function loadDashboardData() {
-            const period = document.getElementById('periodSelect').value;
-            const year = document.getElementById('yearSelect').value;
-            const month = document.getElementById('monthSelect').value;
-            
+
+
+        async function loadDashboardData(showMessage = false) {
+            // Get filter values
+            const period = document.getElementById('periodSelect')?.value || 'monthly';
+            const year = document.getElementById('yearSelect')?.value || new Date().getFullYear();
+            const month = document.getElementById('monthSelect')?.value || new Date().getMonth();
+
+            console.log('=== LOADING DASHBOARD DATA ===');
+            console.log('Filter values:', { period, year, month });
+
             try {
-                // Build query parameters
-                const params = new URLSearchParams({ period });
+                // Build API URL with parameters
+                const params = new URLSearchParams();
+                params.append('period', period);
+                
+                // Add year and month based on period
                 if (period === 'monthly') {
                     params.append('year', year);
                     params.append('month', month);
+                } else if (period === 'yearly') {
+                    params.append('year', year);
                 }
                 
-                // Fetch dashboard data
-                const response = await fetch(`/admin/api/sales-report?${params}`);
+                const apiUrl = `/admin/api/dashboard?${params.toString()}`;
+                console.log('API URL:', apiUrl);
+
+                // Show loading
+                showLoadingState();
+
+                // Make API call
+                const response = await fetch(apiUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'same-origin'
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
                 const result = await response.json();
-                
-                if (result.success) {
+                console.log('API Response:', result);
+
+                if (result.success && result.data) {
+                    console.log('Chart data received:', result.data.chartData?.length || 0, 'points');
+                    console.log('Summary data:', result.data.summary);
                     updateDashboard(result.data);
+                    // Removed success message notifications
                 } else {
-                    console.error('Error loading dashboard data:', result.message);
+                    throw new Error(result.message || 'Invalid response format');
                 }
+
             } catch (error) {
-                console.error('Error:', error);
+                console.error('Dashboard API Error:', error);
+                showErrorState(`Failed to load data: ${error.message}`);
+            } finally {
+                hideLoadingState();
             }
         }
-        
-        function updateDashboard(data) {
-            // Update stats cards
-            document.getElementById('totalSalesValue').textContent = `₹${data.summary.totalRevenue.toLocaleString()}`;
-            document.getElementById('visitorsValue').textContent = data.summary.totalOrders || '0';
-            document.getElementById('totalOrdersValue').textContent = data.summary.totalOrders || '0';
-            document.getElementById('usersValue').textContent = data.summary.totalOrders || '0';
+
+        function showLoadingState() {
+            console.log('Showing loading state...');
             
-            // Update charts
-            updateSalesChart(data.chartData || []);
-            updateOrdersChart(data.chartData || []);
+            // Add loading indicators to charts
+            const salesChart = document.getElementById('salesChart');
+            const ordersChart = document.getElementById('ordersChart');
+            const applyBtn = document.getElementById('applyFilters');
+
+            if (salesChart) {
+                salesChart.style.opacity = '0.5';
+            }
+            if (ordersChart) {
+                ordersChart.style.opacity = '0.5';
+            }
+            if (applyBtn) {
+                applyBtn.textContent = 'Loading...';
+                applyBtn.disabled = true;
+            }
+
+            // Add loading overlay to stats cards
+            const statsCards = document.querySelectorAll('.stat-card');
+            statsCards.forEach(card => {
+                card.style.opacity = '0.7';
+            });
+        }
+
+        function hideLoadingState() {
+            console.log('Hiding loading state...');
+            
+            const salesChart = document.getElementById('salesChart');
+            const ordersChart = document.getElementById('ordersChart');
+            const applyBtn = document.getElementById('applyFilters');
+
+            if (salesChart) {
+                salesChart.style.opacity = '1';
+            }
+            if (ordersChart) {
+                ordersChart.style.opacity = '1';
+            }
+            if (applyBtn) {
+                applyBtn.textContent = 'Apply Filters';
+                applyBtn.disabled = false;
+            }
+
+            // Remove loading overlay from stats cards
+            const statsCards = document.querySelectorAll('.stat-card');
+            statsCards.forEach(card => {
+                card.style.opacity = '1';
+            });
+        }
+
+        function showErrorState(message) {
+            console.error('Dashboard error:', message);
+            
+            // Show error message to user
+            const errorDiv = document.createElement('div');
+            errorDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #dc3545;
+                color: white;
+                padding: 15px;
+                border-radius: 5px;
+                z-index: 1000;
+                max-width: 300px;
+            `;
+            errorDiv.textContent = `Error: ${message}`;
+            document.body.appendChild(errorDiv);
+            
+            // Remove after 5 seconds
+            setTimeout(() => {
+                if (errorDiv.parentNode) {
+                    errorDiv.parentNode.removeChild(errorDiv);
+                }
+            }, 5000);
         }
         
+        function showSuccessMessage(message) {
+            // Removed success message notifications
+        }
+
+        function updateDashboard(data) {
+            console.log('Updating dashboard with data:', data);
+            
+            // Show data type indicator
+            showDataTypeIndicator(data);
+            
+            // Update stats cards with filtered data
+            if (data && data.summary) {
+                const summary = data.summary;
+                
+                console.log('Updating stats with summary:', summary);
+                
+                // Update Total Sales
+                const totalSalesEl = document.getElementById('totalSalesValue');
+                if (totalSalesEl) {
+                    const salesValue = summary.totalRevenue || 0;
+                    totalSalesEl.textContent = `₹${salesValue.toLocaleString()}`;
+                    console.log('Updated total sales to:', salesValue);
+                }
+
+                // Update Delivered Orders
+                const deliveredOrdersEl = document.getElementById('visitorsValue');
+                if (deliveredOrdersEl) {
+                    const deliveredValue = summary.deliveredOrders || 0;
+                    deliveredOrdersEl.textContent = deliveredValue.toLocaleString();
+                    console.log('Updated delivered orders to:', deliveredValue);
+                }
+
+                // Update Total Orders
+                const totalOrdersEl = document.getElementById('totalOrdersValue');
+                if (totalOrdersEl) {
+                    const ordersValue = summary.totalOrders || 0;
+                    totalOrdersEl.textContent = ordersValue.toLocaleString();
+                    console.log('Updated total orders to:', ordersValue);
+                }
+
+                // Note: Total Users doesn't change with date filters, so we don't update it
+            }
+
+            // Update charts with filtered data
+            const chartData = data.chartData || [];
+            console.log('Updating charts with data points:', chartData.length);
+            updateSalesChart(chartData);
+            updateOrdersChart(chartData);
+        }
+
+        function showDataTypeIndicator(data) {
+            // Removed all notification indicators
+            // No more popup messages will be shown
+        }
+
         function updateSalesChart(chartData) {
             const ctx = document.getElementById('salesChart').getContext('2d');
-            
+
             // Destroy existing chart
             if (salesChart) {
                 salesChart.destroy();
             }
+
+            // Get current period for proper labeling
+            const period = document.getElementById('periodSelect')?.value || 'monthly';
             
-            // Generate sample data if no real data
-            const labels = chartData.length > 0 
-                ? chartData.map(item => new Date(item.date).toLocaleDateString())
-                : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-            
-            const salesData = chartData.length > 0 
-                ? chartData.map(item => item.sales)
-                : [30000, 45000, 35000, 50000, 40000, 60000, 45000, 55000, 65000, 50000, 70000, 60000];
-            
-            // Create sales chart (line chart like in your image)
+            // Use real data or fallback to sample data
+            let labels, salesData;
+
+            if (chartData && chartData.length > 0) {
+                console.log('Chart data received:', chartData.length, 'points for period:', period);
+                
+                // Real data from API - format labels based on period
+                labels = chartData.map(item => {
+                    if (period === 'daily') {
+                        // For daily: show date like "Nov 1", "Nov 2"
+                        const dateParts = item.date.split('-');
+                        const date = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
+                        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    } else if (period === 'weekly') {
+                        // For weekly: show "Week 45", "Week 46"
+                        return item.date.includes('W') ? item.date.replace('-W', ' W') : `Week ${item.date}`;
+                    } else if (period === 'monthly') {
+                        // For monthly: show "Jan", "Feb", "Mar"
+                        const dateParts = item.date.split('-');
+                        const date = new Date(dateParts[0], dateParts[1] - 1, 1);
+                        return date.toLocaleDateString('en-US', { month: 'short' });
+                    } else if (period === 'yearly') {
+                        // For yearly: show "2021", "2022", "2023"
+                        return item.date;
+                    }
+                    return item.date;
+                });
+                salesData = chartData.map(item => item.sales || 0);
+                
+                console.log('Chart labels:', labels);
+                console.log('Sales data:', salesData);
+            } else {
+                console.log('No chart data received from API - this should not happen');
+                // Minimal fallback - should not be used if backend is working properly
+                labels = ['No Data'];
+                salesData = [0];
+            }
+
+            // Create sales chart (line chart)
             salesChart = new Chart(ctx, {
                 type: 'line',
                 data: {
@@ -1072,8 +1644,11 @@
                                 color: '#f0f0f0'
                             },
                             ticks: {
-                                callback: function(value) {
-                                    return '₹' + (value / 1000) + 'K';
+                                callback: function (value) {
+                                    if (value >= 1000) {
+                                        return '₹' + (value / 1000) + 'K';
+                                    }
+                                    return '₹' + value;
                                 }
                             }
                         }
@@ -1081,25 +1656,55 @@
                 }
             });
         }
-        
+
         function updateOrdersChart(chartData) {
             const ctx = document.getElementById('ordersChart').getContext('2d');
-            
+
             // Destroy existing chart
             if (ordersChart) {
                 ordersChart.destroy();
             }
+
+            // Get current period for proper labeling
+            const period = document.getElementById('periodSelect')?.value || 'monthly';
             
-            // Generate sample data if no real data
-            const labels = chartData.length > 0 
-                ? chartData.map(item => new Date(item.date).toLocaleDateString())
-                : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-            
-            const ordersData = chartData.length > 0 
-                ? chartData.map(item => item.orders)
-                : [2, 2, 4, 2, 3, 3, 2, 4, 3, 2, 3, 2];
-            
-            // Create orders chart (bar chart like in your image)
+            // Use real data or fallback to sample data
+            let labels, ordersData, maxValue;
+
+            if (chartData && chartData.length > 0) {
+                console.log('Orders chart data received:', chartData.length, 'points for period:', period);
+                
+                // Real data from API - format labels based on period (same as sales chart)
+                labels = chartData.map(item => {
+                    if (period === 'daily') {
+                        const dateParts = item.date.split('-');
+                        const date = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
+                        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    } else if (period === 'weekly') {
+                        return item.date.includes('W') ? item.date.replace('-W', ' W') : `Week ${item.date}`;
+                    } else if (period === 'monthly') {
+                        const dateParts = item.date.split('-');
+                        const date = new Date(dateParts[0], dateParts[1] - 1, 1);
+                        return date.toLocaleDateString('en-US', { month: 'short' });
+                    } else if (period === 'yearly') {
+                        return item.date;
+                    }
+                    return item.date;
+                });
+                ordersData = chartData.map(item => item.orders || 0);
+                maxValue = Math.max(...ordersData) + 2; // Add some padding
+                
+                console.log('Orders labels:', labels);
+                console.log('Orders data:', ordersData);
+            } else {
+                console.log('No orders chart data received from API - this should not happen');
+                // Minimal fallback - should not be used if backend is working properly
+                labels = ['No Data'];
+                ordersData = [0];
+                maxValue = 1;
+            }
+
+            // Create orders chart (bar chart)
             ordersChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
@@ -1128,7 +1733,7 @@
                         },
                         y: {
                             beginAtZero: true,
-                            max: 5,
+                            max: maxValue,
                             grid: {
                                 color: '#f0f0f0'
                             },
@@ -1140,37 +1745,37 @@
                 }
             });
         }
-        
+
         // Generate Ledger PDF
         function generateLedgerPDF() {
             const startDate = document.getElementById('ledgerStartDate').value;
             const endDate = document.getElementById('ledgerEndDate').value;
-            
+
             if (!startDate || !endDate) {
                 alert('Please select both start and end dates');
                 return;
             }
-            
+
             if (new Date(startDate) > new Date(endDate)) {
                 alert('Start date cannot be later than end date');
                 return;
             }
-            
+
             // Show loading state
             const btn = document.getElementById('generateLedgerPDF');
             const originalText = btn.innerHTML;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
             btn.disabled = true;
-            
+
             // Build download URL
             const params = new URLSearchParams({
                 startDate: startDate,
                 endDate: endDate,
                 type: 'ledger'
             });
-            
-            const url = `/admin/reports/download/pdf?${params}`;
-            
+
+            const url = `/admin/api/ledger-pdf?${params}`;
+
             // Create temporary link and click it
             const link = document.createElement('a');
             link.href = url;
@@ -1178,7 +1783,7 @@
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-            
+
             // Reset button after 2 seconds
             setTimeout(() => {
                 btn.innerHTML = originalText;
@@ -1187,111 +1792,112 @@
         }
     </script>
 
-  
-<script>
-// Disable back button functionality when on dashboard
-(function() {
-    // Track if we're on the dashboard page
-    const isDashboard = window.location.pathname.includes('/dashboard');
-    
-    if (isDashboard) {
-        // Push current state to history to prevent back navigation
-        history.pushState(null, null, location.href);
-        
-        // Listen for popstate events (back button clicks)
-        window.addEventListener('popstate', function(event) {
-            console.log('Back button pressed on dashboard');
-            // Push state again to stay on current page
-            history.pushState(null, null, location.href);
-            
-            // Optional: Show a message to user
-            // alert('Use the logout button to exit the dashboard');
-        });
-        
-        // Prevent browser back button navigation
-        window.addEventListener('beforeunload', function() {
-            // Clear any cached data
-            if (window.performance && window.performance.navigation.type === 2) {
-                window.location.reload();
-            }
-        });
-        
-        // Handle page visibility changes (when user switches tabs/windows)
-        document.addEventListener('visibilitychange', function() {
-            if (document.visibilityState === 'visible') {
-                // Verify session is still valid when page becomes visible again
-                fetch('/admin/dashboard', {
-                    method: 'GET',
-                    credentials: 'same-origin',
-                    cache: 'no-cache'
-                }).then(response => {
-                    if (response.redirected || response.status === 401) {
-                        window.location.href = '/admin/login';
+
+    <script>
+        // Disable back button functionality when on dashboard
+        (function () {
+            // Track if we're on the dashboard page
+            const isDashboard = window.location.pathname.includes('/dashboard');
+
+            if (isDashboard) {
+                // Push current state to history to prevent back navigation
+                history.pushState(null, null, location.href);
+
+                // Listen for popstate events (back button clicks)
+                window.addEventListener('popstate', function (event) {
+                    console.log('Back button pressed on dashboard');
+                    // Push state again to stay on current page
+                    history.pushState(null, null, location.href);
+
+                    // Optional: Show a message to user
+                    // alert('Use the logout button to exit the dashboard');
+                });
+
+                // Prevent browser back button navigation
+                window.addEventListener('beforeunload', function () {
+                    // Clear any cached data
+                    if (window.performance && window.performance.navigation.type === 2) {
+                        window.location.reload();
                     }
-                }).catch(error => {
-                    console.error('Session check failed:', error);
+                });
+
+                // Handle page visibility changes (when user switches tabs/windows)
+                document.addEventListener('visibilitychange', function () {
+                    if (document.visibilityState === 'visible') {
+                        // Verify session is still valid when page becomes visible again
+                        fetch('/admin/dashboard', {
+                            method: 'GET',
+                            credentials: 'same-origin',
+                            cache: 'no-cache'
+                        }).then(response => {
+                            if (response.redirected || response.status === 401) {
+                                window.location.href = '/admin/login';
+                            }
+                        }).catch(error => {
+                            console.error('Session check failed:', error);
+                        });
+                    }
                 });
             }
-        });
-    }
-    
-    // Prevent caching for all admin pages
-    window.addEventListener('pageshow', function(event) {
-        if (event.persisted) {
-            // Page was loaded from browser cache
-            console.log('Page loaded from cache, reloading...');
-            window.location.reload();
-        }
-    });
-    
-    // Clear browser history on logout
-    function handleLogout() {
-        // Clear any stored data
-        localStorage.clear();
-        sessionStorage.clear();
-        
-        // Replace current history entry
-        history.replaceState(null, null, '/admin/login');
-        
-        // Navigate to logout
-        window.location.href = '/admin/logout';
-        
-        return false; // Prevent default link behavior
-    }
-    
-    // Make logout function globally available
-    window.handleLogout = handleLogout;
-    
-    // Add logout handler to logout links
-    document.addEventListener('DOMContentLoaded', function() {
-        const logoutLinks = document.querySelectorAll('a[href*="logout"]');
-        logoutLinks.forEach(link => {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
-                handleLogout();
-            });
-        });
-    });
-    
-    // Periodically check session validity (optional)
-    if (isDashboard) {
-        setInterval(function() {
-            fetch('/admin/dashboard', {
-                method: 'HEAD',
-                credentials: 'same-origin',
-                cache: 'no-cache'
-            }).then(response => {
-                if (response.redirected || response.status === 401) {
-                    console.log('Session expired, redirecting to login');
-                    window.location.href = '/admin/login';
+
+            // Prevent caching for all admin pages
+            window.addEventListener('pageshow', function (event) {
+                if (event.persisted) {
+                    // Page was loaded from browser cache
+                    console.log('Page loaded from cache, reloading...');
+                    window.location.reload();
                 }
-            }).catch(error => {
-                console.error('Session check failed:', error);
             });
-        }, 300000); // Check every 5 minutes
-    }
-})();
-</script>
+
+            // Clear browser history on logout
+            function handleLogout() {
+                // Clear any stored data
+                localStorage.clear();
+                sessionStorage.clear();
+
+                // Replace current history entry
+                history.replaceState(null, null, '/admin/login');
+
+                // Navigate to logout
+                window.location.href = '/admin/logout';
+
+                return false; // Prevent default link behavior
+            }
+
+            // Make logout function globally available
+            window.handleLogout = handleLogout;
+
+            // Add logout handler to logout links
+            document.addEventListener('DOMContentLoaded', function () {
+                const logoutLinks = document.querySelectorAll('a[href*="logout"]');
+                logoutLinks.forEach(link => {
+                    link.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        handleLogout();
+                    });
+                });
+            });
+
+            // Periodically check session validity (optional)
+            if (isDashboard) {
+                setInterval(function () {
+                    fetch('/admin/dashboard', {
+                        method: 'HEAD',
+                        credentials: 'same-origin',
+                        cache: 'no-cache'
+                    }).then(response => {
+                        if (response.redirected || response.status === 401) {
+                            console.log('Session expired, redirecting to login');
+                            window.location.href = '/admin/login';
+                        }
+                    }).catch(error => {
+                        console.error('Session check failed:', error);
+                    });
+                }, 300000); // Check every 5 minutes
+            }
+        })();
+    </script>
 
 </body>
+
 </html>

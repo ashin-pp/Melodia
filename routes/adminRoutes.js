@@ -15,9 +15,13 @@ import referralService from '../services/referralService.js';
 router.get('/login', adminCtrl.getLogin);
 router.post('/login', adminCtrl.postLogin);
 
+
+
 router.use(validateAdminSession)
 //protected routes
 router.get('/dashboard', adminAuth, adminCtrl.getDashboard);
+router.get('/api/dashboard', adminAuth, adminCtrl.getDashboardAPI);
+router.get('/api/ledger-pdf', adminAuth, adminCtrl.generateLedgerPDF);
 
 
 router.get('/customer', customerCtrl.getUsers)

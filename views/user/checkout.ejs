@@ -772,22 +772,30 @@
             </h2>
             
             <div class="payment-methods">
-                <div class="payment-method active">
-                    <input type="radio" id="cod" name="paymentMethod" value="COD" checked>
+                <div class="payment-method <%= pricing.totalAmount > 1000 ? 'disabled' : 'active' %>" id="codPaymentMethod">
+                    <input type="radio" id="cod" name="paymentMethod" value="COD" <%= pricing.totalAmount > 1000 ? 'disabled' : 'checked' %>>
                     <label for="cod">
                         <div class="payment-radio"></div>
                         <div class="payment-icon">💰</div>
                         <div class="payment-details">
                             <div class="payment-name">Cash on Delivery</div>
-                            <div class="payment-desc">Pay when your order is delivered to your doorstep</div>
+                            <div class="payment-desc">
+                                <% if (pricing.totalAmount > 1000) { %>
+                                    Not available for orders above ₹1000
+                                <% } else { %>
+                                    Pay when your order is delivered to your doorstep
+                                <% } %>
+                            </div>
                         </div>
-                        <div class="payment-status available">Available</div>
+                        <div class="payment-status <%= pricing.totalAmount > 1000 ? 'coming-soon' : 'available' %>">
+                            <%= pricing.totalAmount > 1000 ? 'Not Available' : 'Available' %>
+                        </div>
                     </label>
                 </div>
                 
                 <% if (razorpayKeyId) { %>
                 <div class="payment-method active">
-                    <input type="radio" id="razorpay" name="paymentMethod" value="razorpay">
+                    <input type="radio" id="razorpay" name="paymentMethod" value="razorpay" <%= pricing.totalAmount > 1000 ? 'checked' : '' %>>
                     <label for="razorpay">
                         <div class="payment-radio"></div>
                         <div class="payment-icon">💳</div>
@@ -1306,6 +1314,29 @@
         }
         
         $('#finalTotal').text(`₹${totalAmount.toFixed(2)}`);
+        
+        // Update COD availability based on total amount
+        const codPaymentMethod = $('#codPaymentMethod');
+        const codInput = $('#cod');
+        const codDesc = codPaymentMethod.find('.payment-desc');
+        const codStatus = codPaymentMethod.find('.payment-status');
+        
+        if (totalAmount > 1000) {
+            codPaymentMethod.removeClass('active').addClass('disabled');
+            codInput.prop('disabled', true).prop('checked', false);
+            codDesc.text('Not available for orders above ₹1000');
+            codStatus.removeClass('available').addClass('coming-soon').text('Not Available');
+            
+            // Auto-select another payment method if COD was selected
+            if ($('input[name="paymentMethod"]:checked').length === 0) {
+                $('input[name="paymentMethod"]:not(:disabled):first').prop('checked', true);
+            }
+        } else {
+            codPaymentMethod.removeClass('disabled').addClass('active');
+            codInput.prop('disabled', false);
+            codDesc.text('Pay when your order is delivered to your doorstep');
+            codStatus.removeClass('coming-soon').addClass('available').text('Available');
+        }
     }
     
     // Update pricing when wallet checkbox changes
@@ -1316,14 +1347,30 @@
         const couponCode = appliedCoupon ? appliedCoupon.code : null;
         const useWallet = $('#useWallet').is(':checked');
         
+        // Get current total amount
+        const totalAmountText = $('#finalTotal').text().replace('₹', '').replace(',', '');
+        const totalAmount = parseFloat(totalAmountText);
+        
         console.log('Place order called');
         console.log('Selected address ID:', selectedAddressId);
         console.log('Payment method:', paymentMethod);
+        console.log('Total amount:', totalAmount);
         console.log('Coupon code:', couponCode);
         console.log('Use wallet:', useWallet);
         
         if (!selectedAddressId) {
             Swal.fire('Error', 'Please select a delivery address', 'error');
+            return;
+        }
+        
+        // Add COD validation for orders above Rs 1000
+        if (paymentMethod === 'COD' && totalAmount > 1000) {
+            Swal.fire({
+                title: 'COD Not Available',
+                text: 'Cash on Delivery is not available for orders above ₹1000. Please choose online payment or wallet payment.',
+                icon: 'warning',
+                confirmButtonText: 'OK'
+            });
             return;
         }
         

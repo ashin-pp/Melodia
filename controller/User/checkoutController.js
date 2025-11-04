@@ -281,6 +281,14 @@ const placeOrder = async (req, res) => {
       }
     }
 
+    // Add COD validation for orders above Rs 1000
+    if (paymentMethod === 'COD' && originalTotalAmount > 1000) {
+      return res.status(400).json({
+        success: false,
+        message: 'Cash on Delivery is not available for orders above ₹1000. Please choose online payment or wallet payment.'
+      });
+    }
+
     // Handle different payment methods
     if (paymentMethod === 'razorpay' && totalAmount > 0) {
       if (!razorpay) {
