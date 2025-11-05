@@ -3,17 +3,14 @@ import walletService from './walletService.js';
 import crypto from 'crypto';
 
 export const referralService = {
-    // Generate referral token for URL sharing
     generateReferralToken: (userId) => {
         return crypto.createHash('sha256').update(userId + Date.now()).digest('hex').substring(0, 16);
     },
 
-    // Validate referral code
-    validateReferralCode: async (referralCode) => {
+        validateReferralCode: async (referralCode) => {
         try {
             if (!referralCode) return { valid: false, message: 'Referral code is required' };
 
-            // Validate format (should be 8 characters, alphanumeric)
             const codeRegex = /^[A-Z0-9]{8}$/;
             if (!codeRegex.test(referralCode.toUpperCase())) {
                 return { valid: false, message: 'Invalid referral code format' };
@@ -21,7 +18,7 @@ export const referralService = {
 
             const referrer = await User.findOne({
                 referralCode: referralCode.toUpperCase(),
-                isBlocked: false // Only allow active users
+                isBlocked: false 
             }).select('_id name referralCode isBlocked referrals referralStats');
 
             if (!referrer) {
@@ -46,7 +43,6 @@ export const referralService = {
         }
     },
 
-    // Process referral when new user registers
     processReferral: async (newUserId, referralCode) => {
         try {
             if (!referralCode) return { success: false, message: 'No referral code provided' };
@@ -56,7 +52,6 @@ export const referralService = {
                 return { success: false, message: validation.message };
             }
 
-            // Get the full referrer data
             const referrer = await User.findOne({
                 referralCode: referralCode.toUpperCase(),
                 isBlocked: false
@@ -74,17 +69,14 @@ export const referralService = {
 
             console.log('Processing referral for new user:', newUserId);
 
-            // Prevent self-referral
             if (referrer._id.toString() === newUserId.toString()) {
                 return { success: false, message: 'Cannot use your own referral code' };
             }
 
-            // Check if user was already referred
             if (newUser.referredBy) {
                 return { success: false, message: 'User already has a referrer' };
             }
 
-            // Initialize referral arrays if they don't exist
             if (!referrer.referrals) {
                 referrer.referrals = [];
             }
@@ -92,7 +84,6 @@ export const referralService = {
                 referrer.referralStats = { totalReferrals: 0, totalRewards: 0 };
             }
 
-            // Check if this referral already exists (prevent duplicates)
             const existingReferral = referrer.referrals.find(
                 ref => ref.userId.toString() === newUserId.toString()
             );
@@ -100,11 +91,9 @@ export const referralService = {
                 return { success: false, message: 'Referral already processed' };
             }
 
-            // Update new user with referrer info
             newUser.referredBy = referrer._id;
             await newUser.save();
 
-            // Check referral limits (prevent abuse)
             const MAX_REFERRALS_PER_DAY = 10;
             const today = new Date();
             today.setHours(0, 0, 0, 0);
@@ -119,16 +108,14 @@ export const referralService = {
                 return { success: false, message: 'Daily referral limit reached' };
             }
 
-            // Update referrer with new referral
             referrer.referrals.push({
                 userId: newUserId,
                 joinedAt: new Date(),
-                rewardGiven: false // Will be updated after successful reward processing
+                rewardGiven: false 
             });
             referrer.referralStats.totalReferrals += 1;
             await referrer.save();
 
-            // Give wallet rewards
             const rewardResult = await referralService.processWalletRewards(referrer._id, newUserId, newUser.name);
 
             return {
@@ -146,12 +133,10 @@ export const referralService = {
         }
     },
 
-    // Process wallet rewards for referral
     processWalletRewards: async (referrerId, newUserId, newUserName) => {
         try {
             console.log('Processing wallet rewards for referral');
 
-            // Give ₹200 to referrer
             const referrerReward = await walletService.addMoney(
                 referrerId,
                 200,
@@ -160,7 +145,6 @@ export const referralService = {
                 null
             );
 
-            // Give ₹100 to new user
             const newUserReward = await walletService.addMoney(
                 newUserId,
                 100,
@@ -169,17 +153,14 @@ export const referralService = {
                 null
             );
 
-            // Update referrer stats
             const referrer = await User.findById(referrerId);
             if (referrer) {
-                // Initialize referralStats if it doesn't exist
                 if (!referrer.referralStats) {
                     referrer.referralStats = { totalReferrals: 0, totalRewards: 0 };
                 }
                 
                 referrer.referralStats.totalRewards += 200;
 
-                // Mark reward as given for this referral
                 const referralIndex = referrer.referrals.findIndex(
                     ref => ref.userId.toString() === newUserId.toString()
                 );
@@ -205,12 +186,11 @@ export const referralService = {
             return result;
 
         } catch (error) {
-            console.error('❌ Error processing wallet rewards:', error);
+            console.error(' Error processing wallet rewards:', error);
             return { success: false, message: 'Failed to process rewards', error: error.message };
         }
     },
 
-    // Get user referral stats
     getReferralStats: async (userId) => {
         try {
             const user = await User.findById(userId)
@@ -221,7 +201,6 @@ export const referralService = {
                 return { success: false, message: 'User not found' };
             }
 
-            // Ensure user has a referral code
             if (!user.referralCode) {
                 user.referralCode = user.generateReferralCode();
                 await user.save();

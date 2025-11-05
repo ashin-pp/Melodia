@@ -21,13 +21,12 @@ const router = express.Router();
 
 //landing page route
 router.get('/', (req, res) => {
-  // If admin is logged in, always go to admin dashboard
   if (req.session?.admin) {
     return res.redirect('/admin/dashboard');
   }
   if (req.session?.user) {
     return res.redirect('/home');
-  } else { // Otherwise, show landing page
+  } else { 
     return userCtrl.loadLandingPage(req, res);
   }
 });
@@ -87,10 +86,15 @@ router.post('/password/change', protectUser, profileCtrl.ChangePassword);
 // About page route
 router.get('/about', userCtrl.loadAboutPage);
 
+//Contact page route
+router.get('/contact',userCtrl.getContact);
+router.post('/contact',userCtrl.postContact);
+
 // Product & Category routes
 router.get('/product/list', productCtrl.getShop);
 router.get('/products/:id', productCtrl.getProductDetails);
 router.get('/products/variants/:variantId', productCtrl.getVariantDetails);
+router.get('/api/variant/:variantId', productCtrl.getVariantAPI);
 router.get('/categories/:id', categoryCtrl.getCategoryPage);
 router.get('/categories', categoryCtrl.getCategoriesPage);
 
@@ -154,7 +158,7 @@ router.get('/api/wallet/balance', protectUser, walletCtrl.getWalletBalance);
 router.get('/api/wallet/transactions', protectUser, walletCtrl.getTransactionHistory);
 router.post('/api/wallet/validate-payment', protectUser, walletCtrl.validateWalletPayment);
 
-// Referral routes (integrated with wallet)
+// Referral routes 
 router.get('/api/referral/stats', protectUser, walletCtrl.getReferralStats);
 router.post('/api/referral/validate', async (req, res) => {
   try {
@@ -171,6 +175,7 @@ router.post('/api/referral/validate', async (req, res) => {
     res.status(500).json({ valid: false, message: 'Validation failed' });
   }
 });
+
 
 
 

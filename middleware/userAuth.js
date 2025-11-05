@@ -1,9 +1,7 @@
 import { checkUserBlocked } from './auth.js';
 
-// Ensures the user is logged in and not blocked before accessing protected routes
 export const protectUser = async (req, res, next) => {
   try {
-    // Strong cache prevention for authenticated pages
     res.set({
       'Cache-Control': 'no-cache, no-store, must-revalidate, private',
       'Pragma': 'no-cache',
@@ -12,16 +10,12 @@ export const protectUser = async (req, res, next) => {
       'X-Content-Type-Options': 'nosniff'
     });
 
-    // Validate session
     if (!req.session || !req.session.user) {
       return res.redirect('/login');
     }
 
-    // Expose user to views
     res.locals.user = req.session.user;
-    
-    // Add OAuth back button prevention script to all protected pages
-    res.locals.preventOAuthBackButton = `
+        res.locals.preventOAuthBackButton = `
       <script>
         (function() {
           // Prevent back button navigation to OAuth pages

@@ -136,7 +136,7 @@
 
     .variant-header {
       display: flex;
-      justify-content: between;
+      justify-content: space-between;
       align-items: center;
       margin-bottom: 15px;
     }
@@ -261,6 +261,21 @@
       padding: 15px;
       margin-bottom: 20px;
     }
+
+    .character-counter {
+      font-size: 12px;
+      color: #666;
+      text-align: right;
+      margin-top: 5px;
+    }
+
+    .character-counter.warning {
+      color: #ff6b35;
+    }
+
+    .character-counter.danger {
+      color: #dc3545;
+    }
   </style>
 </head>
 
@@ -287,8 +302,8 @@
              <li><a href="/admin/sales-report"><i class="fas fa-chart-bar"></i> Sales Report</a></li>
             <li><a href="/admin/coupons"><i class="fas fa-tags"></i> Coupons</a></li>
             <li><a href="/admin/category"><i class="fas fa-folder"></i> Category</a></li>
-            <li><a href="/admin/banners"><i class="fas fa-flag"></i> Banners</a></li>
-            <li><a href="/admin/settings"><i class="fas fa-cog"></i> Settings</a></li>
+            <!-- <li><a href="/admin/banners"><i class="fas fa-flag"></i> Banners</a></li>
+            <li><a href="/admin/settings"><i class="fas fa-cog"></i> Settings</a></li> -->
             <li><a href="/admin/logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
           </ul>
         </nav>
@@ -340,8 +355,11 @@
 
                 <div class="form-group">
                   <label class="form-label">Description <span class="required">*</span></label>
-                  <textarea name="description" rows="4" required class="form-textarea"
-                    placeholder="Enter product description"><%= old && old.description ? old.description : '' %></textarea>
+                  <textarea name="description" rows="4" required class="form-textarea" id="descriptionTextarea"
+                    placeholder="Enter product description" maxlength="1000"><%= old && old.description ? old.description : '' %></textarea>
+                  <div class="character-counter">
+                    <span id="charCount">0</span>/1000 characters
+                  </div>
                 </div>
 
                 <div class="form-group">
@@ -741,6 +759,32 @@
       addVariant();
 
       document.getElementById('add-variant-btn').addEventListener('click', addVariant);
+
+      // Character counter for description
+      const descriptionTextarea = document.getElementById('descriptionTextarea');
+      const charCount = document.getElementById('charCount');
+      const characterCounter = document.querySelector('.character-counter');
+
+      if (descriptionTextarea && charCount) {
+        function updateCharCount() {
+          const currentLength = descriptionTextarea.value.length;
+          charCount.textContent = currentLength;
+          
+          // Update styling based on character count
+          characterCounter.classList.remove('warning', 'danger');
+          if (currentLength > 800) {
+            characterCounter.classList.add('danger');
+          } else if (currentLength > 600) {
+            characterCounter.classList.add('warning');
+          }
+        }
+
+        // Update count on page load
+        updateCharCount();
+
+        // Update count on input
+        descriptionTextarea.addEventListener('input', updateCharCount);
+      }
 
       // Form validation and submission
       document.querySelector('form').addEventListener('submit', function (e) {

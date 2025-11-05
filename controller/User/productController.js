@@ -71,7 +71,10 @@ export const getShop = async (req, res) => {
           from: 'variants',
           localField: 'variants',
           foreignField: '_id',
-          as: 'variantDocs'
+          as: 'variantDocs',
+          pipeline: [
+            { $sort: { salePrice: 1 } } // Sort variants by price ascending
+          ]
         }
       },
 
@@ -156,7 +159,10 @@ export const getShop = async (req, res) => {
           from: 'variants',
           localField: 'variants',
           foreignField: '_id',
-          as: 'variantDocs'
+          as: 'variantDocs',
+          pipeline: [
+            { $sort: { salePrice: 1 } } // Sort variants by price ascending
+          ]
         }
       },
       {
@@ -295,6 +301,7 @@ export const getShop = async (req, res) => {
 export const getProductDetails = async (req, res) => {
   try {
     const productId = req.params.id;
+    const selectedVariantId = req.query.variant; // Get selected variant from URL
     let user = null;
     if (req.session && req.session.user && req.session.user.id) {
       const userId = req.session.user.id;
@@ -309,7 +316,10 @@ export const getProductDetails = async (req, res) => {
 
     const product = await Product.findById(productId)
       .populate({ path: 'categoryId', select: 'name isListed offer' })
-      .populate('variants');
+      .populate({
+        path: 'variants',
+        options: { sort: { salePrice: 1 } } // Sort by price ascending - same as home page
+      });
 
     console.log(product);
 
@@ -330,7 +340,10 @@ export const getProductDetails = async (req, res) => {
       _id: { $ne: product._id }
     })
       .limit(4)
-      .populate('variants');
+      .populate({
+        path: 'variants',
+        options: { sort: { salePrice: 1 } } // Sort by price ascending - consistent sorting
+      });
 
     console.log('Related products debug:', {
       categoryId: product.categoryId?._id,
@@ -344,8 +357,14 @@ export const getProductDetails = async (req, res) => {
       return res.status(404).render('error/404', { title: '404 Not Found' });
     }
 
-    // Get the first variant as default
-    const defaultVariant = product.variants[0];
+    // Get the selected variant or first variant as default
+    let defaultVariant = product.variants[0];
+    if (selectedVariantId) {
+      const foundVariant = product.variants.find(v => v._id.toString() === selectedVariantId);
+      if (foundVariant) {
+        defaultVariant = foundVariant;
+      }
+    }
 
     // Calculate best offer (product or category)
     const productOffer = product.offer || 0;
@@ -375,6 +394,7 @@ export const getProductDetails = async (req, res) => {
     res.render('user/productdetail', {
       product,
       defaultVariant,
+      activeVariant: defaultVariant, // Pass the selected variant as activeVariant
       stock: defaultVariant.stock,
       reviews,
       relatedProducts,
@@ -455,9 +475,47 @@ export const getVariantDetails = async (req, res) => {
     });
   }
 };
+
+// API endpoint to get variant data
+export const getVariantAPI = async (req, res) => {
+  try {
+    const { variantId } = req.params;
+    const Variant = (await import('../../model/variantSchema.js')).default;
+    
+    const variant = await Variant.findById(variantId);
+    
+    if (!variant) {
+      return res.status(404).json({
+        success: false,
+        message: 'Variant not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      variant: {
+        _id: variant._id,
+        color: variant.color,
+        salePrice: variant.salePrice,
+        regularPrice: variant.regularPrice,
+        stock: variant.stock,
+        images: variant.images
+      }
+    });
+
+  } catch (error) {
+    console.error('Error fetching variant:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch variant data'
+    });
+  }
+};
+
 // Default export for compatibility
 export default {
   getShop,
   getProductDetails,
-  getVariantDetails
+  getVariantDetails,
+  getVariantAPI
 };

@@ -216,7 +216,11 @@ export const postAddProduct = async (req, res) => {
   if (!productName || !productName.trim()) errors.push('Product name is required.');
   if (!brand || !brand.trim()) errors.push('Brand is required.');
   if (!categoryId) errors.push('Category is required.');
-  if (!description || !description.trim()) errors.push('Description is required.');
+  if (!description || !description.trim()) {
+    errors.push('Description is required.');
+  } else if (description.trim().length > 1000) {
+    errors.push('Description must be less than 1000 characters.');
+  }
 
   // Validate numeric fields
   if (offer && (isNaN(Number(offer)) || Number(offer) < 0 || Number(offer) > 100)) {
@@ -490,7 +494,11 @@ export const postEditProduct = async (req, res) => {
     if (!productName || !productName.trim()) errors.push('Product name is required.');
     if (!brand || !brand.trim()) errors.push('Brand is required.');
     if (!categoryId) errors.push('Category is required.');
-    if (!description || !description.trim()) errors.push('Description is required.');
+    if (!description || !description.trim()) {
+      errors.push('Description is required.');
+    } else if (description.trim().length > 1000) {
+      errors.push('Description must be less than 1000 characters.');
+    }
 
     if (!variants || variants.length === 0) {
       errors.push('At least one variant is required.');
@@ -731,6 +739,97 @@ export const recalculateAllPrices = async (req, res) => {
     }
 };
 
+// Toggle premium status
+export const togglePremiumStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { isPremium } = req.body;
+
+    const product = await Product.findById(id);
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: 'Product not found'
+      });
+    }
+
+    product.isPremium = isPremium;
+    await product.save();
+
+    res.json({
+      success: true,
+      message: `Product ${isPremium ? 'marked as premium' : 'removed from premium'}`,
+      isPremium: product.isPremium
+    });
+
+  } catch (error) {
+    console.error('Error toggling premium status:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update premium status'
+    });
+  }
+};
+
+// Delete variant function
+export const deleteVariant = async (req, res) => {
+  try {
+    const variantId = req.params.id;
+    const Variant = (await import('../../model/variantSchema.js')).default;
+    const Product = (await import('../../model/productSchema.js')).default;
+
+    // Find the variant
+    const variant = await Variant.findById(variantId);
+    if (!variant) {
+      return res.status(404).json({
+        success: false,
+        message: 'Variant not found'
+      });
+    }
+
+    // Find the product and check if it has other variants
+    const product = await Product.findById(variant.productId);
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: 'Product not found'
+      });
+    }
+
+    // Check if this is the last variant
+    const variantCount = await Variant.countDocuments({ productId: variant.productId });
+    if (variantCount <= 1) {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot delete the last variant. A product must have at least one variant.'
+      });
+    }
+
+    // Delete the variant
+    await Variant.findByIdAndDelete(variantId);
+
+    // Remove variant reference from product
+    await Product.findByIdAndUpdate(
+      variant.productId,
+      { $pull: { variants: variantId } }
+    );
+
+    console.log(`Variant ${variantId} deleted successfully`);
+
+    res.json({
+      success: true,
+      message: 'Variant deleted successfully'
+    });
+
+  } catch (error) {
+    console.error('Error deleting variant:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to delete variant'
+    });
+  }
+};
+
 // Default export for compatibility
 export default {
   getProducts,
@@ -740,5 +839,7 @@ export default {
   getEditProduct,
   postEditProduct,
   uploadProductImage,
-  recalculateAllPrices
+  recalculateAllPrices,
+  togglePremiumStatus,
+  deleteVariant
 };

@@ -1,0 +1,548 @@
+<%- include('../partials/header-common', { title: 'Contact Us - Melodia' }) %>
+
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            line-height: 1.6;
+            margin-top: 100px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(circle at 20% 80%, rgba(102, 126, 234, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(118, 75, 162, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(102, 126, 234, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .contact-hero {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+            padding: 80px 60px 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .contact-hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="30" r="1.5" fill="rgba(102,126,234,0.2)"/><circle cx="60" cy="70" r="1" fill="rgba(118,75,162,0.2)"/><circle cx="30" cy="80" r="1.2" fill="rgba(255,255,255,0.08)"/></svg>') repeat;
+            animation: float 20s infinite linear;
+            pointer-events: none;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0px) rotate(0deg);
+            }
+
+            100% {
+                transform: translateY(-100px) rotate(360deg);
+            }
+        }
+
+        .hero-title {
+            font-size: 48px;
+            font-weight: 800;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, #ffffff 0%, #cccccc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 18px;
+            color: rgba(255, 255, 255, 0.7);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .contact-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: calc(100vh - 240px);
+        }
+
+        .contact-form {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 40px;
+            width: 100%;
+            max-width: 550px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .contact-form::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        }
+
+        .contact-form h2 {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 12px;
+            color: #ffffff;
+            text-align: center;
+            background: linear-gradient(135deg, #ffffff 0%, #cccccc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .form-subtitle {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 32px;
+            font-size: 15px;
+            line-height: 1.4;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group.full-width {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .form-input,
+        .form-textarea {
+            width: 100%;
+            padding: 16px 20px;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 14px;
+            color: #ffffff;
+            font-size: 15px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            resize: vertical;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-input:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            background: rgba(255, 255, 255, 0.12);
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15), inset 0 2px 4px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .form-input::placeholder,
+        .form-textarea::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .form-textarea {
+            min-height: 80px;
+            max-height: 120px;
+            font-family: inherit;
+        }
+
+        .submit-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #ffffff;
+            border: none;
+            padding: 16px 28px;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+            margin-top: 12px;
+        }
+
+        .submit-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s;
+        }
+
+        .submit-btn:hover::before {
+            left: 100%;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 40px rgba(102, 126, 234, 0.4);
+        }
+
+        .submit-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: 0 8px 32px rgba(102, 126, 234, 0.2);
+        }
+
+        .success-message,
+        .error-message {
+            padding: 20px 24px;
+            border-radius: 16px;
+            margin-bottom: 32px;
+            font-weight: 600;
+            display: none;
+            backdrop-filter: blur(10px);
+            animation: slideIn 0.5s ease-out;
+            text-align: center;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .success-message {
+            background: rgba(34, 197, 94, 0.15);
+            border: 1px solid rgba(34, 197, 94, 0.4);
+            color: #22c55e;
+            box-shadow: 0 8px 32px rgba(34, 197, 94, 0.2);
+        }
+
+        .error-message {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            color: #ef4444;
+            box-shadow: 0 8px 32px rgba(239, 68, 68, 0.2);
+        }
+
+
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .contact-hero {
+                padding: 60px 20px 30px;
+            }
+
+            .hero-title {
+                font-size: 36px;
+            }
+
+            .contact-container {
+                padding: 40px 20px;
+                min-height: calc(100vh - 160px);
+            }
+
+            .contact-form {
+                padding: 30px 25px;
+                border-radius: 20px;
+            }
+
+            .contact-form h2 {
+                font-size: 28px;
+            }
+
+            .form-subtitle {
+                font-size: 14px;
+                margin-bottom: 30px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
+
+            .form-input,
+            .form-textarea {
+                padding: 16px 20px;
+                font-size: 15px;
+            }
+
+            .submit-btn {
+                padding: 18px 28px;
+                font-size: 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .contact-hero {
+                padding: 40px 15px 20px;
+            }
+
+            .hero-title {
+                font-size: 28px;
+            }
+
+            .hero-subtitle {
+                font-size: 16px;
+            }
+
+            .contact-form {
+                padding: 25px 20px;
+            }
+
+            .contact-form h2 {
+                font-size: 24px;
+            }
+        }
+    </style>
+
+    <body>
+        <!-- Contact Hero Section -->
+        <section class="contact-hero">
+            <h1 class="hero-title">Get in Touch</h1>
+            <p class="hero-subtitle">
+                Have questions about our premium audio products? We're here to help you find the perfect sound
+                experience.
+            </p>
+        </section>
+
+        <!-- Contact Content -->
+        <div class="contact-container">
+            <!-- Contact Form -->
+            <div class="contact-form">
+                <h2>Send us a Message</h2>
+                <p class="form-subtitle">We'd love to hear from you. Send us a message and we'll respond as soon as
+                    possible.</p>
+
+                <div class="success-message" id="successMessage">
+                    <i class="fas fa-check-circle"></i>
+                    Thank you for your message! We'll get back to you within 24 hours.
+                </div>
+
+                <div class="error-message" id="errorMessage">
+                    <i class="fas fa-exclamation-circle"></i>
+                    Sorry, there was an error sending your message. Please try again.
+                </div>
+
+                <form id="contactForm" action="/contact" method="POST">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="name" class="form-label">Full Name *</label>
+                            <input type="text" id="name" name="name" class="form-input"
+                                placeholder="Enter your full name" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email" class="form-label">Email Address *</label>
+                            <input type="email" id="email" name="email" class="form-input"
+                                placeholder="Enter your email address" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="phone" class="form-label">Phone Number</label>
+                            <input type="tel" id="phone" name="phone" class="form-input"
+                                placeholder="Enter your phone number">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="subject" class="form-label">Subject *</label>
+                            <input type="text" id="subject" name="subject" class="form-input"
+                                placeholder="What is this regarding?" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label for="message" class="form-label">Message *</label>
+                        <textarea id="message" name="message" class="form-textarea"
+                            placeholder="Tell us how we can help you..." required></textarea>
+                    </div>
+
+                    <button type="submit" class="submit-btn" id="submitBtn">
+                        <span class="btn-text">Send Message</span>
+                        <i class="fas fa-paper-plane" style="margin-left: 8px;"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Map Section -->
+        <!-- <div class="contact-container">
+        <div class="map-section" style="grid-column: 1 / -1;">
+            <h2>Find Our Store</h2>
+            <p>Visit our flagship store to experience our premium audio products firsthand</p>
+            <div class="map-placeholder">
+                <i class="fas fa-map" style="font-size: 48px; margin-right: 16px;"></i>
+                Interactive Map Coming Soon
+            </div>
+        </div>
+    </div> -->
+
+        <script>
+            // Contact form handling
+            document.getElementById('contactForm').addEventListener('submit', async function (e) {
+                e.preventDefault();
+
+                const submitBtn = document.getElementById('submitBtn');
+                const successMessage = document.getElementById('successMessage');
+                const errorMessage = document.getElementById('errorMessage');
+
+                // Hide previous messages
+                successMessage.style.display = 'none';
+                errorMessage.style.display = 'none';
+
+                // Validate required fields
+                const requiredFields = this.querySelectorAll('input[required], textarea[required]');
+                let isValid = true;
+
+                requiredFields.forEach(field => {
+                    if (!field.value.trim()) {
+                        field.style.borderColor = '#ef4444';
+                        isValid = false;
+                    } else {
+                        field.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                    }
+                });
+
+                // Validate email format
+                const emailField = document.getElementById('email');
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (emailField.value && !emailRegex.test(emailField.value)) {
+                    emailField.style.borderColor = '#ef4444';
+                    isValid = false;
+                }
+
+                if (!isValid) {
+                    errorMessage.style.display = 'block';
+                    errorMessage.innerHTML = '<i class="fas fa-exclamation-circle"></i> Please fill all required fields correctly.';
+                    return;
+                }
+
+                // Show loading state
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+
+                try {
+                    const formData = new FormData(this);
+                    const data = Object.fromEntries(formData);
+
+                    console.log('Sending contact form data:', data);
+
+                    const response = await fetch('/contact', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(data)
+                    });
+
+                    console.log('Response status:', response.status);
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const result = await response.json();
+                    console.log('Response data:', result);
+
+                    if (result.success) {
+                        successMessage.style.display = 'block';
+                        successMessage.innerHTML = '<i class="fas fa-check-circle"></i> ' + result.message;
+                        this.reset(); // Clear form
+
+                        // Scroll to success message
+                        successMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    } else {
+                        errorMessage.style.display = 'block';
+                        errorMessage.innerHTML = '<i class="fas fa-exclamation-circle"></i> ' +
+                            (result.message || 'Sorry, there was an error sending your message. Please try again.');
+                    }
+                } catch (error) {
+                    console.error('Contact form error:', error);
+                    errorMessage.style.display = 'block';
+                    errorMessage.innerHTML = '<i class="fas fa-exclamation-circle"></i> Network error. Please check your connection and try again.';
+                } finally {
+                    // Reset button
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<span class="btn-text">Send Message</span><i class="fas fa-paper-plane" style="margin-left: 8px;"></i>';
+                }
+            });
+
+            // Form validation
+            const form = document.getElementById('contactForm');
+            const inputs = form.querySelectorAll('input[required], textarea[required]');
+
+            inputs.forEach(input => {
+                input.addEventListener('blur', function () {
+                    if (this.value.trim() === '') {
+                        this.style.borderColor = '#ef4444';
+                    } else {
+                        this.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                    }
+                });
+
+                input.addEventListener('input', function () {
+                    if (this.style.borderColor === 'rgb(239, 68, 68)') {
+                        this.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                    }
+                });
+            });
+
+            // Email validation
+            const emailInput = document.getElementById('email');
+            emailInput.addEventListener('blur', function () {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (this.value && !emailRegex.test(this.value)) {
+                    this.style.borderColor = '#ef4444';
+                }
+            });
+        </script>
+
+        <%- include('../partials/footer') %>
+            </bo

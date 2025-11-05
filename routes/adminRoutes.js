@@ -32,6 +32,8 @@ router.post('/products/add', uploadProductImages.any(), productCtrl.postAddProdu
 router.get('/products/:id/edit', productCtrl.getEditProduct);
 router.post('/products/:id/edit', uploadProductImages.any(), productCtrl.postEditProduct);
 router.post('/products/:id/edit-image', uploadProductImages.single('image'), productCtrl.uploadProductImage);
+router.post('/products/:id/toggle-premium', productCtrl.togglePremiumStatus);
+router.delete('/variants/:id/delete', productCtrl.deleteVariant);
 
 
 // Category
@@ -72,8 +74,6 @@ router.get('/reports/download/pdf', adminAuth, salesReportCtrl.downloadPDFReport
 
 router.put('/api/orders/items/:itemId/return/approve', adminAuth, adminOrderCtrl.approveReturnRequest);
 router.put('/api/orders/items/:itemId/return/reject', adminAuth, adminOrderCtrl.rejectReturnRequest);
-
-
 router.put('/api/return-requests/:returnRequestId/process', adminAuth, adminOrderCtrl.processReturnRequestLegacy);
 
 

@@ -88,7 +88,6 @@ export const getWalletPage = async (req, res) => {
             return res.redirect('/login');
         }
 
-        // Ensure user has a referral code
         if (!user.referralCode) {
             user.referralCode = user.generateReferralCode();
             await user.save();
@@ -97,7 +96,7 @@ export const getWalletPage = async (req, res) => {
         // Get wallet balance
         const balance = await walletService.getBalance(userId);
 
-        // Get recent transactions (last 10)
+        // Get recent transactions 
         const recentTransactions = await walletService.getTransactionHistory(userId, {
             page: 1,
             limit: 10
@@ -124,8 +123,7 @@ export const getWalletPage = async (req, res) => {
 export const getReferralStats = async (req, res) => {
     try {
         const userId = req.session.user.id;
-
-        // First, ensure user has a referral code
+        
         const userForReferral = await User.findById(userId);
         if (!userForReferral.referralCode) {
             userForReferral.referralCode = userForReferral.generateReferralCode();

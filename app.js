@@ -7,7 +7,7 @@ import MongoStore from 'connect-mongo';
 import userRoutes from './routes/userRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import { getImageUrl } from './helper/imageHandler.js';
-import connectDB from './config/mongo.js';
+import connectDB from './config/mongo.js'; 
 import './config/passport.js';
 import passport from 'passport';
 
@@ -21,7 +21,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 app.locals.getImageUrl = getImageUrl;
 
-// Disable ETag/304 caching and enforce no-store for dynamic pages
 app.disable('etag');
 app.set('etag', false);
 

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -282,37 +283,37 @@
             .main-content {
                 flex-direction: column;
             }
-            
+
             .sidebar {
                 width: 100%;
                 min-height: auto;
             }
-            
+
             .sidebar nav ul {
                 display: flex;
                 overflow-x: auto;
                 padding: 10px;
             }
-            
+
             .sidebar nav li {
                 margin: 0 5px;
                 white-space: nowrap;
             }
-            
+
             .content-area {
                 padding: 20px;
             }
-            
+
             .form-container {
                 padding: 20px;
                 margin: 0;
             }
-            
+
             .form-actions {
                 flex-direction: column;
                 gap: 15px;
             }
-            
+
             .form-actions .back-btn,
             .form-actions .save-btn {
                 width: 100%;
@@ -322,6 +323,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="admin-container">
         <!-- Header - EXACT CUSTOMER PAGE DESIGN -->
@@ -347,8 +349,8 @@
                         <li><a href="/admin/sales-report"><i class="fas fa-chart-bar"></i> Sales Report</a></li>
                         <li><a href="/admin/coupons"><i class="fas fa-tags"></i> Coupons</a></li>
                         <li class="active"><a href="/admin/category"><i class="fas fa-folder"></i> Category</a></li>
-                        <li><a href="/admin/banners"><i class="fas fa-flag"></i> Banners</a></li>
-                        <li><a href="/admin/settings"><i class="fas fa-cog"></i> Settings</a></li>
+                        <!-- <li><a href="/admin/banners"><i class="fas fa-flag"></i> Banners</a></li>
+                        <li><a href="/admin/settings"><i class="fas fa-cog"></i> Settings</a></li> -->
                         <li><a href="/admin/logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
                     </ul>
                 </nav>
@@ -371,80 +373,62 @@
                     </h2>
 
                     <!-- Error Messages - KEEPS YOUR EXACT ERROR HANDLING -->
-                    <% if (typeof errors !== "undefined" && errors.length > 0) { %>
+                    <% if (typeof errors !=="undefined" && errors.length> 0) { %>
                         <div class="error-container">
                             <ul>
                                 <% errors.forEach(function(msg) { %>
-                                    <li><%= msg %></li>
-                                <% }) %>
+                                    <li>
+                                        <%= msg %>
+                                    </li>
+                                    <% }) %>
                             </ul>
                         </div>
-                    <% } %>
+                        <% } %>
 
-                    <!-- Form - KEEPS YOUR EXACT FORM CONTENT -->
-                    <form action="/admin/category/<%= category._id %>/edit" method="POST" class="space-y-5">
-                        <!-- Category Name -->
-                        <div class="form-group">
-                            <label for="name" class="form-label">
-                                Category Name <span class="required">*</span>
-                            </label>
-                            <input
-                                type="text"
-                                id="name"
-                                name="name"
-                                required
-                                value="<%= typeof old !== 'undefined' && old.name !== undefined ? old.name : category.name %>"
-                                class="form-input"
-                            />
-                        </div>
+                            <!-- Form - KEEPS YOUR EXACT FORM CONTENT -->
+                            <form action="/admin/category/<%= category._id %>/edit" method="POST" class="space-y-5">
+                                <!-- Category Name -->
+                                <div class="form-group">
+                                    <label for="name" class="form-label">
+                                        Category Name <span class="required">*</span>
+                                    </label>
+                                    <input type="text" id="name" name="name" required
+                                        value="<%= typeof old !== 'undefined' && old.name !== undefined ? old.name : category.name %>"
+                                        class="form-input" />
+                                </div>
 
-                        <!-- Description -->
-                        <div class="form-group">
-                            <label for="description" class="form-label">Description</label>
-                            <textarea
-                                id="description"
-                                name="description"
-                                class="form-textarea"
-                                rows="3"
-                            ><%= typeof old !== 'undefined' && old.description !== undefined ? old.description : category.description %></textarea>
-                        </div>
+                                <!-- Description -->
+                                <div class="form-group">
+                                    <label for="description" class="form-label">Description</label>
+                                    <textarea id="description" name="description" class="form-textarea"
+                                        rows="3"><%= typeof old !== 'undefined' && old.description !== undefined ? old.description : category.description %></textarea>
+                                </div>
 
-                        <!-- Offer -->
-                        <div class="form-group">
-                            <label for="offer" class="form-label">Offer (%)</label>
-                            <input
-                                type="number"
-                                min="0"
-                                max="100"
-                                id="offer"
-                                name="offer"
-                                value="<%= typeof old !== 'undefined' && old.offer !== undefined ? old.offer : (category.offer || 0) %>"
-                                class="form-input"
-                            />
-                        </div>
+                                <!-- Offer -->
+                                <div class="form-group">
+                                    <label for="offer" class="form-label">Offer (%)</label>
+                                    <input type="number" min="0" max="100" id="offer" name="offer"
+                                        value="<%= typeof old !== 'undefined' && old.offer !== undefined ? old.offer : (category.offer || 0) %>"
+                                        class="form-input" />
+                                </div>
 
-                        <!-- Checkbox - KEEPS YOUR EXACT CHECKBOX LOGIC -->
-                        <div class="checkbox-container">
-                            <input
-                                type="checkbox"
-                                id="isListed"
-                                name="isListed"
-                                class="checkbox-input"
-                                <%= (typeof old !== 'undefined'
-                                      ? old.isListed === "on"
-                                      : category.isListed) ? 'checked' : '' %>
-                            />
-                            <label for="isListed" class="checkbox-label">Listed (Show Category to Users)</label>
-                        </div>
+                                <!-- Checkbox - KEEPS YOUR EXACT CHECKBOX LOGIC -->
+                                <div class="checkbox-container">
+                                    <input type="checkbox" id="isListed" name="isListed" class="checkbox-input"
+                                        <%=(typeof old !=='undefined' ? old.isListed==="on" : category.isListed)
+                                        ? 'checked' : '' %>
+                                    />
+                                    <label for="isListed" class="checkbox-label">Listed (Show Category to Users)</label>
+                                </div>
 
-                        <!-- Form Actions - KEEPS YOUR EXACT BUTTONS -->
-                        <div class="form-actions">
-                            <a href="/admin/category" class="back-btn">Back</a>
-                            <button type="submit" class="save-btn">
-                                <i class="fas fa-save"></i>Save Changes
-                            </button>
-                        </div>
-                    </form>
+                                <!-- Form Actions - KEEPS YOUR EXACT BUTTONS -->
+                                <div class="form-actions">
+                                    <a href="/admin/category" class="back-btn">Back</a>
+                                    <button type="submit" class="save-btn">
+                                        <i class="fas fa-save"></i>Save Changes
+                                    </button>
+                                </div>
+                            </form>
                 </div>
             </div>
         </div>
@@ -453,13 +437,13 @@
     <!-- Enhanced JavaScript for Better UX -->
     <script>
         // Form submission enhancement
-        document.querySelector('form').addEventListener('submit', function(e) {
+        document.querySelector('form').addEventListener('submit', function (e) {
             const saveBtn = document.querySelector('.save-btn');
             const originalContent = saveBtn.innerHTML;
-            
+
             saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
             saveBtn.disabled = true;
-            
+
             // Re-enable after 5 seconds as failsafe
             setTimeout(() => {
                 saveBtn.innerHTML = originalContent;
@@ -481,7 +465,7 @@
         }
 
         // Real-time validation
-        document.getElementById('name').addEventListener('input', function() {
+        document.getElementById('name').addEventListener('input', function () {
             if (this.value.trim().length < 2 && this.value.length > 0) {
                 this.style.borderColor = '#ef4444';
             } else {
@@ -489,7 +473,7 @@
             }
         });
 
-        document.getElementById('offer').addEventListener('input', function() {
+        document.getElementById('offer').addEventListener('input', function () {
             const value = parseInt(this.value);
             if ((value < 0 || value > 100) && this.value !== '') {
                 this.style.borderColor = '#ef4444';
@@ -499,4 +483,5 @@
         });
     </script>
 </body>
+
 </html>

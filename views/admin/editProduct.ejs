@@ -46,6 +46,9 @@
     .save-btn { background: #667eea; color: white; padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; }
     .error-container { background-color: #f8d7da; color: #721c24; border: 1px solid #f1aeb5; border-radius: 8px; padding: 15px; margin-bottom: 20px; }
     .upload-btn { background: #667eea; color: white; padding: 8px 16px; border-radius: 6px; border: none; cursor: pointer; }
+    .character-counter { font-size: 12px; color: #666; text-align: right; margin-top: 5px; }
+    .character-counter.warning { color: #ff6b35; }
+    .character-counter.danger { color: #dc3545; }
   </style>
 </head>
 <body>
@@ -71,8 +74,8 @@
              <li><a href="/admin/sales-report"><i class="fas fa-chart-bar"></i> Sales Report</a></li>
             <li><a href="/admin/coupons"><i class="fas fa-tags"></i> Coupons</a></li>
             <li><a href="/admin/category"><i class="fas fa-folder"></i> Category</a></li>
-            <li><a href="/admin/banners"><i class="fas fa-flag"></i> Banners</a></li>
-            <li><a href="/admin/settings"><i class="fas fa-cog"></i> Settings</a></li>
+            <!-- <li><a href="/admin/banners"><i class="fas fa-flag"></i> Banners</a></li>
+            <li><a href="/admin/settings"><i class="fas fa-cog"></i> Settings</a></li> -->
             <li><a href="/admin/logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
           </ul>
         </nav>
@@ -108,7 +111,10 @@
 
             <div class="form-group">
               <label class="form-label">Description <span class="required">*</span></label>
-              <textarea name="description" rows="4" required class="form-textarea"><%= product.description %></textarea>
+              <textarea name="description" rows="4" required class="form-textarea" id="descriptionTextarea" maxlength="1000"><%= product.description %></textarea>
+              <div class="character-counter">
+                <span id="charCount">0</span>/1000 characters
+              </div>
             </div>
 
             <div class="form-group">
@@ -150,6 +156,9 @@
                     <div class="variant-card">
                       <div class="variant-header">
                         <h4 class="variant-title">Variant <%= i + 1 %> - <%= variant.color %></h4>
+                        <button type="button" onclick="removeExistingVariant(this, '<%= variant._id %>')" class="remove-variant-btn">
+                          <i class="fas fa-times"></i> Remove Variant
+                        </button>
                       </div>
                       
                       <div class="variant-fields">
@@ -579,6 +588,52 @@
       }
     }
 
+    async function removeExistingVariant(btn, variantId) {
+      const result = await Swal.fire({
+        title: 'Remove Existing Variant?',
+        text: 'This will permanently delete this variant and all its data. This action cannot be undone.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Yes, Delete Permanently',
+        cancelButtonText: 'Cancel'
+      });
+
+      if (result.isConfirmed) {
+        try {
+          // Send request to delete variant
+          const response = await fetch(`/admin/variants/${variantId}/delete`, {
+            method: 'DELETE',
+            headers: {
+              'Content-Type': 'application/json',
+            }
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            // Remove the variant card from DOM
+            btn.closest('.variant-card').remove();
+            
+            Swal.fire({
+              toast: true,
+              position: 'top-end',
+              icon: 'success',
+              title: 'Variant deleted successfully',
+              showConfirmButton: false,
+              timer: 3000
+            });
+          } else {
+            Swal.fire('Error', data.message || 'Failed to delete variant', 'error');
+          }
+        } catch (error) {
+          console.error('Error deleting variant:', error);
+          Swal.fire('Error', 'Failed to delete variant. Please try again.', 'error');
+        }
+      }
+    }
+
     function handleVariantImages(input, variantIndex) {
       const previewContainer = document.getElementById(`variant-preview-${variantIndex}`);
       previewContainer.innerHTML = '';
@@ -683,6 +738,32 @@
         });
       }
     });
+
+    // Character counter for description
+    const descriptionTextarea = document.getElementById('descriptionTextarea');
+    const charCount = document.getElementById('charCount');
+    const characterCounter = document.querySelector('.character-counter');
+
+    if (descriptionTextarea && charCount) {
+      function updateCharCount() {
+        const currentLength = descriptionTextarea.value.length;
+        charCount.textContent = currentLength;
+        
+        // Update styling based on character count
+        characterCounter.classList.remove('warning', 'danger');
+        if (currentLength > 800) {
+          characterCounter.classList.add('danger');
+        } else if (currentLength > 600) {
+          characterCounter.classList.add('warning');
+        }
+      }
+
+      // Update count on page load
+      updateCharCount();
+
+      // Update count on input
+      descriptionTextarea.addEventListener('input', updateCharCount);
+    }
   </script>
 </body>
 </html>

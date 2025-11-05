@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,7 +13,7 @@
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-        
+
         * {
             margin: 0;
             padding: 0;
@@ -206,6 +207,7 @@
                 opacity: 0;
                 transform: translateX(-50px);
             }
+
             to {
                 opacity: 1;
                 transform: translateX(0);
@@ -259,7 +261,8 @@
             margin-top: 40px;
         }
 
-        .cta-primary, .cta-secondary {
+        .cta-primary,
+        .cta-secondary {
             padding: 16px 32px;
             border-radius: 30px;
             font-size: 15px;
@@ -308,6 +311,7 @@
                 opacity: 0;
                 transform: translateX(50px);
             }
+
             to {
                 opacity: 1;
                 transform: translateX(0);
@@ -334,8 +338,17 @@
         }
 
         @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 0.7; }
-            50% { transform: scale(1.1); opacity: 0.9; }
+
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 0.7;
+            }
+
+            50% {
+                transform: scale(1.1);
+                opacity: 0.9;
+            }
         }
 
         /* Automatic Fade Container */
@@ -418,19 +431,24 @@
         }
 
         @keyframes floatParticle {
-            0%, 100% { 
+
+            0%,
+            100% {
                 transform: translateY(0px) translateX(0px) scale(1);
                 opacity: 0.4;
             }
-            25% { 
+
+            25% {
                 transform: translateY(-40px) translateX(25px) scale(1.2);
                 opacity: 0.8;
             }
-            50% { 
+
+            50% {
                 transform: translateY(-20px) translateX(-25px) scale(1.5);
                 opacity: 1;
             }
-            75% { 
+
+            75% {
                 transform: translateY(-50px) translateX(15px) scale(1.1);
                 opacity: 0.6;
             }
@@ -474,8 +492,13 @@
         }
 
         @keyframes progressFill {
-            from { width: 0; }
-            to { width: 100%; }
+            from {
+                width: 0;
+            }
+
+            to {
+                width: 100%;
+            }
         }
 
         /* Image info with auto-fade */
@@ -535,8 +558,15 @@
         }
 
         @keyframes float {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-20px) rotate(180deg); }
+
+            0%,
+            100% {
+                transform: translateY(0px) rotate(0deg);
+            }
+
+            50% {
+                transform: translateY(-20px) rotate(180deg);
+            }
         }
 
         /* Stats Section */
@@ -693,9 +723,10 @@
             height: 20px;
             border-radius: 50%;
             cursor: pointer;
-            border: 3px solid transparent;
+            border: 2px solid #ddd;
             transition: all 0.3s ease;
             position: relative;
+            box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
         }
 
         .color-dot:hover {
@@ -705,21 +736,99 @@
         .color-dot.active {
             border-color: #333333;
             box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #333333;
+            transform: scale(1.1);
+        }
+
+        .color-dot.white.active {
+            border-color: #000000;
+            box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #000000;
+        }
+
+        .color-dot.out-of-stock {
+            opacity: 0.5;
+            position: relative;
+        }
+
+        .color-dot.out-of-stock::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 2px;
+            height: 120%;
+            background-color: #ff0000;
+            transform: translate(-50%, -50%) rotate(45deg);
+        }
+
+        .color-dot.out-of-stock:hover {
+            transform: scale(1.1);
+            cursor: not-allowed;
         }
 
         /* Color variants */
-        .color-dot.black { background-color: #000000; }
-        .color-dot.blue { background-color: #1e3a8a; }
-        .color-dot.gray { background-color: #9ca3af; }
-        .color-dot.red { background-color: #dc2626; }
-        .color-dot.orange { background-color: #ea580c; }
-        .color-dot.yellow { background-color: #eab308; }
-        .color-dot.pink { background-color: #ec4899; }
-        .color-dot.purple { background-color: #7c3aed; }
-        .color-dot.green { background-color: #16a34a; }
-        .color-dot.brown { background-color: #92400e; }
-        .color-dot.light-gray { background-color: #d1d5db; }
-        .color-dot.dark-gray { background-color: #4b5563; }
+        .color-dot.black {
+            background-color: #000000;
+        }
+
+        .color-dot.blue {
+            background-color: #1e3a8a;
+        }
+
+        .color-dot.gray {
+            background-color: #9ca3af;
+        }
+
+        .color-dot.red {
+            background-color: #dc2626;
+        }
+
+        .color-dot.orange {
+            background-color: #ea580c;
+        }
+
+        .color-dot.yellow {
+            background-color: #eab308;
+        }
+
+        .color-dot.pink {
+            background-color: #ec4899;
+        }
+
+        .color-dot.purple {
+            background-color: #7c3aed;
+        }
+
+        .color-dot.green {
+            background-color: #16a34a;
+        }
+
+        .color-dot.brown {
+            background-color: #92400e;
+        }
+
+        .color-dot.light-gray {
+            background-color: #d1d5db;
+        }
+
+        .color-dot.dark-gray {
+            background-color: #4b5563;
+        }
+
+        .color-dot.white {
+            background-color: #ffffff;
+            border: 2px solid #333333;
+            box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2);
+        }
+
+        .color-dot.silver {
+            background-color: #e5e7eb;
+            border: 2px solid #9ca3af;
+        }
+
+        .color-dot.cream {
+            background-color: #fef7ed;
+            border: 2px solid #d97706;
+        }
 
         /* Holiday Section */
         .holiday-section {
@@ -892,12 +1001,12 @@
                 gap: 60px;
                 text-align: center;
             }
-            
+
             .products-grid {
                 grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
                 gap: 30px;
             }
-            
+
             .footer-content {
                 grid-template-columns: repeat(2, 1fr);
             }
@@ -1011,14 +1120,15 @@
         }
     </style>
 </head>
+
 <body>
     <script>
-      // If this page is loaded from the back/forward cache, force a reload
-      window.addEventListener('pageshow', function(event) {
-        if (event.persisted) {
-          window.location.reload();
-        }
-      });
+        // If this page is loaded from the back/forward cache, force a reload
+        window.addEventListener('pageshow', function (event) {
+            if (event.persisted) {
+                window.location.reload();
+            }
+        });
     </script>
     <nav class="navbar" id="navbar">
         <div class="logo">
@@ -1027,7 +1137,7 @@
         </div>
         <ul class="nav-links">
             <li><a href="#home">Home</a></li>
-            <li><a href="#products">Products</a></li>
+            <li><a href="/login">Products</a></li>
             <li><a href="#about">About</a></li>
             <li><a href="/login">Contact</a></li>
         </ul>
@@ -1043,16 +1153,17 @@
         <div class="floating-element"></div>
         <div class="floating-element"></div>
         <div class="floating-element"></div>
-        
+
         <div class="hero-container">
             <div class="hero-content">
                 <h1 class="hero-title">FEEL EVERY BEAT</h1>
                 <p class="hero-subtitle">FROM TOP BRANDS</p>
-                
+
                 <div class="overview-section">
                     <h3 class="overview-title">Overview</h3>
                     <p class="hero-description">
-                        Light the way forward for others and scale new peaks, connected and protected by our award-winning outdoor tech. Catch every fish the deeper, every bird the higher.
+                        Light the way forward for others and scale new peaks, connected and protected by our
+                        award-winning outdoor tech. Catch every fish the deeper, every bird the higher.
                     </p>
                 </div>
 
@@ -1070,17 +1181,19 @@
             <div class="hero-image">
                 <div class="headphone-carousel">
                     <div class="headphone-glow"></div>
-                    
-                     <div class="carousel-particle"></div>
+
                     <div class="carousel-particle"></div>
                     <div class="carousel-particle"></div>
-                    <div class="carousel-particle"></div> 
-                    
+                    <div class="carousel-particle"></div>
+                    <div class="carousel-particle"></div>
+
                     <div class="auto-fade-container">
                         <div class="headphone-slide active">
-                            <img src="/image/user/home/Joyroom-JR-OH1-Bluetooth-Wireless-Headphones-4-removebg-preview.png" alt="Premium Headphones 1" onerror="this.style.display='none'; this.parentNode.innerHTML='<div style=&quot;font-size:120px;color:#ff6b6b;&quot;>🎧</div>';">
-                            </div>
-                        
+                            <img src="/image/user/home/Joyroom-JR-OH1-Bluetooth-Wireless-Headphones-4-removebg-preview.png"
+                                alt="Premium Headphones 1"
+                                onerror="this.style.display='none'; this.parentNode.innerHTML='<div style=&quot;font-size:120px;color:#ff6b6b;&quot;>🎧</div>';">
+                        </div>
+
                         <!-- <div class="headphone-slide">
                             <img src="/image/user/home/headset1.jpg" alt="Premium Headphones 2" onerror="this.style.display='none'; this.parentNode.innerHTML='<div style=&quot;font-size:120px;color:#ff6b6b;&quot;>🎵</div>';">
                             </div>
@@ -1094,15 +1207,15 @@
                             </div>
                     </div>
                      -->
-                    <div class="auto-progress-indicator">
-                        <div class="progress-dot active"></div>
-                        <div class="progress-dot"></div>
-                        <div class="progress-dot"></div>
-                        <div class="progress-dot"></div>
+                        <div class="auto-progress-indicator">
+                            <div class="progress-dot active"></div>
+                            <div class="progress-dot"></div>
+                            <div class="progress-dot"></div>
+                            <div class="progress-dot"></div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
     </section>
 
     <section class="stats-section">
@@ -1128,50 +1241,66 @@
 
     <section class="products-section" id="products">
         <h2 class="section-title">Premium Audio Collection</h2>
-        <p class="section-subtitle">Discover our curated selection of professional-grade headphones designed for audiophiles and professionals alike.</p>
-        
+        <p class="section-subtitle">Discover our curated selection of professional-grade headphones designed for
+            audiophiles and professionals alike.</p>
+
         <div class="products-grid">
-            <div class="product-card">
-                <h3 class="product-name">Beats Solo 4</h3>
-                <p class="product-price">$199.99</p>
-                <div class="product-image-container">
-                   <a href="/login"> <img src="/image/user/home/headset1.jpg" alt="Beats Solo 4 Pink"></a>
-                </div>
-                <div class="color-options">
-                    <div class="color-dot black active"></div>
-                    <div class="color-dot blue"></div>
-                    <div class="color-dot light-gray"></div>
-                </div>
-            </div>
-            <div class="product-card">
-                <h3 class="product-name">Beats Solo 4</h3>
-                <p class="product-price">$249.00</p>
-                <div class="product-image-container">
-                   <a href="/login"> <img src="/image/user/home/black-01-solobuds.jpg.large.2x.jpg" alt="Beats Solo 4 Black"></a>
-                </div>
-                <div class="color-options">
-                    <div class="color-dot black active"></div>
-                    <div class="color-dot red"></div>
-                    <div class="color-dot orange"></div>
-                    <div class="color-dot blue"></div>
-                    <div class="color-dot yellow"></div>
-                </div>
-            </div>
-            <div class="product-card">
-                <h3 class="product-name">Beats Studio Pro</h3>
-                <p class="product-price">$349.99</p>
-                <div class="product-image-container">
-                  <a href="/login"> <img src="/image/user/home/headset3.jpg" alt="Beats Studio Pro" onerror="this.style.display='none'; this.parentNode.innerHTML='<div style=&quot;font-size:80px;color:#666;&quot;>🎧</div>';"></a> 
-                </div>
-                <div class="color-options">
-                    <div class="color-dot dark-gray active"></div>
-                    <div class="color-dot gray"></div>
-                    <div class="color-dot black"></div>
-                    <div class="color-dot light-gray"></div>
-                    <div class="color-dot brown"></div>
-                    <div class="color-dot red"></div>
-                </div>
-            </div>
+            <% if (typeof premiumProducts !=='undefined' && premiumProducts.length> 0) { %>
+                <% premiumProducts.slice(0, 3).forEach((product, index)=> { %>
+                    <div class="product-card" data-product-id="<%= product._id %>">
+                        <h3 class="product-name">
+                            <%= product.productName %>
+                        </h3>
+                        <!-- <p class="product-price">₹<%= product.variants[0].salePrice.toLocaleString() %></p> -->
+                        <div class="product-image-container">
+                            <a href="/login">
+                                <img src="<%= product.mainImage %>" alt="<%= product.productName %>"
+                                    onerror="this.style.display='none'; this.parentNode.innerHTML='<div style=&quot;font-size:80px;color:#666;&quot;>🎧</div>';">
+                            </a>
+                        </div>
+                        <div class="color-options">
+                            <% product.variants.forEach((variant, variantIndex)=> { %>
+                                <% // Smart color mapping function function getColorClass(colorName) { const
+                                    color=colorName.toLowerCase(); if (color.includes('brown') ||
+                                    color.includes('chocolate') || color.includes('coffee')) return 'brown' ; if
+                                    (color.includes('black') || color.includes('dark') && color.includes('gray'))
+                                    return 'black' ; if (color.includes('blue') || color.includes('navy')) return 'blue'
+                                    ; if (color.includes('red') || color.includes('crimson') ||
+                                    color.includes('cherry')) return 'red' ; if (color.includes('green') ||
+                                    color.includes('forest') || color.includes('lime')) return 'green' ; if
+                                    (color.includes('yellow') || color.includes('gold') || color.includes('amber'))
+                                    return 'yellow' ; if (color.includes('orange') || color.includes('tangerine'))
+                                    return 'orange' ; if (color.includes('purple') || color.includes('violet') ||
+                                    color.includes('magenta')) return 'purple' ; if (color.includes('pink') ||
+                                    color.includes('rose')) return 'pink' ; if (color.includes('white') ||
+                                    color.includes('ivory') || color.includes('cream')) return 'white' ; if
+                                    (color.includes('gray') || color.includes('grey') || color.includes('silver'))
+                                    return 'gray' ; if (color.includes('light')) return 'light-gray' ; return 'gray' ;
+                                    // Default fallback } %>
+                                    <div class="color-dot <%= getColorClass(variant.color) %> <%= variantIndex === 0 ? 'active' : '' %> <%= variant.stock === 0 ? 'out-of-stock' : '' %>"
+                                        title="<%= variant.color %> - ₹<%= variant.salePrice.toLocaleString() %><%= variant.stock === 0 ? ' (Out of Stock)' : '' %>"
+                                        data-variant-id="<%= variant._id %>" data-product-id="<%= product._id %>"
+                                        data-stock="<%= variant.stock %>"
+                                        onclick="selectLandingColor(this, '<%= product._id %>')"></div>
+                                    <% }); %>
+                        </div>
+                    </div>
+                    <% }); %>
+                        <% } else { %>
+                            <!-- Fallback if no premium products -->
+                            <div class="product-card">
+                                <h3 class="product-name">Premium Headphones</h3>
+                                <p class="product-price">Coming Soon</p>
+                                <div class="product-image-container">
+                                    <a href="/login">
+                                        <div style="font-size:80px;color:#666;">🎧</div>
+                                    </a>
+                                </div>
+                                <div class="color-options">
+                                    <div class="color-dot black active"></div>
+                                </div>
+                            </div>
+                            <% } %>
         </div>
     </section>
 
@@ -1188,14 +1317,15 @@
             <div class="footer-brand">
                 <div class="footer-logo">♪ Melodia</div>
                 <p class="footer-description">
-                    Premium audio experiences crafted for those who demand excellence. Discover the perfect sound for every moment.
+                    Premium audio experiences crafted for those who demand excellence. Discover the perfect sound for
+                    every moment.
                 </p>
-                <div class="social-icons">
+                <!-- <div class="social-icons">
                     <a href="#" class="social-icon">📘</a>
                     <a href="#" class="social-icon">🐦</a>
                     <a href="#" class="social-icon">📷</a>
                     <a href="#" class="social-icon">▶️</a>
-                </div>
+                </div> -->
             </div>
             <div class="footer-section">
                 <h3>Products</h3>
@@ -1275,7 +1405,7 @@
         function initCarousel() {
             // Show first slide
             showSlide(0);
-            
+
             // Start automatic slideshow
             startAutoSlide();
 
@@ -1285,7 +1415,7 @@
             carouselContainer.addEventListener('mouseleave', startAutoSlide);
 
             // Visibility API - pause when tab is not visible
-            document.addEventListener('visibilitychange', function() {
+            document.addEventListener('visibilitychange', function () {
                 if (document.hidden) {
                     stopAutoSlide();
                 } else {
@@ -1301,6 +1431,13 @@
                 navbar.classList.add('scrolled');
             } else {
                 navbar.classList.remove('scrolled');
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const searchContainer = document.querySelector('.search-container');
+            if (searchContainer) {
+                searchContainer.style.display = 'none';
             }
         });
 
@@ -1320,7 +1457,7 @@
 
         // Color dot selection
         document.querySelectorAll('.color-dot').forEach(dot => {
-            dot.addEventListener('click', function() {
+            dot.addEventListener('click', function () {
                 // Remove active class from siblings
                 this.parentNode.querySelectorAll('.color-dot').forEach(d => {
                     d.classList.remove('active');
@@ -1331,7 +1468,7 @@
         });
 
         // FIXED: Login button functionality - redirects to login page
-        document.getElementById('loginButton').addEventListener('click', function() {
+        document.getElementById('loginButton').addEventListener('click', function () {
             // Change this URL to match your login route
             window.location.href = '/login';
         });
@@ -1347,15 +1484,13 @@
         // });
 
         // Shop button functionality
-        document.querySelector('.shop-btn').addEventListener('click', function() {
-            document.querySelector('#products').scrollIntoView({
-                behavior: 'smooth'
-            });
+        document.querySelector('.shop-btn').addEventListener('click', function () {
+            window.location.href = '/login'
         });
 
         // Image loading with fade-in effect
         document.querySelectorAll('img').forEach(img => {
-            img.addEventListener('load', function() {
+            img.addEventListener('load', function () {
                 this.style.opacity = '0';
                 this.style.transform = 'scale(0.8)';
                 this.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
@@ -1390,20 +1525,20 @@
         });
 
         // Holiday section background fallback
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const holidaySection = document.querySelector('.holiday-section');
             const img = new Image();
-            
-            img.onload = function() {
+
+            img.onload = function () {
                 // Background image loaded successfully
             };
-            
-            img.onerror = function() {
+
+            img.onerror = function () {
                 holidaySection.classList.add('fallback');
                 holidaySection.style.background = 'linear-gradient(135deg, #8b4513 0%, #cd853f 50%, #d2691e 100%)';
                 // Background image failed to load, using fallback
             };
-            
+
             img.src = '/image/user/home/bottom.jpg';
 
             // Initialize the automatic carousel
@@ -1423,6 +1558,52 @@
 
         // Observe the carousel container
         carouselObserver.observe(document.querySelector('.headphone-carousel'));
+
+        // Interactive color selection function for landing page
+        function selectLandingColor(colorDot, productId) {
+            const productCard = colorDot.closest('.product-card');
+            const variantId = colorDot.getAttribute('data-variant-id');
+            const stock = parseInt(colorDot.getAttribute('data-stock'));
+
+            // Check if variant is out of stock
+            if (stock === 0) {
+                alert('This color variant is currently out of stock.');
+                return;
+            }
+
+            // Remove active class from all color dots in this product
+            productCard.querySelectorAll('.color-dot').forEach(dot => dot.classList.remove('active'));
+            // Add active class to clicked dot
+            colorDot.classList.add('active');
+
+            // Fetch variant data via API and update display
+            fetch(`/api/variant/${variantId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.variant) {
+                        const variant = data.variant;
+
+                        // Update image
+                        const productImage = productCard.querySelector('img');
+                        if (variant.images && variant.images.length > 0) {
+                            const imageUrl = typeof variant.images[0] === 'string' ? variant.images[0] : variant.images[0].url;
+                            productImage.src = imageUrl;
+                        }
+
+                        // Update price
+                        const priceElement = productCard.querySelector('.product-price');
+                        if (variant.salePrice === variant.regularPrice) {
+                            priceElement.innerHTML = `₹${variant.salePrice.toLocaleString()}`;
+                        } else {
+                            priceElement.innerHTML = `₹${variant.salePrice.toLocaleString()} <span style="text-decoration: line-through; color: #999; font-size: 0.9em;">₹${variant.regularPrice.toLocaleString()}</span>`;
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching variant data:', error);
+                });
+        }
     </script>
 </body>
+
 </html>

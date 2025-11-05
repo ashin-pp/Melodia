@@ -460,6 +460,31 @@
             font-size: 14px;
             line-height: 1.6;
             color: #666;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .description-text.truncated {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .see-more-btn {
+            background: none;
+            border: none;
+            color: #007aff;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            padding: 8px 0;
+            margin-top: 8px;
+            text-decoration: underline;
+        }
+
+        .see-more-btn:hover {
+            color: #0056b3;
         }
 
         /* Image Magnifier */
@@ -954,11 +979,13 @@
         <div class="product-images">
             <!-- Main Image with Magnifier -->
             <div class="main-image-container img-magnifier-container">
-                <% let mainImageUrl='https://via.placeholder.com/800x800/333333/ffffff?text=No+Image' ; let
-                    defaultVariant=product.variants && product.variants.length> 0 ? product.variants[0] : null;
-                    if (defaultVariant && defaultVariant.images && defaultVariant.images.length > 0) {
-                    mainImageUrl = typeof defaultVariant.images[0] === 'string' ? defaultVariant.images[0] :
-                    defaultVariant.images[0].url;
+                <% let mainImageUrl='https://via.placeholder.com/800x800/333333/ffffff?text=No+Image' ; 
+                    // Use activeVariant if available, otherwise use defaultVariant
+                    let displayVariant = (typeof activeVariant !== 'undefined') ? activeVariant : 
+                                        (product.variants && product.variants.length > 0 ? product.variants[0] : null);
+                    if (displayVariant && displayVariant.images && displayVariant.images.length > 0) {
+                        mainImageUrl = typeof displayVariant.images[0] === 'string' ? displayVariant.images[0] :
+                        displayVariant.images[0].url;
                     } %>
                     <img id="mainProductImage" src="<%= mainImageUrl %>" alt="<%= product.productName %>"
                         class="main-product-image" />
@@ -968,8 +995,8 @@
 
             <!-- Thumbnails for current variant -->
             <div class="image-thumbnails" id="imageThumbnails">
-                <% if (defaultVariant && defaultVariant.images && defaultVariant.images.length> 0) { %>
-                    <% defaultVariant.images.forEach((img, i)=> { %>
+                <% if (displayVariant && displayVariant.images && displayVariant.images.length> 0) { %>
+                    <% displayVariant.images.forEach((img, i)=> { %>
                         <% const imageUrl=typeof img==='string' ? img : img.url; %>
                             <div class="thumbnail <%= i === 0 ? 'active' : '' %>"
                                 onclick="changeMainImage(this, '<%= imageUrl %>')" data-image-src="<%= imageUrl %>">
@@ -1036,12 +1063,31 @@
                     <label class="variant-label">Choose Color:</label>
                     <div class="color-options">
                         <% product.variants.forEach((variant, i)=> { %>
-                            <div class="color-button <%= i === 0 ? 'active' : '' %>"
+                            <div class="color-button <%= (typeof activeVariant !== 'undefined' && activeVariant._id.toString() === variant._id.toString()) || (typeof activeVariant === 'undefined' && i === 0) ? 'active' : '' %>"
                                 data-variant-id="<%= variant._id %>" data-price="<%= variant.salePrice %>"
                                 data-regular-price="<%= variant.regularPrice %>" data-stock="<%= variant.stock %>"
                                 data-color="<%= variant.color %>" onclick="selectColor(this)"
                                 title="<%= variant.color %> - ₹<%= variant.salePrice %>">
-                                <div class="color-circle <%= variant.color.toLowerCase().replace(/\s+/g, '') %>"></div>
+                                <%
+                                // Smart color mapping function
+                                function getColorClass(colorName) {
+                                    const color = colorName.toLowerCase();
+                                    if (color.includes('brown') || color.includes('chocolate') || color.includes('coffee')) return 'brown';
+                                    if (color.includes('black') || color.includes('dark') && color.includes('gray')) return 'black';
+                                    if (color.includes('blue') || color.includes('navy')) return 'blue';
+                                    if (color.includes('red') || color.includes('crimson') || color.includes('cherry')) return 'red';
+                                    if (color.includes('green') || color.includes('forest') || color.includes('lime')) return 'green';
+                                    if (color.includes('yellow') || color.includes('gold') || color.includes('amber')) return 'yellow';
+                                    if (color.includes('orange') || color.includes('tangerine')) return 'orange';
+                                    if (color.includes('purple') || color.includes('violet') || color.includes('magenta')) return 'purple';
+                                    if (color.includes('pink') || color.includes('rose')) return 'pink';
+                                    if (color.includes('white') || color.includes('ivory') || color.includes('cream')) return 'white';
+                                    if (color.includes('gray') || color.includes('grey') || color.includes('silver')) return 'gray';
+                                    if (color.includes('light')) return 'light-gray';
+                                    return 'gray'; // Default fallback
+                                }
+                                %>
+                                <div class="color-circle <%= getColorClass(variant.color) %>"></div>
                                 <span class="color-name">
                                     <%= variant.color %>
                                 </span>
@@ -1116,9 +1162,14 @@
                     <!-- Description -->
                     <div class="description-section">
                         <h3 class="description-title">Description</h3>
-                        <p class="description-text">
-                            <%= product.description %>
-                        </p>
+                        <div class="description-container">
+                            <p class="description-text" id="productDescription">
+                                <%= product.description %>
+                            </p>
+                            <button class="see-more-btn" id="seeMoreBtn" style="display: none; color: #000;">
+                                See More
+                            </button>
+                        </div>
                     </div>
         </div>
     </main>
@@ -1477,7 +1528,19 @@
                             }
 
                     // Initialize magnifier after page load
-                    document.addEventListener('DOMContentLoaded', initMagnifier);
+                    document.addEventListener('DOMContentLoaded', function() {
+                        initMagnifier();
+                        
+                        // Handle pre-selected variant from URL
+                        <% if (typeof activeVariant !== 'undefined') { %>
+                            const preSelectedVariantId = '<%= activeVariant._id %>';
+                            const preSelectedColorButton = document.querySelector(`[data-variant-id="${preSelectedVariantId}"]`);
+                            if (preSelectedColorButton) {
+                                // Always call selectColor to update images, even if already active
+                                selectColor(preSelectedColorButton);
+                            }
+                        <% } %>
+                    });
 
                     // Wishlist toggle functionality
                     function toggleWishlist() {
@@ -1828,6 +1891,41 @@
                             }
                         }
                     <% } // End user check for wishlist functions %>
+
+                    // Description "See More" functionality
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const descriptionText = document.getElementById('productDescription');
+                        const seeMoreBtn = document.getElementById('seeMoreBtn');
+                        
+                        if (descriptionText && seeMoreBtn) {
+                            const fullText = descriptionText.textContent.trim();
+                            const maxLength = 200; // Character limit
+                            
+                            if (fullText.length > maxLength) {
+                                const truncatedText = fullText.substring(0, maxLength) + '...';
+                                let isExpanded = false;
+                                
+                                // Initially show truncated text
+                                descriptionText.textContent = truncatedText;
+                                seeMoreBtn.style.display = 'inline-block';
+                                seeMoreBtn.textContent = 'See More';
+                                
+                                seeMoreBtn.addEventListener('click', function() {
+                                    if (isExpanded) {
+                                        // Collapse
+                                        descriptionText.textContent = truncatedText;
+                                        seeMoreBtn.textContent = 'See More';
+                                        isExpanded = false;
+                                    } else {
+                                        // Expand
+                                        descriptionText.textContent = fullText;
+                                        seeMoreBtn.textContent = 'See Less';
+                                        isExpanded = true;
+                                    }
+                                });
+                            }
+                        }
+                    });
                 </script>
 
                 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>

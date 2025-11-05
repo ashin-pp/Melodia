@@ -430,6 +430,58 @@
       text-transform: uppercase;
     }
 
+    /* Premium Toggle Styles */
+    .premium-toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+
+    .premium-toggle input[type="checkbox"] {
+      display: none;
+    }
+
+    .premium-slider {
+      position: relative;
+      width: 40px;
+      height: 20px;
+      background-color: #ccc;
+      border-radius: 20px;
+      transition: background-color 0.3s;
+    }
+
+    .premium-slider:before {
+      content: '';
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background-color: white;
+      top: 2px;
+      left: 2px;
+      transition: transform 0.3s;
+    }
+
+    .premium-toggle input[type="checkbox"]:checked + .premium-slider {
+      background-color: #ffd700;
+    }
+
+    .premium-toggle input[type="checkbox"]:checked + .premium-slider:before {
+      transform: translateX(20px);
+    }
+
+    .premium-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: #666;
+    }
+
+    .premium-toggle input[type="checkbox"]:checked ~ .premium-label {
+      color: #b8860b;
+      font-weight: 600;
+    }
+
 
 
     /* Action Buttons */
@@ -815,8 +867,8 @@
             <li><a href="/admin/sales-report"><i class="fas fa-chart-bar"></i> Sales Report</a></li>
             <li><a href="/admin/coupons"><i class="fas fa-tags"></i> Coupons</a></li>
             <li><a href="/admin/category"><i class="fas fa-folder"></i> Category</a></li>
-            <li><a href="/admin/banners"><i class="fas fa-flag"></i> Banners</a></li>
-            <li><a href="/admin/settings"><i class="fas fa-cog"></i> Settings</a></li>
+            <!-- <li><a href="/admin/banners"><i class="fas fa-flag"></i> Banners</a></li>
+            <li><a href="/admin/settings"><i class="fas fa-cog"></i> Settings</a></li> -->
             <li><a href="/admin/logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
           </ul>
         </nav>
@@ -964,6 +1016,7 @@
                 <th>Variants<br><span style="font-size: 11px; color: #888; font-weight: normal;">(Color/ Price)</span>
                 </th>
                 <th>Offer</th>
+                <th>Premium</th>
                 <th>Status</th>
                 <th>Actions</th>
               </tr>
@@ -1002,6 +1055,15 @@
 
                     <td>
                       <%= product.offer ? product.offer + '%' : '—' %>
+                    </td>
+                    <td>
+                      <label class="premium-toggle">
+                        <input type="checkbox" 
+                               <%= product.isPremium ? 'checked' : '' %>
+                               onchange="togglePremium('<%= product._id %>', this.checked)">
+                        <span class="premium-slider"></span>
+                        <span class="premium-label"><%= product.isPremium ? 'Premium' : 'Regular' %></span>
+                      </label>
                     </td>
                     <td>
                       <% if (product.isListed) { %>
@@ -1206,6 +1268,49 @@
 
 
 
+
+    // Premium toggle function
+    window.togglePremium = async function(productId, isPremium) {
+      try {
+        const response = await fetch(`/admin/products/${productId}/toggle-premium`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ isPremium })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          // Update the label text
+          const toggle = document.querySelector(`input[onchange*="${productId}"]`).closest('.premium-toggle');
+          const label = toggle.querySelector('.premium-label');
+          label.textContent = isPremium ? 'Premium' : 'Regular';
+          
+          // Show success message
+          Swal.fire({
+            icon: 'success',
+            title: 'Updated!',
+            text: `Product ${isPremium ? 'marked as premium' : 'removed from premium'}`,
+            timer: 2000,
+            showConfirmButton: false
+          });
+        } else {
+          throw new Error(result.message || 'Failed to update premium status');
+        }
+      } catch (error) {
+        // Revert the toggle if there's an error
+        const checkbox = document.querySelector(`input[onchange*="${productId}"]`);
+        checkbox.checked = !isPremium;
+        
+        Swal.fire({
+          icon: 'error',
+          title: 'Error!',
+          text: error.message || 'Failed to update premium status'
+        });
+      }
+    };
 
   </script>
 </body>

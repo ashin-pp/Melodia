@@ -637,14 +637,14 @@ const cancelOrderItems = async (req, res) => {
               }
             });
           } else {
-            console.error('❌ Wallet service failed for item refund, trying direct approach');
+            console.error(' Wallet service failed for item refund, trying direct approach');
             console.error('Wallet service error:', refundResult.error);
             
             // Fallback: Direct wallet credit
-            console.log('🔧 FORCING DIRECT WALLET CREDIT FOR ITEMS...');
+            console.log('FORCING DIRECT WALLET CREDIT FOR ITEMS...');
             
             if (!user.wallet) {
-              console.log('🔧 Creating new wallet for user');
+              console.log(' Creating new wallet for user');
               user.wallet = { balance: 0, transactions: [], isWalletActive: true };
             }
             

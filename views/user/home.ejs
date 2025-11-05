@@ -621,8 +621,11 @@
 
         .color-options {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             justify-content: center;
+            flex-wrap: wrap;
+            max-width: 100%;
+            margin: 10px 0;
         }
 
         .color-dot {
@@ -630,9 +633,10 @@
             height: 20px;
             border-radius: 50%;
             cursor: pointer;
-            border: 3px solid transparent;
+            border: 2px solid #ddd;
             transition: all 0.3s ease;
             position: relative;
+            box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
         }
 
         .color-dot:hover {
@@ -642,6 +646,33 @@
         .color-dot.active {
             border-color: #333333;
             box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #333333;
+            transform: scale(1.1);
+        }
+
+        .color-dot.white.active {
+            border-color: #000000;
+            box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #000000;
+        }
+
+        .color-dot.out-of-stock {
+            opacity: 0.5;
+            position: relative;
+        }
+
+        .color-dot.out-of-stock::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 2px;
+            height: 120%;
+            background-color: #ff0000;
+            transform: translate(-50%, -50%) rotate(45deg);
+        }
+
+        .color-dot.out-of-stock:hover {
+            transform: scale(1.1);
+            cursor: not-allowed;
         }
 
         /* Color variants */
@@ -691,6 +722,22 @@
 
         .color-dot.dark-gray {
             background-color: #4b5563;
+        }
+
+        .color-dot.white {
+            background-color: #ffffff;
+            border: 2px solid #333333;
+            box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2);
+        }
+
+        .color-dot.silver {
+            background-color: #e5e7eb;
+            border: 2px solid #9ca3af;
+        }
+
+        .color-dot.cream {
+            background-color: #fef7ed;
+            border: 2px solid #d97706;
         }
 
         /* Holiday Section */
@@ -1065,49 +1112,63 @@
             audiophiles and professionals alike.</p>
 
         <div class="products-grid">
-            <div class="product-card">
-                <h3 class="product-name">Beats Solo 4</h3>
-                <p class="product-price">$199.99</p>
-                <div class="product-image-container">
-                    <a href="/product/list"> <img src="/image/user/home/headset1.jpg" alt="Beats Solo 4 Pink"></a>
+            <% if (premiumProducts && premiumProducts.length > 0) { %>
+                <% premiumProducts.forEach(product => { %>
+                    <div class="product-card">
+                        <h3 class="product-name"><%= product.productName %></h3>
+                        <!-- <p class="product-price">
+                            <% if (product.minPrice === product.maxPrice) { %>
+                                ₹<%= product.minPrice.toLocaleString() %>
+                            <% } else { %>
+                                ₹<%= product.minPrice.toLocaleString() %> - ₹<%= product.maxPrice.toLocaleString() %>
+                            <% } %>
+                        </p> -->
+                        <div class="product-image-container">
+                            <a href="/products/<%= product._id %>">
+                                <img src="<%= product.mainImage %>" 
+                                     alt="<%= product.productName %>"
+                                     onerror="this.src='/image/user/home/headset1.jpg'; this.onerror=null;">
+                            </a>
+                        </div>
+                        <div class="color-options">
+                            <% product.variants.forEach((variant, index) => { %>
+                                <%
+                                // Smart color mapping function
+                                function getColorClass(colorName) {
+                                    const color = colorName.toLowerCase();
+                                    if (color.includes('brown') || color.includes('chocolate') || color.includes('coffee')) return 'brown';
+                                    if (color.includes('black') || color.includes('dark') && color.includes('gray')) return 'black';
+                                    if (color.includes('blue') || color.includes('navy')) return 'blue';
+                                    if (color.includes('red') || color.includes('crimson') || color.includes('cherry')) return 'red';
+                                    if (color.includes('green') || color.includes('forest') || color.includes('lime')) return 'green';
+                                    if (color.includes('yellow') || color.includes('gold') || color.includes('amber')) return 'yellow';
+                                    if (color.includes('orange') || color.includes('tangerine')) return 'orange';
+                                    if (color.includes('purple') || color.includes('violet') || color.includes('magenta')) return 'purple';
+                                    if (color.includes('pink') || color.includes('rose')) return 'pink';
+                                    if (color.includes('white') || color.includes('ivory') || color.includes('cream')) return 'white';
+                                    if (color.includes('gray') || color.includes('grey') || color.includes('silver')) return 'gray';
+                                    if (color.includes('light')) return 'light-gray';
+                                    return 'gray'; // Default fallback
+                                }
+                                %>
+                                <div class="color-dot <%= getColorClass(variant.color) %> <%= index === 0 ? 'active' : '' %> <%= variant.stock === 0 ? 'out-of-stock' : '' %>" 
+                                     title="<%= variant.color %> - ₹<%= variant.salePrice.toLocaleString() %><%= variant.stock === 0 ? ' (Out of Stock)' : '' %>"
+                                     data-variant-id="<%= variant._id %>"
+                                     data-product-id="<%= product._id %>"
+                                     data-stock="<%= variant.stock %>"
+                                     onclick="selectHomeColor(this, '<%= product._id %>')"></div>
+                            <% }); %>
+                        </div>
+                    </div>
+                <% }); %>
+            <% } else { %>
+                <!-- Fallback if no premium products -->
+                <div class="no-premium-products">
+                    <p style="text-align: center; color: #666; font-size: 18px; grid-column: 1 / -1;">
+                        🎧 No premium products available at the moment
+                    </p>
                 </div>
-                <div class="color-options">
-                    <div class="color-dot black active"></div>
-                    <div class="color-dot blue"></div>
-                    <div class="color-dot light-gray"></div>
-                </div>
-            </div>
-            <div class="product-card">
-                <h3 class="product-name">Beats Solo 4</h3>
-                <p class="product-price">$249.00</p>
-                <div class="product-image-container">
-                    <a href="/product/list"> <img src="/image/user/home/black-01-solobuds.jpg.large.2x.jpg"
-                            alt="Beats Solo 4 Black"></a>
-                </div>
-                <div class="color-options">
-                    <div class="color-dot black active"></div>
-                    <div class="color-dot red"></div>
-                    <div class="color-dot orange"></div>
-                    <div class="color-dot blue"></div>
-                    <div class="color-dot yellow"></div>
-                </div>
-            </div>
-            <div class="product-card">
-                <h3 class="product-name">Beats Studio Pro</h3>
-                <p class="product-price">$349.99</p>
-                <div class="product-image-container">
-                    <a href="/product/list"> <img src="/image/user/home/headset3.jpg" alt="Beats Studio Pro"
-                            onerror="this.style.display='none'; this.parentNode.innerHTML='<div style=&quot;font-size:80px;color:#666;&quot;>🎧</div>';"></a>
-                </div>
-                <div class="color-options">
-                    <div class="color-dot dark-gray active"></div>
-                    <div class="color-dot gray"></div>
-                    <div class="color-dot black"></div>
-                    <div class="color-dot light-gray"></div>
-                    <div class="color-dot brown"></div>
-                    <div class="color-dot red"></div>
-                </div>
-            </div>
+            <% } %>
         </div>
     </section>
 
@@ -1129,40 +1190,38 @@
                     Premium audio experiences crafted for those who demand excellence. Discover the perfect sound for
                     every moment.
                 </p>
-                <div class="social-icons">
+                <!-- <div class="social-icons">
                     <a href="#" class="social-icon">📘</a>
                     <a href="#" class="social-icon">🐦</a>
                     <a href="#" class="social-icon">📷</a>
                     <a href="#" class="social-icon">▶️</a>
-                </div>
+                </div> -->
             </div>
             <div class="footer-section">
                 <h3>Products</h3>
                 <ul>
-                    <li><a href="#">Headphones</a></li>
-                    <li><a href="#">Earbuds</a></li>
-                    <li><a href="#">Speakers</a></li>
-                    <li><a href="#">Accessories</a></li>
-                    <li><a href="#">Professional Series</a></li>
+                    <li><a href="/product/list">Headphones</a></li>
+                    <li><a href="/product/list">Earbuds</a></li>
+                   
                 </ul>
             </div>
             <div class="footer-section">
                 <h3>Support</h3>
                 <ul>
-                    <li><a href="#">Customer Service</a></li>
-                    <li><a href="#">Technical Support</a></li>
-                    <li><a href="#">Warranty & Repairs</a></li>
+                    <li><a href="/contact">Customer Service</a></li>
+                    <li><a href="/contact">Technical Support</a></li>
+                    <!-- <li><a href="#">Warranty & Repairs</a></li>
                     <li><a href="#">User Manuals</a></li>
-                    <li><a href="#">Returns & Exchanges</a></li>
+                    <li><a href="#">Returns & Exchanges</a></li> -->
                 </ul>
             </div>
             <div class="footer-section">
                 <h3>Company</h3>
                 <ul>
-                    <li><a href="#">About Us</a></li>
-                    <li><a href="#">Careers</a></li>
+                    <li><a href="/about">About Us</a></li>
+                    <!-- <li><a href="#">Careers</a></li>
                     <li><a href="#">Press & Media</a></li>
-                    <li><a href="#">Investor Relations</a></li>
+                    <li><a href="#">Investor Relations</a></li> -->
                     <li><a href="#">Privacy Policy</a></li>
                 </ul>
             </div>
@@ -1260,6 +1319,15 @@
         document.querySelector('.profile-btn').addEventListener('click', function () {
             window.location.href = '/profile';
         });
+
+        // Hide search bar on home page
+document.addEventListener('DOMContentLoaded', function() {
+    const searchContainer = document.querySelector('.search-container');
+    if (searchContainer) {
+        searchContainer.style.display = 'none';
+    }
+});
+
 
         // Enhanced tooltip functionality for profile button
         document.addEventListener('DOMContentLoaded', function() {
@@ -1369,6 +1437,57 @@
             // Push a new state to prevent direct back navigation
             window.history.pushState(null, null, window.location.href);
         });
+
+        // Simple color selection function for home page
+        function selectHomeColor(colorDot, productId) {
+            const productCard = colorDot.closest('.product-card');
+            const variantId = colorDot.getAttribute('data-variant-id');
+            const stock = parseInt(colorDot.getAttribute('data-stock'));
+
+            // Check if variant is out of stock
+            if (stock === 0) {
+                alert('This color variant is currently out of stock.');
+                return;
+            }
+
+            // Remove active class from all color dots in this product
+            productCard.querySelectorAll('.color-dot').forEach(dot => dot.classList.remove('active'));
+            // Add active class to clicked dot
+            colorDot.classList.add('active');
+
+            // Update product link to include selected variant
+            const productLink = productCard.querySelector('a[href*="/products/"]');
+            if (productLink) {
+                productLink.href = `/products/${productId}?variant=${variantId}`;
+            }
+
+            // Fetch variant data via API and update display
+            fetch(`/api/variant/${variantId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.variant) {
+                        const variant = data.variant;
+                        
+                        // Update image
+                        const productImage = productCard.querySelector('img');
+                        if (variant.images && variant.images.length > 0) {
+                            const imageUrl = typeof variant.images[0] === 'string' ? variant.images[0] : variant.images[0].url;
+                            productImage.src = imageUrl;
+                        }
+
+                        // Update price
+                        const priceElement = productCard.querySelector('.product-price');
+                        if (variant.salePrice === variant.regularPrice) {
+                            priceElement.innerHTML = `₹${variant.salePrice.toLocaleString()}`;
+                        } else {
+                            priceElement.innerHTML = `₹${variant.salePrice.toLocaleString()} <span style="text-decoration: line-through; color: #999; font-size: 0.9em;">₹${variant.regularPrice.toLocaleString()}</span>`;
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching variant data:', error);
+                });
+        }
     </script>
 
     <!-- Session Security Script -->

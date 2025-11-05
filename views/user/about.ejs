@@ -4,7 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= title %></title>
+    <title>
+        <%= title %>
+    </title>
     <link href="https://fonts.googleapis.com/css2?family=Prata&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 
@@ -194,7 +196,7 @@
             position: relative;
         }
 
-        .icon-btn.profile-btn > * {
+        .icon-btn.profile-btn>* {
             pointer-events: none;
             position: relative;
             z-index: 1;
@@ -346,10 +348,13 @@
         }
 
         @keyframes pulse {
-            0%, 100% {
+
+            0%,
+            100% {
                 transform: scale(1);
                 opacity: 0.6;
             }
+
             50% {
                 transform: scale(1.1);
                 opacity: 0.8;
@@ -655,23 +660,28 @@
             </div>
             <div class="icon-buttons">
                 <button class="icon-btn cart-btn" data-tooltip="Cart" onclick="window.location.href='/cart'">
-                    <% if (typeof cartCount !== 'undefined' && cartCount > 0) { %>
-                        <span class="badge"><%= cartCount %></span>
-                    <% } %>
-                </button>
-                <button class="icon-btn wishlist-btn" data-tooltip="Wishlist" onclick="window.location.href='/wishlist'"></button>
-                <button class="icon-btn profile-btn" data-tooltip="Profile" onclick="window.location.href='/profile'">
-                    <% if (typeof user !== 'undefined' && user && user.avatar && user.avatar.url) { %>
-                        <img src="<%= user.avatar.url %>" alt="Profile" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
-                    <% } else { %>
-                        <% if (typeof user !== 'undefined' && user && user.name) { %>
-                            <div style="width: 100%; height: 100%; background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 16px; font-weight: 600;">
-                                <%= user.name.charAt(0).toUpperCase() %>
-                            </div>
-                        <% } else { %>
-                            <i class="fas fa-user"></i>
+                    <% if (typeof cartCount !=='undefined' && cartCount> 0) { %>
+                        <span class="badge">
+                            <%= cartCount %>
+                        </span>
                         <% } %>
-                    <% } %>
+                </button>
+                <button class="icon-btn wishlist-btn" data-tooltip="Wishlist"
+                    onclick="window.location.href='/wishlist'"></button>
+                <button class="icon-btn profile-btn" data-tooltip="Profile" onclick="window.location.href='/profile'">
+                    <% if (typeof user !=='undefined' && user && user.avatar && user.avatar.url) { %>
+                        <img src="<%= user.avatar.url %>" alt="Profile"
+                            style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                        <% } else { %>
+                            <% if (typeof user !=='undefined' && user && user.name) { %>
+                                <div
+                                    style="width: 100%; height: 100%; background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 16px; font-weight: 600;">
+                                    <%= user.name.charAt(0).toUpperCase() %>
+                                </div>
+                                <% } else { %>
+                                    <i class="fas fa-user"></i>
+                                    <% } %>
+                                        <% } %>
                 </button>
             </div>
         </div>
@@ -680,7 +690,8 @@
     <!-- Hero Section -->
     <section class="hero-section">
         <h1 class="hero-title">About Melodia</h1>
-        <p class="hero-subtitle">Discover the story behind premium audio excellence and our commitment to sound perfection</p>
+        <p class="hero-subtitle">Discover the story behind premium audio excellence and our commitment to sound
+            perfection</p>
     </section>
 
     <!-- About Section -->
@@ -699,13 +710,17 @@
 
             <div class="about-content">
                 <h1 class="about-title">About Us</h1>
-                
+
                 <p class="about-text">
-                    At Soundix, we believe that shopping should be simple, enjoyable, and rewarding. We are passionate about bringing you carefully curated Audio & Sound Equipment at unbeatable prices, with a focus on customer satisfaction and seamless shopping experiences.
+                    At Soundix, we believe that shopping should be simple, enjoyable, and rewarding. We are passionate
+                    about bringing you carefully curated Audio & Sound Equipment at unbeatable prices, with a focus on
+                    customer satisfaction and seamless shopping experiences.
                 </p>
 
                 <p class="about-text">
-                    We are more than just a store; we are a community of fashion enthusiasts, tech lovers, home decorators, etc. committed to helping you find exactly what you need. From product discovery to delivery, we are with you every step of the way.
+                    We are more than just a store; we are a community of fashion enthusiasts, tech lovers, home
+                    decorators, etc. committed to helping you find exactly what you need. From product discovery to
+                    delivery, we are with you every step of the way.
                 </p>
 
                 <div class="stats-grid">
@@ -731,7 +746,8 @@
         <div class="footer-content">
             <div class="footer-brand">
                 <div class="footer-logo">
-                    <img src="/image/user/home/20250929_014220.png" alt="Melodia Logo" onerror="this.style.display='none';">
+                    <img src="/image/user/home/20250929_014220.png" alt="Melodia Logo"
+                        onerror="this.style.display='none';">
                     Melodia
                 </div>
             </div>
@@ -774,7 +790,7 @@
 
     <script>
         // Navbar scroll effect
-        window.addEventListener('scroll', function() {
+        window.addEventListener('scroll', function () {
             const navbar = document.getElementById('navbar');
             if (window.scrollY > 50) {
                 navbar.classList.add('scrolled');
@@ -792,15 +808,22 @@
             }
         }
 
+        document.addEventListener('DOMContentLoaded', function () {
+            const searchContainer = document.querySelector('.search-container');
+            if (searchContainer) {
+                searchContainer.style.display = 'none';
+            }
+        });
+
         // Search on Enter key
-        document.getElementById('navSearchInput').addEventListener('keypress', function(e) {
+        document.getElementById('navSearchInput').addEventListener('keypress', function (e) {
             if (e.key === 'Enter') {
                 performSearch();
             }
         });
 
         // Load cart count on page load
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             loadCartCount();
         });
 

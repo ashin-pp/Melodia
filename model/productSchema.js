@@ -9,6 +9,7 @@ const productSchema = new mongoose.Schema({
   batteryHealth: { type: Number, default: 100 },
   offer: { type: Number, default: 0, min: 0, max: 100 },
   isListed: { type: Boolean, default: true },
+  isPremium: { type: Boolean, default: false },
   variants: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Variant' }]
 }, { timestamps: true });
 

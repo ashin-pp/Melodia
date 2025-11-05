@@ -6,6 +6,7 @@ import User from '../../model/userSchema.js';
 import sendMail from '../../helper/mailer.js';
 import Cart from '../../model/cartSchema.js';
 import referralService from '../../services/referralService.js';
+import { title } from 'process';
 
 dotenv.config();
 
@@ -27,6 +28,59 @@ export const loadHomePage = async (req, res) => {
     const userId = req.session.user.id;
     const user = await User.findById(userId);
 
+    // Fetch premium products for homepage
+    const Product = (await import('../../model/productSchema.js')).default;
+    const Variant = (await import('../../model/variantSchema.js')).default;
+
+    const premiumProducts = await Product.find({
+      isPremium: true,
+      isListed: true
+    })
+      .populate('categoryId', 'name')
+      .populate('variants')
+      .limit(6) // Show max 6 premium products
+      .sort({ createdAt: -1 }); // Show newest first
+
+    // Get variant data for each premium product
+    const premiumProductsWithVariants = await Promise.all(
+      premiumProducts.map(async (product) => {
+        const variants = await Variant.find({
+          productId: product._id
+        }).sort({ salePrice: 1 }); // Sort by price ascending - show all variants
+
+
+
+        // Get the main image - use same pattern as other pages
+        let mainImage = '/image/user/home/headset1.jpg'; // Default fallback
+
+        if (variants.length > 0 && variants[0].images && variants[0].images.length > 0) {
+          const firstImage = variants[0].images[0];
+          // Use same pattern as productlist.ejs and other pages
+          mainImage = typeof firstImage === 'string' ? firstImage : firstImage.url;
+        }
+
+        return {
+          ...product.toObject(),
+          variants: variants,
+          minPrice: variants.length > 0 ? Math.min(...variants.map(v => v.salePrice)) : 0,
+          maxPrice: variants.length > 0 ? Math.max(...variants.map(v => v.salePrice)) : 0,
+          availableColors: variants.map(v => v.color),
+          mainImage: mainImage,
+          variantData: variants.reduce((acc, variant) => {
+            acc[variant._id] = {
+              id: variant._id,
+              color: variant.color,
+              price: variant.salePrice,
+              regularPrice: variant.regularPrice,
+              stock: variant.stock,
+              images: variant.images
+            };
+            return acc;
+          }, {})
+        };
+      })
+    );
+
 
     // Set cache control headers to prevent back button issues
     res.set({
@@ -38,6 +92,7 @@ export const loadHomePage = async (req, res) => {
     res.render('user/home', {
       isAuthenticated: true,
       user,
+      premiumProducts: premiumProductsWithVariants,
       welcomeMessage: req.session.justLoggedIn ? 'Welcome back!' : null,
       sessionSecurity: `
         <script>
@@ -80,9 +135,62 @@ export const loadHomePage = async (req, res) => {
 
 
 
-export const loadLandingPage = (req, res) => {
+export const loadLandingPage = async (req, res) => {
   try {
-    res.render('user/landing')
+    // Fetch premium products for landing page
+    const Product = (await import('../../model/productSchema.js')).default;
+    const Variant = (await import('../../model/variantSchema.js')).default;
+
+    const premiumProducts = await Product.find({
+      isPremium: true,
+      isListed: true
+    })
+      .populate('categoryId', 'name')
+      .populate('variants')
+      .limit(6) // Show max 6 premium products
+      .sort({ createdAt: -1 }); // Show newest first
+
+    // Get variant data for each premium product
+    const premiumProductsWithVariants = await Promise.all(
+      premiumProducts.map(async (product) => {
+        const variants = await Variant.find({
+          productId: product._id
+        }).sort({ salePrice: 1 }); // Sort by price ascending - show all variants
+
+        // Get the main image - use same pattern as home page
+        let mainImage = '/image/user/home/headset1.jpg'; // Default fallback
+
+        if (variants.length > 0 && variants[0].images && variants[0].images.length > 0) {
+          const firstImage = variants[0].images[0];
+          mainImage = typeof firstImage === 'string' ? firstImage : firstImage.url;
+        }
+
+        return {
+          ...product.toObject(),
+          variants: variants,
+          minPrice: variants.length > 0 ? Math.min(...variants.map(v => v.salePrice)) : 0,
+          maxPrice: variants.length > 0 ? Math.max(...variants.map(v => v.salePrice)) : 0,
+          availableColors: variants.map(v => v.color),
+          mainImage: mainImage,
+          variantData: variants.reduce((acc, variant) => {
+            acc[variant._id] = {
+              id: variant._id,
+              color: variant.color,
+              price: variant.salePrice,
+              regularPrice: variant.regularPrice,
+              stock: variant.stock,
+              images: variant.images
+            };
+            return acc;
+          }, {})
+        };
+      })
+    );
+
+    res.render('user/landing', {
+      premiumProducts: premiumProductsWithVariants,
+      isAuthenticated: req.session?.user ? true : false
+    });
   } catch (err) {
     console.log("error in loading landing page", err);
     res.render('error/500', { title: 'server error' });
@@ -581,17 +689,17 @@ export const verifyOtp = async (req, res) => {
         console.log('Referral Result:', referralResult);
 
         if (referralResult.success) {
-          console.log('✅ Referral processed successfully');
+          console.log(' Referral processed successfully');
           // Store referral success info for display
           req.session.referralSuccess = {
             message: referralResult.message,
             reward: referralResult.reward
           };
         } else {
-          console.log('❌ Referral processing failed:', referralResult.message);
+          console.log(' Referral processing failed:', referralResult.message);
         }
       } catch (referralError) {
-        console.error('❌ Referral processing error:', referralError);
+        console.error('Referral processing error:', referralError);
         // Don't block user registration, but log the error
       }
     }
@@ -1121,6 +1229,106 @@ export const loadAboutPage = async (req, res) => {
   }
 };
 
+export const getContact = async (req, res) => {
+  try {
+    let user = null;
+
+    if (req.session?.user?.id) {
+      user = await User.findById(req.session.user.id); 
+    }
+
+    res.render('user/contact', {
+      user: user,
+      title: 'Contact Us - Melodia',
+      isAuthenticated: user ? true : false
+    });
+  } catch (error) {
+    console.log("error in contact page", error);
+    res.status(500).render('error/500', { title: 'Server Error' });
+  }
+};
+
+
+export const postContact = async (req, res) => {
+  console.log('🚀 CONTACT ROUTE HIT - Starting function');
+  console.log('📧 Request method:', req.method);
+  console.log('📧 Request URL:', req.url);
+  console.log('📧 Content-Type:', req.headers['content-type']);
+  
+  try {
+    console.log('📧 Contact form submission received:', req.body);
+    console.log('📧 Email config check:', {
+      email: process.env.NODEMAILER_EMAIL,
+      pass: process.env.NODEMAILER_PASS ? 'SET' : 'NOT SET'
+    });
+
+    const { name, email, phone, subject, message } = req.body;
+    let userInfo = '';
+
+    if (req.session?.user?.id) {
+      const user = await User.findById(req.session.user.id);
+      if (user) {
+        userInfo = `
+          <div style="background: #f0f8ff; padding: 15px; border-radius: 8px; margin: 10px 0;">
+            <h4 style="color: #1976d2; margin-top: 0;">Registered User Details</h4>
+            <p><strong>User ID:</strong> ${user._id}</p>
+            <p><strong>Registered Email:</strong> ${user.email}</p>
+            <p><strong>Join Date:</strong> ${user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}</p>
+          </div>
+        `;
+      }
+    }
+
+    if (!name || !email || !subject || !message) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please fill all required fields'
+      });
+    }
+
+    const emailSubject = `New Contact: ${subject}`; 
+    const emailHtml = `
+      <h2>New Contact Form Submission</h2>
+      <p><strong>Name:</strong> ${name}</p>
+      <p><strong>Email:</strong> ${email}</p>
+      <p><strong>Phone:</strong> ${phone || 'Not provided'}</p>
+      <p><strong>Subject:</strong> ${subject}</p>
+      <p><strong>Message:</strong><br>${message}</p>
+      ${userInfo}
+    `;
+
+    console.log('📧 Sending email with subject:', emailSubject);
+    console.log('📧 Sending to:', process.env.NODEMAILER_EMAIL);
+
+    await sendMail(
+      process.env.NODEMAILER_EMAIL,
+      emailSubject,
+      message,
+      emailHtml
+    );
+
+    console.log('✅ Email sent successfully');
+
+    res.json({
+      success: true,
+      message: 'Thank you! We will get back to you within 24 hours.'
+    });
+
+  } catch (error) {
+    console.error('Contact page form submission error:', error);
+    console.error('Error details:', {
+      message: error.message,
+      stack: error.stack
+    });
+
+    res.status(500).json({
+      success: false,
+      message: 'Error sending message. Please try again.'
+    });
+  }
+};
+
+
 // Default export for compatibility
 export default {
   loadHomePage,
@@ -1136,5 +1344,7 @@ export default {
   postForgotPassword,
   getResetPassword,
   postResetPassword,
-  loadAboutPage
+  loadAboutPage,
+  getContact,
+  postContact,
 };
