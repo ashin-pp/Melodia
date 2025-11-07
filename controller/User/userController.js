@@ -944,7 +944,8 @@ export const postForgotPassword = async (req, res) => {
       });
     }
 
-    const resetUrl = `${process.env.APP_BASE_URL || 'http://localhost:3000'}/user/reset-password/${token}`;
+    const resetUrl =  `${process.env.APP_BASE_URL}/reset-password/${token}`;
+    `${process.env.APP_BASE_URL}/reset-password/${token}`;
 
     await transporter.sendMail({
       to: email,
@@ -1180,7 +1181,7 @@ export const postResetPassword = async (req, res) => {
 
       console.log('Session saved, redirecting to login...');
       // FIXED: Only redirect, don't render and redirect
-      res.redirect('/user/login?success=password_reset');
+      res.redirect('/login?success=password_reset');
     });
 
   } catch (err) {
