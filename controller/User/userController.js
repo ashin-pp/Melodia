@@ -137,6 +137,8 @@ export const loadHomePage = async (req, res) => {
 
 export const loadLandingPage = async (req, res) => {
   try {
+    console.log("Loading landing page...");
+    
     // Fetch premium products for landing page
     const Product = (await import('../../model/productSchema.js')).default;
     const Variant = (await import('../../model/variantSchema.js')).default;
@@ -149,6 +151,8 @@ export const loadLandingPage = async (req, res) => {
       .populate('variants')
       .limit(6) // Show max 6 premium products
       .sort({ createdAt: -1 }); // Show newest first
+
+    console.log(`Found ${premiumProducts.length} premium products`);
 
     // Get variant data for each premium product
     const premiumProductsWithVariants = await Promise.all(
@@ -187,15 +191,18 @@ export const loadLandingPage = async (req, res) => {
       })
     );
 
+    console.log("Rendering landing page with data");
+    
     res.render('user/landing', {
       premiumProducts: premiumProductsWithVariants,
       isAuthenticated: req.session?.user ? true : false
     });
+    
+    console.log("Landing page rendered successfully");
   } catch (err) {
-    console.log("error in loading landing page", err);
-    res.render('error/500', { title: 'server error' });
+    console.error("Error in loading landing page:", err);
+    res.status(500).render('error/500', { title: 'Server Error' });
   }
-  console.log("landing page loaded")
 }
 
 // Render login page
@@ -1234,7 +1241,7 @@ export const getContact = async (req, res) => {
     let user = null;
 
     if (req.session?.user?.id) {
-      user = await User.findById(req.session.user.id); 
+      user = await User.findById(req.session.user.id);
     }
 
     res.render('user/contact', {
@@ -1254,7 +1261,7 @@ export const postContact = async (req, res) => {
   console.log('📧 Request method:', req.method);
   console.log('📧 Request URL:', req.url);
   console.log('📧 Content-Type:', req.headers['content-type']);
-  
+
   try {
     console.log('📧 Contact form submission received:', req.body);
     console.log('📧 Email config check:', {
@@ -1286,7 +1293,7 @@ export const postContact = async (req, res) => {
       });
     }
 
-    const emailSubject = `New Contact: ${subject}`; 
+    const emailSubject = `New Contact: ${subject}`;
     const emailHtml = `
       <h2>New Contact Form Submission</h2>
       <p><strong>Name:</strong> ${name}</p>

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -56,6 +57,7 @@
                 opacity: 0;
                 transform: translateY(20px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -66,6 +68,7 @@
             from {
                 opacity: 0;
             }
+
             to {
                 opacity: 1;
             }
@@ -88,6 +91,7 @@
                 opacity: 0;
                 transform: translateX(-15px);
             }
+
             to {
                 opacity: 1;
                 transform: translateX(0);
@@ -159,6 +163,7 @@
                 opacity: 0;
                 transform: translateX(15px);
             }
+
             to {
                 opacity: 1;
                 transform: translateX(0);
@@ -373,7 +378,7 @@
         .social-button {
             width: 300px;
             height: 48px;
-            border-radius:10%;
+            border-radius: 10%;
             border: 1.5px solid #ddd;
             background: #ffffff;
             display: flex;
@@ -409,8 +414,13 @@
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
 
         .password-strength {
@@ -419,9 +429,17 @@
             color: #666;
         }
 
-        .strength-weak { color: #e53e3e; }
-        .strength-medium { color: #dd6b20; }
-        .strength-strong { color: #38a169; }
+        .strength-weak {
+            color: #e53e3e;
+        }
+
+        .strength-medium {
+            color: #dd6b20;
+        }
+
+        .strength-strong {
+            color: #38a169;
+        }
 
         .error-message {
             color: #e53e3e;
@@ -495,9 +513,19 @@
         }
 
         @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-5px);
+            }
+
+            75% {
+                transform: translateX(5px);
+            }
         }
 
         #already {
@@ -556,24 +584,246 @@
                 transform: translateY(0);
             }
         }
+
+        /* Enhanced Responsive Design for SignUp Page */
+        @media (max-width: 1200px) {
+            .register-container {
+                max-width: 800px;
+            }
+
+            .page-titles {
+                left: 30px;
+                font-size: 15px;
+            }
+        }
+
+        @media (max-width: 992px) {
+            body {
+                padding: 15px;
+            }
+
+            .register-container {
+                max-width: 700px;
+                min-height: 450px;
+            }
+
+            .page-titles {
+                left: 25px;
+                top: 20px;
+                font-size: 14px;
+            }
+
+            .register-image {
+                padding: 40px 30px;
+            }
+
+            .logo-left {
+                font-size: 28px;
+            }
+
+            .register-form {
+                padding: 40px 30px;
+            }
+
+            .form-title {
+                font-size: 26px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+                align-items: flex-start;
+                padding-top: 50px;
+            }
+
+            .page-titles {
+                position: relative;
+                top: 0;
+                left: 0;
+                text-align: center;
+                margin-bottom: 20px;
+                font-size: 16px;
+            }
+
+            .register-container {
+                flex-direction: column;
+                max-width: 500px;
+                min-height: auto;
+            }
+
+            .register-image {
+                padding: 30px 20px;
+                text-align: center;
+                min-height: 150px;
+            }
+
+            .logo-left {
+                font-size: 24px;
+                margin-bottom: 10px;
+            }
+
+            .image-text {
+                font-size: 14px;
+                margin-top: 10px;
+            }
+
+            .register-form {
+                padding: 30px 25px;
+            }
+
+            .form-title {
+                font-size: 24px;
+                margin-bottom: 20px;
+            }
+
+            .name-fields {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .name-field {
+                margin-bottom: 0;
+            }
+
+            .form-group {
+                margin-bottom: 18px;
+            }
+
+            .form-input {
+                padding: 12px 15px;
+                font-size: 15px;
+            }
+
+            .register-btn {
+                padding: 12px;
+                font-size: 15px;
+            }
+
+            .form-links {
+                margin-top: 20px;
+            }
+
+            .form-links a {
+                font-size: 13px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            body {
+                padding: 8px;
+                padding-top: 30px;
+            }
+
+            .register-container {
+                max-width: 400px;
+                border-radius: 16px;
+            }
+
+            .register-image {
+                padding: 25px 15px;
+                min-height: 120px;
+            }
+
+            .logo-left {
+                font-size: 22px;
+            }
+
+            .image-text {
+                font-size: 13px;
+            }
+
+            .register-form {
+                padding: 25px 20px;
+            }
+
+            .form-title {
+                font-size: 22px;
+                margin-bottom: 18px;
+            }
+
+            .form-group {
+                margin-bottom: 16px;
+            }
+
+            .form-input {
+                padding: 10px 12px;
+                font-size: 14px;
+            }
+
+            .register-btn {
+                padding: 10px;
+                font-size: 14px;
+            }
+
+            .form-links a {
+                font-size: 12px;
+            }
+
+            .error-message,
+            .success-message {
+                font-size: 13px;
+                padding: 10px 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 5px;
+                padding-top: 20px;
+            }
+
+            .register-container {
+                max-width: 350px;
+            }
+
+            .register-image {
+                padding: 20px 12px;
+                min-height: 100px;
+            }
+
+            .logo-left {
+                font-size: 20px;
+            }
+
+            .register-form {
+                padding: 20px 15px;
+            }
+
+            .form-title {
+                font-size: 20px;
+            }
+
+            .form-input {
+                padding: 8px 10px;
+                font-size: 13px;
+            }
+
+            .register-btn {
+                padding: 8px;
+                font-size: 13px;
+            }
+        }
     </style>
 </head>
+
 <body>
     <div class="page-titles"></div>
-    
+
     <div class="register-container">
         <!-- Left side with image -->
         <div class="register-image">
             <a href="#" class="logo-left">Melodia</a>
             <div class="image-container">
-                <img src="/image/user/login/register.jpg" alt="Woman with headphones" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgdmlld0JveD0iMCAwIDQwMCA0MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iNDAwIiBmaWxsPSIjZjNmNGY2Ii8+CjxjaXJjbGUgY3g9IjIwMCIgY3k9IjE1MCIgcj0iNDAiIGZpbGw9IiM5Y2EzYWYiLz4KPHBhdGggZD0iTTEyMCAyNDBjMC00NC4xODMgMzUuODE3LTgwIDgwLTgwczgwIDM1LjgxNyA4MCA4MHYxMjBIMTIwVjI0MFoiIGZpbGw9IiM5Y2EzYWYiLz4KPC9zdmc+Cg=='; this.style.backgroundColor='#f3f4f6';">
+                <img src="/image/user/login/register.jpg" alt="Woman with headphones"
+                    onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgdmlld0JveD0iMCAwIDQwMCA0MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iNDAwIiBmaWxsPSIjZjNmNGY2Ii8+CjxjaXJjbGUgY3g9IjIwMCIgY3k9IjE1MCIgcj0iNDAiIGZpbGw9IiM5Y2EzYWYiLz4KPHBhdGggZD0iTTEyMCAyNDBjMC00NC4xODMgMzUuODE3LTgwIDgwLTgwczgwIDM1LjgxNyA4MCA4MHYxMjBIMTIwVjI0MFoiIGZpbGw9IiM5Y2EzYWYiLz4KPC9zdmc+Cg=='; this.style.backgroundColor='#f3f4f6';">
             </div>
         </div>
 
         <!-- Right side with form -->
         <div class="register-form-container">
             <div class="welcome-text">Welcome to Melodia</div>
-            
+
             <div class="tab-container">
                 <button class="tab-button" type="button" onclick="window.location.href='/login'">Login</button>
                 <button class="tab-button active" type="button">Register</button>
@@ -584,98 +834,56 @@
                 <div class="name-row">
                     <div class="name-field">
                         <label for="firstName" class="form-label">First name</label>
-                        <input 
-                            type="text" 
-                            id="firstName" 
-                            name="firstName" 
-                            class="form-input" 
-                            placeholder="First name"
+                        <input type="text" id="firstName" name="firstName" class="form-input" placeholder="First name"
                             value="<%= typeof oldInput !== 'undefined' && oldInput.firstName ? oldInput.firstName : ''%>"
-                            required
-                            pattern="[A-Za-z\s]+"
-                            title="First name should only contain letters"
-                        >
+                            required pattern="[A-Za-z\s]+" title="First name should only contain letters">
                         <div class="error-message" id="firstNameError"></div>
                     </div>
                     <div class="name-field">
                         <label for="lastName" class="form-label">Last name</label>
-                        <input 
-                            type="text" 
-                            id="lastName" 
-                            name="lastName" 
-                            class="form-input" 
-                            placeholder="Last name"
+                        <input type="text" id="lastName" name="lastName" class="form-input" placeholder="Last name"
                             value="<%= typeof oldInput !== 'undefined' && oldInput.lastName ? oldInput.lastName : ''%>"
-                           
-                            pattern="[A-Za-z\s]+"
-                            title="Last name should only contain letters"
-                        >
+                            pattern="[A-Za-z\s]+" title="Last name should only contain letters">
                         <div class="error-message" id="lastNameError"></div>
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label for="email" class="form-label">Email Address</label>
-                    <input 
-                        type="email" 
-                        id="email" 
-                        name="email" 
-                        class="form-input" 
+                    <input type="email" id="email" name="email" class="form-input"
                         placeholder="Enter your Email Address"
-                        value="<%= typeof oldInput !== 'undefined' && oldInput.email ? oldInput.email : ''%>"
-                        required
-                        pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
-                        title="Please enter a valid email address"
-                    >
+                        value="<%= typeof oldInput !== 'undefined' && oldInput.email ? oldInput.email : ''%>" required
+                        pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$" title="Please enter a valid email address">
                     <div class="error-message" id="emailError"></div>
                 </div>
 
                 <div class="form-group">
                     <label for="phoneNumber" class="form-label">Phone Number</label>
-                    <input 
-                        type="tel" 
-                        id="phoneNumber" 
-                        name="phone" 
-                        class="form-input" 
+                    <input type="tel" id="phoneNumber" name="phone" class="form-input"
                         placeholder="Enter your phone number"
-                        value="<%= typeof oldInput !== 'undefined' && oldInput.phone ? oldInput.phone : ''%>"
-                        required
-                        pattern="[0-9]{10}"
-                        title="Phone number should contain exactly 10 digits"
-                    >
+                        value="<%= typeof oldInput !== 'undefined' && oldInput.phone ? oldInput.phone : ''%>" required
+                        pattern="[0-9]{10}" title="Phone number should contain exactly 10 digits">
                     <div class="error-message" id="phoneError"></div>
                 </div>
 
                 <div class="form-group">
                     <label for="referralCode" class="form-label">Referral Code (Optional)</label>
-                    <input 
-                        type="text" 
-                        id="referralCode" 
-                        name="referralCode" 
-                        class="form-input" 
-                        placeholder="Enter referral code if you have one"
+                    <input type="text" id="referralCode" name="referralCode" class="form-input"
+                        placeholder="Enter referral code"
                         value="<%= typeof referralCode !== 'undefined' ? referralCode : '' %>"
-                        style="text-transform: uppercase;"
-                        maxlength="8"
-                    >
+                        style="text-transform: uppercase;" maxlength="8">
                     <div class="error-message" id="referralCodeError"></div>
-                    <div class="success-message" id="referralCodeSuccess" style="color: #38a169; font-size: 12px; margin-top: 5px; display: none;"></div>
+                    <div class="success-message" id="referralCodeSuccess"
+                        style="color: #38a169; font-size: 12px; margin-top: 5px; display: none;"></div>
                 </div>
 
                 <div class="form-group">
                     <label for="password" class="form-label">Password</label>
                     <div class="password-container">
-                        <input 
-                            type="password" 
-                            id="password" 
-                            name="password" 
-                            class="form-input" 
-                            placeholder="Enter your Password"
-                            required
-                            minlength="6"
+                        <input type="password" id="password" name="password" class="form-input"
+                            placeholder="Enter your Password" required minlength="6"
                             pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{6,}$"
-                            title="Password must be at least 6 characters with at least one uppercase, one lowercase, and one number"
-                        >
+                            title="Password must be at least 6 characters with at least one uppercase, one lowercase, and one number">
                         <button type="button" class="password-toggle" onclick="togglePassword('password')">👁</button>
                     </div>
                     <div class="password-strength" id="passwordStrength"></div>
@@ -685,16 +893,10 @@
                 <div class="form-group">
                     <label for="confirmPassword" class="form-label">Confirm Password</label>
                     <div class="password-container">
-                        <input 
-                            type="password" 
-                            id="confirmPassword" 
-                            name="confirmPass" 
-                            class="form-input" 
-                            placeholder="Confirm your Password"
-                            required
-                            minlength="6"
-                        >
-                        <button type="button" class="password-toggle" onclick="togglePassword('confirmPassword')">👁</button>
+                        <input type="password" id="confirmPassword" name="confirmPass" class="form-input"
+                            placeholder="Confirm your Password" required minlength="6">
+                        <button type="button" class="password-toggle"
+                            onclick="togglePassword('confirmPassword')">👁</button>
                     </div>
                     <div class="error-message" id="confirmPasswordError"></div>
                 </div>
@@ -705,10 +907,11 @@
                         Remember me
                     </label>
                 </div> -->
-                
+
                 <p id="already" class="text-sm text-center mt-6 text-gray-500">
                     Already have an account?
-                    <a href="/login" id="login-link" class="text-black font-medium hover:underline" aria-label="Go to login page">Log in</a>
+                    <a href="/login" id="login-link" class="text-black font-medium hover:underline"
+                        aria-label="Go to login page">Log in</a>
                 </p>
 
                 <button type="submit" class="register-button">Register</button>
@@ -719,7 +922,9 @@
             </div>
 
             <div class="social-buttons">
-                <button type="button" class="social-button google-btn" onclick="registerWithGoogle()"><img src="/image/user/login/icons8-google-48.png" alt="google-logo" style="width: 30px; padding-right: 10px;">Sign Up with Google</button>
+                <button type="button" class="social-button google-btn" onclick="registerWithGoogle()"><img
+                        src="/image/user/login/icons8-google-48.png" alt="google-logo"
+                        style="width: 30px; padding-right: 10px;">Sign Up with Google</button>
             </div>
         </div>
     </div>
@@ -728,7 +933,7 @@
         // Validation utility functions
         const ValidationUtils = {
             // Name validation - only letters and spaces, 2-50 characters
-            validateName: function(name) {
+            validateName: function (name) {
                 if (!name || name.trim().length === 0) {
                     return { valid: false, message: 'Name is required' };
                 }
@@ -742,11 +947,11 @@
                 if (!nameRegex.test(name.trim())) {
                     return { valid: false, message: 'Name can only contain letters and spaces' };
                 }
-                return { valid: true, message: ''};
+                return { valid: true, message: '' };
             },
 
             // Email validation - proper email format
-            validateEmail: function(email) {
+            validateEmail: function (email) {
                 if (!email || email.trim().length === 0) {
                     return { valid: false, message: 'Email is required' };
                 }
@@ -754,33 +959,33 @@
                 if (!emailRegex.test(email.trim())) {
                     return { valid: false, message: 'Please enter a valid email address' };
                 }
-                return { valid: true, message: ''};
+                return { valid: true, message: '' };
             },
 
             // Phone validation - exactly 10 digits
-            validatePhone: function(phone) {
+            validatePhone: function (phone) {
                 if (!phone || phone.trim().length === 0) {
                     return { valid: false, message: 'Phone number is required' };
                 }
                 // Remove spaces, dashes, parentheses, and plus signs
                 const cleanPhone = phone.replace(/[\s\-\(\)\+]/g, '');
-                
+
                 // Check if it contains only digits
                 const phoneRegex = /^[0-9]+$/;
                 if (!phoneRegex.test(cleanPhone)) {
                     return { valid: false, message: 'Phone number can only contain digits' };
                 }
-                
+
                 // Check length (10 digits for most countries, adjust as needed)
                 if (cleanPhone.length !== 10) {
                     return { valid: false, message: 'Phone number must be exactly 10 digits' };
                 }
-                
-                return { valid: true, message: ''};
+
+                return { valid: true, message: '' };
             },
 
             // Password validation - at least 6 characters, mixed case, number
-            validatePassword: function(password) {
+            validatePassword: function (password) {
                 if (!password || password.length === 0) {
                     return { valid: false, message: 'Password is required' };
                 }
@@ -790,11 +995,11 @@
                 if (password.length > 128) {
                     return { valid: false, message: 'Password must be less than 128 characters' };
                 }
-                
+
                 const hasLowerCase = /[a-z]/.test(password);
                 const hasUpperCase = /[A-Z]/.test(password);
                 const hasNumbers = /\d/.test(password);
-                
+
                 if (!hasLowerCase) {
                     return { valid: false, message: 'Password must contain at least one lowercase letter' };
                 }
@@ -804,26 +1009,26 @@
                 if (!hasNumbers) {
                     return { valid: false, message: 'Password must contain at least one number' };
                 }
-                
-                return { valid: true, message: ''};
+
+                return { valid: true, message: '' };
             },
 
             // Confirm password validation
-            validateConfirmPassword: function(password, confirmPassword) {
+            validateConfirmPassword: function (password, confirmPassword) {
                 if (!confirmPassword || confirmPassword.length === 0) {
                     return { valid: false, message: 'Please confirm your password' };
                 }
                 if (password !== confirmPassword) {
                     return { valid: false, message: 'Passwords do not match' };
                 }
-                return { valid: true, message: ''};
+                return { valid: true, message: '' };
             }
         };
 
         function togglePassword(fieldId) {
             const passwordInput = document.getElementById(fieldId);
             const toggleBtn = passwordInput.nextElementSibling;
-            
+
             if (passwordInput.type === 'password') {
                 passwordInput.type = 'text';
                 toggleBtn.textContent = '🙈';
@@ -867,7 +1072,7 @@
         }
 
         // Real-time validation event listeners
-        document.getElementById('firstName').addEventListener('input', function() {
+        document.getElementById('firstName').addEventListener('input', function () {
             const validation = ValidationUtils.validateName(this.value);
             if (!validation.valid && this.value.trim().length > 0) {
                 showError('firstName', validation.message);
@@ -889,7 +1094,7 @@
         //     }
         // });
 
-        document.getElementById('email').addEventListener('input', function() {
+        document.getElementById('email').addEventListener('input', function () {
             const validation = ValidationUtils.validateEmail(this.value);
             if (!validation.valid && this.value.trim().length > 0) {
                 showError('email', validation.message);
@@ -900,10 +1105,10 @@
             }
         });
 
-        document.getElementById('phoneNumber').addEventListener('input', function() {
+        document.getElementById('phoneNumber').addEventListener('input', function () {
             // Allow only numbers and common phone formatting characters during input
             this.value = this.value.replace(/[^0-9\s\-\(\)\+]/g, '');
-            
+
             const validation = ValidationUtils.validatePhone(this.value);
             if (!validation.valid && this.value.trim().length > 0) {
                 showError('phoneNumber', validation.message);
@@ -914,9 +1119,9 @@
             }
         });
 
-        document.getElementById('password').addEventListener('input', function() {
+        document.getElementById('password').addEventListener('input', function () {
             checkPasswordStrength(this.value);
-            
+
             const validation = ValidationUtils.validatePassword(this.value);
             if (!validation.valid && this.value.length > 0) {
                 showError('password', validation.message);
@@ -925,7 +1130,7 @@
             } else {
                 clearFieldState('password');
             }
-            
+
             // Also validate confirm password when password changes
             const confirmPassword = document.getElementById('confirmPassword').value;
             if (confirmPassword) {
@@ -938,7 +1143,7 @@
         function validatePasswordMatch() {
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
-            
+
             const validation = ValidationUtils.validateConfirmPassword(password, confirmPassword);
             if (!validation.valid && confirmPassword.length > 0) {
                 showError('confirmPassword', validation.message);
@@ -993,7 +1198,7 @@
         function showError(fieldId, message) {
             const input = document.getElementById(fieldId);
             const errorDiv = document.getElementById(fieldId + 'Error');
-            
+
             if (input && errorDiv) {
                 input.classList.add('error', 'shake');
                 input.classList.remove('success');
@@ -1005,7 +1210,7 @@
         function showSuccess(fieldId) {
             const input = document.getElementById(fieldId);
             const errorDiv = document.getElementById(fieldId + 'Error');
-            
+
             if (input) {
                 input.classList.add('success');
                 input.classList.remove('error');
@@ -1018,7 +1223,7 @@
         function clearFieldState(fieldId) {
             const input = document.getElementById(fieldId);
             const errorDiv = document.getElementById(fieldId + 'Error');
-            
+
             if (input) {
                 input.classList.remove('error', 'success');
             }
@@ -1028,14 +1233,14 @@
         }
 
         // Enhanced form validation
-        document.getElementById('registerForm').addEventListener('submit', function(e) {
+        document.getElementById('registerForm').addEventListener('submit', function (e) {
             const firstName = document.getElementById('firstName').value;
             const lastName = document.getElementById('lastName').value;
             const email = document.getElementById('email').value;
             const phoneNumber = document.getElementById('phoneNumber').value;
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
-            
+
             // Clear previous states
             document.querySelectorAll('.form-input').forEach(input => {
                 input.classList.remove('error', 'success', 'shake');
@@ -1043,10 +1248,10 @@
             document.querySelectorAll('.error-message').forEach(error => {
                 error.classList.remove('show');
             });
-            
+
             let hasErrors = false;
             const errors = [];
-            
+
             // First name validation
             const firstNameValidation = ValidationUtils.validateName(firstName);
             if (!firstNameValidation.valid) {
@@ -1056,7 +1261,7 @@
             } else {
                 showSuccess('firstName');
             }
-            
+
             // Last name validation - FIXED THE LOGICAL ERROR HERE
             // const lastNameValidation = ValidationUtils.validateName(lastName);
             // if (!lastNameValidation.valid) {
@@ -1066,7 +1271,7 @@
             // } else {
             //     showSuccess('lastName');
             // }
-            
+
             // Email validation
             const emailValidation = ValidationUtils.validateEmail(email);
             if (!emailValidation.valid) {
@@ -1076,7 +1281,7 @@
             } else {
                 showSuccess('email');
             }
-            
+
             // Phone validation - FIXED THE LOGICAL ERROR HERE
             const phoneValidation = ValidationUtils.validatePhone(phoneNumber);
             if (!phoneValidation.valid) {
@@ -1086,7 +1291,7 @@
             } else {
                 showSuccess('phoneNumber');
             }
-            
+
             // Password validation
             const passwordValidation = ValidationUtils.validatePassword(password);
             if (!passwordValidation.valid) {
@@ -1096,7 +1301,7 @@
             } else {
                 showSuccess('password');
             }
-            
+
             // Confirm password validation
             const confirmPasswordValidation = ValidationUtils.validateConfirmPassword(password, confirmPassword);
             if (!confirmPasswordValidation.valid) {
@@ -1106,7 +1311,7 @@
             } else {
                 showSuccess('confirmPassword');
             }
-            
+
             if (hasErrors) {
                 e.preventDefault();
                 showFlashNotification('Please fix the validation errors before submitting.', 'error');
@@ -1118,7 +1323,7 @@
             const originalText = registerBtn.innerHTML;
             registerBtn.innerHTML = '<div class="loading-spinner"></div> Creating Account...';
             registerBtn.disabled = true;
-            
+
             // Restore button state after 10 seconds if form hasn't submitted
             setTimeout(() => {
                 if (registerBtn.disabled) {
@@ -1129,14 +1334,14 @@
         });
 
         // Remove shake class after animation
-        document.addEventListener('animationend', function(e) {
+        document.addEventListener('animationend', function (e) {
             if (e.animationName === 'shake') {
                 e.target.classList.remove('shake');
             }
         });
 
         // Prevent form submission on Enter key if there are validation errors
-        document.addEventListener('keypress', function(e) {
+        document.addEventListener('keypress', function (e) {
             if (e.key === 'Enter') {
                 const activeElement = document.activeElement;
                 if (activeElement && activeElement.classList.contains('form-input') && activeElement.classList.contains('error')) {
@@ -1150,36 +1355,36 @@
         const referralCodeInput = document.getElementById('referralCode');
         const referralCodeError = document.getElementById('referralCodeError');
         const referralCodeSuccess = document.getElementById('referralCodeSuccess');
-        
+
         let referralValidationTimeout;
-        
-        referralCodeInput.addEventListener('input', function() {
+
+        referralCodeInput.addEventListener('input', function () {
             const referralCode = this.value.trim().toUpperCase();
             this.value = referralCode;
-            
+
             // Clear previous timeout
             clearTimeout(referralValidationTimeout);
-            
+
             // Reset messages
             referralCodeError.textContent = '';
             referralCodeError.style.display = 'none';
             referralCodeSuccess.textContent = '';
             referralCodeSuccess.style.display = 'none';
-            
+
             if (referralCode.length === 0) {
                 return; // Optional field, no validation needed for empty
             }
-            
+
             if (referralCode.length < 8) {
                 return; // Wait for complete code
             }
-            
+
             // Debounce validation
             referralValidationTimeout = setTimeout(() => {
                 validateReferralCode(referralCode);
             }, 500);
         });
-        
+
         async function validateReferralCode(code) {
             try {
                 const response = await fetch('/api/referral/validate', {
@@ -1189,9 +1394,9 @@
                     },
                     body: JSON.stringify({ referralCode: code })
                 });
-                
+
                 const result = await response.json();
-                
+
                 if (result.valid) {
                     referralCodeSuccess.textContent = `✓ Valid referral code from ${result.referrer.name}`;
                     referralCodeSuccess.style.display = 'block';
@@ -1212,19 +1417,19 @@
     </script>
 
     <!-- FIXED: Proper error message handling -->
-    <% if (typeof message !== 'undefined' && message) { %>
+    <% if (typeof message !=='undefined' && message) { %>
         <script>
-            document.addEventListener('DOMContentLoaded', function() {
+            document.addEventListener('DOMContentLoaded', function () {
                 const message = '<%= message %>';
                 const isError = <%= typeof isError !== 'undefined' ? isError : true %>;
-                
+
                 // Show elegant notification
                 showFlashNotification(message, isError ? 'error' : 'success');
-                
+
                 // Field-specific error highlighting
                 if (isError) {
                     const msgLower = message.toLowerCase();
-                    
+
                     // Email-related errors
                     if (msgLower.includes('email')) {
                         showError('email', message);
@@ -1252,8 +1457,9 @@
                 }
             });
         </script>
-    <% } %>
+        <% } %>
 
-    <script src="../../public/js/signUp-validation.js"></script>
+            <script src="../../public/js/signUp-validation.js"></script>
 </body>
+
 </html>

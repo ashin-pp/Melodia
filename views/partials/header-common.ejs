@@ -36,9 +36,11 @@
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             position: fixed;
             top: 0;
+            left: 0;
             width: 100%;
             z-index: 1000;
             transition: all 0.3s ease;
+            box-sizing: border-box;
         }
 
         .navbar.scrolled {
@@ -193,13 +195,7 @@
             box-shadow: 0 8px 20px rgba(255, 107, 107, 0.2);
         }
 
-        .icon-btn.cart-btn::after {
-            content: "🛒";
-        }
 
-        .icon-btn.wishlist-btn::after {
-            content: "❤️";
-        }
 
         .icon-btn.profile-btn {
             overflow: hidden;
@@ -253,29 +249,288 @@
             bottom: -40px;
         }
 
-        @media (max-width: 768px) {
+        /* Hamburger Menu */
+        .hamburger-menu {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .hamburger-menu:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .hamburger-menu span {
+            width: 24px;
+            height: 2px;
+            background: #ffffff;
+            margin: 3px 0;
+            transition: all 0.3s ease;
+            border-radius: 1px;
+        }
+
+        .hamburger-menu.active span:nth-child(1) {
+            transform: rotate(45deg) translate(6px, 6px);
+        }
+
+        .hamburger-menu.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger-menu.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(6px, -6px);
+        }
+
+        /* Enhanced Responsive Design */
+        @media (max-width: 1200px) {
             .navbar {
-                padding: 15px 30px;
-                flex-direction: column;
-                gap: 20px;
+                padding: 16px 40px;
+            }
+
+            .navbar.scrolled {
+                padding: 12px 40px;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .navbar {
+                padding: 16px 30px;
+            }
+
+            .navbar.scrolled {
+                padding: 12px 30px;
             }
 
             .nav-links {
-                gap: 25px;
+                gap: 30px;
             }
 
-            .search-box {
-                width: 200px;
+            .logo {
+                font-size: 24px;
+            }
+
+            .logo img {
+                width: 36px;
+                height: 36px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 14px 20px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .navbar.scrolled {
+                padding: 10px 20px;
+            }
+
+            .logo {
+                font-size: 22px;
+                order: 1;
+            }
+
+            .logo img {
+                width: 32px;
+                height: 32px;
+            }
+
+            .nav-actions {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                order: 2;
+            }
+
+            .hamburger-menu {
+                display: flex;
+                order: 3;
+                margin-left: auto;
+            }
+
+            .nav-links {
+                position: fixed;
+                top: 70px;
+                left: 0;
+                width: 100%;
+                height: calc(100vh - 70px);
+                background: rgba(10, 10, 10, 0.98);
+                backdrop-filter: blur(20px);
+                flex-direction: column;
+                gap: 0;
+                padding: 40px 20px;
+                transform: translateX(-100%);
+                opacity: 0;
+                visibility: hidden;
+                transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                border-right: 1px solid rgba(255, 255, 255, 0.1);
+                z-index: 999;
+            }
+
+            .nav-links.active {
+                transform: translateX(0);
+                opacity: 1;
+                visibility: visible;
+            }
+
+            .nav-links li {
+                width: 100%;
+                margin-bottom: 8px;
+            }
+
+            .nav-links a {
+                display: block;
+                width: 100%;
+                padding: 16px 20px;
+                font-size: 16px;
+                border-radius: 12px;
+                text-align: left;
+                border: 1px solid transparent;
+            }
+
+            .nav-links a:hover,
+            .nav-links a.active {
+                background: rgba(255, 255, 255, 0.1);
+                border-color: rgba(255, 255, 255, 0.2);
+            }
+
+            .nav-actions {
+                order: 2;
+                gap: 12px;
+            }
+
+            .search-container {
+                display: none;
             }
 
             .icon-buttons {
-                gap: 10px;
+                gap: 8px;
             }
 
             .icon-btn {
-                width: 40px;
-                height: 40px;
-                font-size: 16px;
+                width: 38px;
+                height: 38px;
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .navbar {
+                padding: 12px 15px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .navbar.scrolled {
+                padding: 8px 15px;
+            }
+
+            .logo {
+                font-size: 20px;
+                order: 1;
+            }
+
+            .logo img {
+                width: 28px;
+                height: 28px;
+            }
+
+            .nav-actions {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                order: 2;
+            }
+
+            .hamburger-menu {
+                display: flex;
+                order: 3;
+                margin-left: auto;
+            }
+
+            .nav-links {
+                padding: 15px;
+                gap: 12px;
+            }
+
+            .nav-links a {
+                font-size: 14px;
+                padding: 10px 15px;
+            }
+
+            .search-box {
+                width: 150px;
+                padding: 8px 14px;
+                font-size: 13px;
+            }
+
+            .icon-btn {
+                width: 36px;
+                height: 36px;
+                font-size: 13px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .navbar {
+                padding: 10px 12px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .navbar.scrolled {
+                padding: 6px 12px;
+            }
+
+            .logo {
+                font-size: 18px;
+                order: 1;
+            }
+
+            .logo img {
+                width: 26px;
+                height: 26px;
+            }
+
+            .nav-actions {
+                display: flex;
+                align-items: center;
+                gap: 4px;
+                order: 2;
+            }
+
+            .hamburger-menu {
+                display: flex;
+                order: 3;
+                margin-left: auto;
+            }
+
+            .search-container {
+                display: none;
+            }
+
+            .icon-btn {
+                width: 34px;
+                height: 34px;
+                font-size: 12px;
+            }
+
+            .nav-links {
+                padding: 12px;
+            }
+
+            .nav-links a {
+                font-size: 13px;
+                padding: 8px 12px;
             }
         }
     </style>
@@ -290,27 +545,21 @@
             <img src="/image/user/home/20250929_014220.png" alt="Melodia Logo" onerror="this.style.display='none';">
             Melodia
         </a>
-        <ul class="nav-links">
-            <li><a href="/">Home</a></li>
-            <li><a href="/product/list">Products</a></li>
-            <li><a href="/about">About</a></li>
-            <li><a href="/contact">Contact</a></li>
-
-            
+        <ul class="nav-links" id="navLinks">
+            <li><a href="/" class="nav-link">Home</a></li>
+            <li><a href="/product/list" class="nav-link">Products</a></li>
+            <li><a href="/about" class="nav-link">About</a></li>
+            <li><a href="/contact" class="nav-link">Contact</a></li>
         </ul>
+
         <div class="nav-actions">
-            <!-- <div class="search-container">
-                <input type="text" class="search-box" placeholder="Search premium audio..." id="navSearchInput">
-                <i class="fas fa-search search-icon" onclick="performSearch()" id="searchIcon"></i>
-                <i class="fas fa-times clear-search" onclick="clearSearch()" id="clearSearchBtn"></i>
-            </div> -->
             <div class="icon-buttons">
                 <button class="icon-btn cart-btn" data-tooltip="Cart" onclick="window.location.href='/cart'">
-                    <!-- <i class="fas fa-shopping-cart"></i> -->
+                    🛒
                     <span class="badge cart-count" style="display: none;">0</span>
                 </button>
                 <button class="icon-btn wishlist-btn" data-tooltip="Wishlist"
-                    onclick="window.location.href='/wishlist'"></button>
+                    onclick="window.location.href='/wishlist'">❤️</button>
                 <button class="icon-btn profile-btn" data-tooltip="Profile" onclick="window.location.href='/profile'">
                     <% if (typeof user !=='undefined' && user && user.avatar && user.avatar.url) { %>
                         <img src="<%= user.avatar.url %>" alt="Profile"
@@ -327,6 +576,12 @@
                                         <% } %>
                 </button>
             </div>
+        </div>
+
+        <div class="hamburger-menu" id="hamburgerMenu">
+            <span></span>
+            <span></span>
+            <span></span>
         </div>
     </nav>
 
@@ -365,6 +620,34 @@
             }
         }
 
+        // Hamburger menu functionality
+        function toggleMobileMenu() {
+            const navLinks = document.getElementById('navLinks');
+            const hamburgerMenu = document.getElementById('hamburgerMenu');
+
+            navLinks.classList.toggle('active');
+            hamburgerMenu.classList.toggle('active');
+        }
+
+        // Set active nav link
+        function setActiveNavLink() {
+            const currentPath = window.location.pathname;
+            const navLinks = document.querySelectorAll('.nav-link');
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                const linkPath = new URL(link.href).pathname;
+
+                if (currentPath === linkPath ||
+                    (currentPath === '/' && linkPath === '/') ||
+                    (currentPath.startsWith('/product') && linkPath === '/product/list') ||
+                    (currentPath.startsWith('/about') && linkPath === '/about') ||
+                    (currentPath.startsWith('/contact') && linkPath === '/contact')) {
+                    link.classList.add('active');
+                }
+            });
+        }
+
         // Load cart count on page load
         function loadCartCount() {
             fetch('/cart/count')
@@ -396,6 +679,38 @@
         document.addEventListener('DOMContentLoaded', function () {
             // Load cart count
             loadCartCount();
+
+            // Set active nav link
+            setActiveNavLink();
+
+            // Hamburger menu toggle
+            const hamburgerMenu = document.getElementById('hamburgerMenu');
+            if (hamburgerMenu) {
+                hamburgerMenu.addEventListener('click', toggleMobileMenu);
+            }
+
+            // Close mobile menu when clicking nav links
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    const navLinksContainer = document.getElementById('navLinks');
+                    const hamburger = document.getElementById('hamburgerMenu');
+                    navLinksContainer.classList.remove('active');
+                    hamburger.classList.remove('active');
+                });
+            });
+
+            // Close mobile menu when clicking outside
+            document.addEventListener('click', (e) => {
+                const navLinks = document.getElementById('navLinks');
+                const hamburger = document.getElementById('hamburgerMenu');
+                const navbar = document.getElementById('navbar');
+
+                if (!navbar.contains(e.target) && navLinks.classList.contains('active')) {
+                    navLinks.classList.remove('active');
+                    hamburger.classList.remove('active');
+                }
+            });
             const searchInput = document.getElementById('navSearchInput');
             const clearBtn = document.getElementById('clearSearchBtn');
             const searchIcon = document.getElementById('searchIcon');

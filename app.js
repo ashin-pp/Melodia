@@ -7,7 +7,7 @@ import MongoStore from 'connect-mongo';
 import userRoutes from './routes/userRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import { getImageUrl } from './helper/imageHandler.js';
-import connectDB from './config/mongo.js'; 
+import connectDB from './config/mongo.js';
 import './config/passport.js';
 import passport from 'passport';
 

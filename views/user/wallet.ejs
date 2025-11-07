@@ -495,7 +495,48 @@
             transform: rotate(90deg) translateX(4px);
         }
     }
+
+    .breadcrumb {
+    background: #fafafa;
+    padding: 16px 0;
+    font-size: 13px;
+}
+
+.breadcrumb-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #666;
+}
+
+.breadcrumb a {
+    color: #666;
+    text-decoration: none;
+}
+
+.breadcrumb a:hover {
+    color: #000;
+}
+
+.breadcrumb .current {
+    color: #000;
+    font-weight: 500;
+}
+
 </style>
+
+<div class="breadcrumb">
+    <div class="breadcrumb-container">
+        <a href="/">Home</a>
+        <span>></span>
+        <a href="/profile">Profile</a>
+        <span>></span>
+        <span class="current">Wallet</span>
+    </div>
+</div>
 <div class="container">
     <!-- Page Header -->
     <div class="page-header">

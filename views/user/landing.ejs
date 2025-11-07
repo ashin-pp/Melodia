@@ -5,11 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Melodia - Premium Headphones</title>
-    <!-- Prevent caching of landing page -->
-    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
     <link href="https://fonts.googleapis.com/css2?family=Prata&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
@@ -66,16 +63,6 @@
             margin-right: 12px;
             border-radius: 6px;
         }
-
-        /* .logo::before {
-            content: "♪";
-            margin-right: 12px;
-            font-size: 32px;
-            background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        } */
 
         .nav-links {
             display: flex;
@@ -164,15 +151,53 @@
             box-shadow: 0 10px 30px rgba(255, 107, 107, 0.3);
         }
 
+        /* Hamburger Menu */
+        .hamburger-menu {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .hamburger-menu:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .hamburger-menu span {
+            width: 24px;
+            height: 2px;
+            background: #ffffff;
+            margin: 3px 0;
+            transition: all 0.3s ease;
+            border-radius: 1px;
+        }
+
+        .hamburger-menu.active span:nth-child(1) {
+            transform: rotate(45deg) translate(6px, 6px);
+        }
+
+        .hamburger-menu.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger-menu.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(6px, -6px);
+        }
+
         /* Modern Hero Section */
         .hero {
             position: relative;
             min-height: 100vh;
             display: flex;
             align-items: center;
-            padding: 120px 60px 80px;
+            padding: 140px 60px 80px;
             background: radial-gradient(ellipse at center, rgba(255, 107, 107, 0.03) 0%, transparent 70%);
             overflow: hidden;
+            margin-top: 0;
         }
 
         .hero::before {
@@ -214,8 +239,30 @@
             }
         }
 
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 107, 107, 0.1);
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            border-radius: 50px;
+            padding: 8px 20px;
+            margin-bottom: 32px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #ff6b6b;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            backdrop-filter: blur(10px);
+        }
+
+        .hero-badge::before {
+            content: '🎵';
+            font-size: 16px;
+        }
+
         .hero-title {
-            font-size: clamp(48px, 6vw, 72px);
+            font-size: clamp(48px, 6vw, 84px);
             font-weight: 800;
             line-height: 0.9;
             margin-bottom: 24px;
@@ -250,22 +297,23 @@
 
         .hero-description {
             font-size: 16px;
-            line-height: 1.7;
-            color: rgba(255, 255, 255, 0.6);
-            max-width: 480px;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.8);
+            max-width: 500px;
         }
 
         .hero-cta {
             display: flex;
             gap: 20px;
             margin-top: 40px;
+            flex-wrap: wrap;
         }
 
         .cta-primary,
         .cta-secondary {
             padding: 16px 32px;
             border-radius: 30px;
-            font-size: 15px;
+            font-size: 16px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -276,28 +324,74 @@
         }
 
         .cta-primary {
-            background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+            background: #ff6b6b;
             color: #ffffff;
             border: none;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
         }
 
         .cta-primary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 40px rgba(255, 107, 107, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4);
+            background: #ff5252;
         }
 
         .cta-secondary {
             background: transparent;
             color: #ffffff;
-            border: 2px solid rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
         }
 
         .cta-secondary:hover {
-            border-color: rgba(255, 255, 255, 0.4);
-            background: rgba(255, 255, 255, 0.05);
+            border-color: #ff6b6b;
+            background: rgba(255, 107, 107, 0.1);
         }
 
-        /* ✨ AUTOMATIC FADE CAROUSEL */
+        /* Floating Elements */
+        .floating-element {
+            position: absolute;
+            background: rgba(255, 107, 107, 0.1);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .floating-element:nth-child(1) {
+            width: 100px;
+            height: 100px;
+            top: 20%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .floating-element:nth-child(2) {
+            width: 60px;
+            height: 60px;
+            top: 60%;
+            right: 15%;
+            animation-delay: 2s;
+        }
+
+        .floating-element:nth-child(3) {
+            width: 80px;
+            height: 80px;
+            bottom: 20%;
+            left: 20%;
+            animation-delay: 4s;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0px) rotate(0deg);
+            }
+
+            50% {
+                transform: translateY(-20px) rotate(180deg);
+            }
+        }
+
+        /* Hero Image Section */
         .hero-image {
             display: flex;
             justify-content: center;
@@ -318,7 +412,7 @@
             }
         }
 
-        .headphone-carousel {
+        .headphone-container {
             position: relative;
             width: 500px;
             height: 500px;
@@ -334,7 +428,6 @@
             background: radial-gradient(circle, rgba(255, 107, 107, 0.2) 0%, rgba(255, 107, 107, 0.1) 30%, transparent 70%);
             border-radius: 50%;
             animation: pulse 3s ease-in-out infinite;
-            z-index: 0;
         }
 
         @keyframes pulse {
@@ -351,178 +444,18 @@
             }
         }
 
-        /* Automatic Fade Container */
-        .auto-fade-container {
-            position: relative;
-            width: 400px;
-            height: 400px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 2;
-        }
-
-        /* Individual Headphone Images with Automatic Fade */
-        .headphone-slide {
-            position: absolute;
-            width: 400px;
-            height: 400px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            transform: scale(0.9);
-            transition: all 2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            pointer-events: none;
-        }
-
-        .headphone-slide.active {
-            opacity: 1;
-            transform: scale(1);
-            pointer-events: auto;
-        }
-
-        .headphone-slide img {
-            width: 380px;
-            height: 380px;
+        .headphone-image img {
+            width: 500px;
+            height: 500px;
             object-fit: contain;
-            filter: drop-shadow(0 25px 60px rgba(0, 0, 0, 0.4));
-            transition: all 0.5s ease;
-        }
-
-        /* Enhanced hover effect */
-        .headphone-slide.active:hover img {
-            transform: scale(1.05) rotate(2deg);
-            filter: drop-shadow(0 30px 80px rgba(255, 107, 107, 0.3));
-        }
-
-        /* Floating particles with synchronized animation */
-        .carousel-particle {
-            position: absolute;
-            width: 6px;
-            height: 6px;
-            background: rgba(255, 107, 107, 0.6);
-            border-radius: 50%;
-            animation: floatParticle 12s ease-in-out infinite;
-        }
-
-        .carousel-particle:nth-child(1) {
-            top: 10%;
-            left: 20%;
-            animation-delay: 0s;
-        }
-
-        .carousel-particle:nth-child(2) {
-            top: 20%;
-            right: 15%;
-            animation-delay: 3s;
-        }
-
-        .carousel-particle:nth-child(3) {
-            bottom: 30%;
-            left: 10%;
-            animation-delay: 6s;
-        }
-
-        .carousel-particle:nth-child(4) {
-            bottom: 15%;
-            right: 20%;
-            animation-delay: 9s;
-        }
-
-        @keyframes floatParticle {
-
-            0%,
-            100% {
-                transform: translateY(0px) translateX(0px) scale(1);
-                opacity: 0.4;
-            }
-
-            25% {
-                transform: translateY(-40px) translateX(25px) scale(1.2);
-                opacity: 0.8;
-            }
-
-            50% {
-                transform: translateY(-20px) translateX(-25px) scale(1.5);
-                opacity: 1;
-            }
-
-            75% {
-                transform: translateY(-50px) translateX(15px) scale(1.1);
-                opacity: 0.6;
-            }
-        }
-
-        /* Auto-progress indicator */
-        .auto-progress-indicator {
-            position: absolute;
-            bottom: -50px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 8px;
-            z-index: 3;
-        }
-
-        .progress-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.3);
+            filter: drop-shadow(0 20px 60px rgba(0, 0, 0, 0.4));
+            transition: transform 0.5s ease;
+            z-index: 2;
             position: relative;
-            overflow: hidden;
-            transition: all 0.3s ease;
         }
 
-        .progress-dot.active {
-            background: rgba(255, 107, 107, 0.3);
-            border: 2px solid #ff6b6b;
-        }
-
-        .progress-dot.active::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 0;
-            height: 100%;
-            background: #ff6b6b;
-            animation: progressFill 5s linear;
-        }
-
-        @keyframes progressFill {
-            from {
-                width: 0;
-            }
-
-            to {
-                width: 100%;
-            }
-        }
-
-        /* Image info with auto-fade */
-        .slide-info {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(15px);
-            padding: 15px 25px;
-            border-radius: 30px;
-            color: #ffffff;
-            font-size: 14px;
-            font-weight: 500;
-            opacity: 0;
-            transition: all 0.8s ease;
-            z-index: 5;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .headphone-slide.active .slide-info {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
+        .headphone-image:hover img {
+            transform: scale(1.05) rotate(5deg);
         }
 
         /* Floating Elements */
@@ -658,21 +591,6 @@
             overflow: hidden;
         }
 
-        .product-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 107, 107, 0.1), transparent);
-            transition: left 0.5s ease;
-        }
-
-        .product-card:hover::before {
-            left: 100%;
-        }
-
         .product-card:hover {
             transform: translateY(-15px);
             box-shadow: 0 25px 60px rgba(0, 0, 0, 0.15);
@@ -683,13 +601,6 @@
             font-weight: 700;
             margin-bottom: 8px;
             color: #1a1a1a;
-        }
-
-        .product-price {
-            font-size: 18px;
-            color: #ff6b6b;
-            font-weight: 600;
-            margin-bottom: 30px;
         }
 
         .product-image-container {
@@ -712,10 +623,85 @@
             transform: scale(1.1) rotate(5deg);
         }
 
+        /* Holiday Section */
+        .holiday-section {
+            padding: 0;
+            margin: 0;
+            background: url('/image/user/home/bottom.jpg') center/cover no-repeat;
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: #ffffff;
+            position: relative;
+            min-height: 600px;
+            display: flex;
+            align-items: center;
+        }
+
+        .holiday-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.3) 100%);
+            z-index: 1;
+        }
+
+        .holiday-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 120px 60px;
+            position: relative;
+            z-index: 2;
+            text-align: center;
+        }
+
+        .holiday-title {
+            font-size: 54px;
+            font-weight: 800;
+            margin-bottom: 24px;
+            color: #ffffff;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
+        }
+
+        .holiday-subtitle {
+            font-size: 22px;
+            margin-bottom: 40px;
+            opacity: 0.9;
+            color: #f0f0f0;
+            text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.7);
+        }
+
+        .shop-btn {
+            background: linear-gradient(135deg, #ffffff, #f0f0f0);
+            color: #1a1a1a;
+            border: none;
+            padding: 18px 40px;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .shop-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+            background: linear-gradient(135deg, #f0f0f0, #e0e0e0);
+        }
+
         .color-options {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             justify-content: center;
+            flex-wrap: wrap;
+            max-width: 100%;
+            margin: 10px 0;
         }
 
         .color-dot {
@@ -830,78 +816,6 @@
             border: 2px solid #d97706;
         }
 
-        /* Holiday Section */
-        .holiday-section {
-            padding: 0;
-            margin: 0;
-            background: url('/image/user/home/bottom.jpg') center/cover no-repeat;
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            color: #ffffff;
-            position: relative;
-            min-height: 600px;
-            display: flex;
-            align-items: center;
-        }
-
-        .holiday-section::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.3) 100%);
-            z-index: 1;
-        }
-
-        .holiday-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 120px 60px;
-            position: relative;
-            z-index: 2;
-            text-align: center;
-        }
-
-        .holiday-title {
-            font-size: 54px;
-            font-weight: 800;
-            margin-bottom: 24px;
-            color: #ffffff;
-            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
-        }
-
-        .holiday-subtitle {
-            font-size: 22px;
-            margin-bottom: 40px;
-            opacity: 0.9;
-            color: #f0f0f0;
-            text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.7);
-        }
-
-        .shop-btn {
-            background: linear-gradient(135deg, #ffffff, #f0f0f0);
-            color: #1a1a1a;
-            border: none;
-            padding: 18px 40px;
-            border-radius: 30px;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
-        }
-
-        .shop-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
-            background: linear-gradient(135deg, #f0f0f0, #e0e0e0);
-        }
-
         /* Footer */
         .footer {
             background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
@@ -934,31 +848,6 @@
             color: rgba(255, 255, 255, 0.6);
             line-height: 1.6;
             margin-bottom: 30px;
-        }
-
-        .social-icons {
-            display: flex;
-            gap: 16px;
-        }
-
-        .social-icon {
-            width: 48px;
-            height: 48px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #ffffff;
-            text-decoration: none;
-            transition: all 0.3s ease;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .social-icon:hover {
-            background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3);
         }
 
         .footer-section h3 {
@@ -995,73 +884,143 @@
         }
 
         /* Responsive Design */
-        @media (max-width: 1024px) {
-            .hero-container {
-                grid-template-columns: 1fr;
-                gap: 60px;
-                text-align: center;
-            }
-
-            .products-grid {
-                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-                gap: 30px;
-            }
-
-            .footer-content {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .headphone-carousel {
-                width: 400px;
-                height: 400px;
-            }
-
-            .auto-fade-container {
-                width: 320px;
-                height: 320px;
-            }
-
-            .headphone-slide {
-                width: 320px;
-                height: 320px;
-            }
-
-            .headphone-slide img {
-                width: 300px;
-                height: 300px;
-            }
-        }
-
         @media (max-width: 768px) {
             .navbar {
                 padding: 15px 30px;
-                flex-direction: column;
-                gap: 20px;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .hamburger-menu {
+                display: flex;
+                order: 3;
             }
 
             .nav-links {
-                gap: 25px;
+                position: fixed;
+                top: 70px;
+                left: 0;
+                width: 100%;
+                height: calc(100vh - 70px);
+                background: rgba(10, 10, 10, 0.98);
+                backdrop-filter: blur(20px);
+                flex-direction: column;
+                gap: 0;
+                padding: 40px 20px;
+                transform: translateX(-100%);
+                opacity: 0;
+                visibility: hidden;
+                transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                border-right: 1px solid rgba(255, 255, 255, 0.1);
+                z-index: 999;
             }
 
-            .search-box {
-                width: 200px;
+            .nav-links.active {
+                transform: translateX(0);
+                opacity: 1;
+                visibility: visible;
+            }
+
+            .nav-links li {
+                width: 100%;
+                margin-bottom: 8px;
+            }
+
+            .nav-links a {
+                display: block;
+                width: 100%;
+                padding: 16px 20px;
+                font-size: 16px;
+                border-radius: 12px;
+                text-align: left;
+                border: 1px solid transparent;
+            }
+
+            .nav-links a:hover {
+                background: rgba(255, 255, 255, 0.1);
+                border-color: rgba(255, 255, 255, 0.2);
+            }
+
+            .nav-actions {
+                order: 2;
+                gap: 12px;
+            }
+
+            .search-container {
+                display: none;
             }
 
             .hero {
                 padding: 100px 30px 60px;
             }
 
+            .hero-container {
+                grid-template-columns: 1fr;
+                gap: 60px;
+                text-align: center;
+            }
+
+            .hero-badge {
+                font-size: 12px;
+                padding: 6px 16px;
+                margin-bottom: 24px;
+            }
+
             .hero-title {
-                font-size: 42px;
+                font-size: clamp(36px, 8vw, 48px);
+                margin-bottom: 24px;
             }
 
             .hero-subtitle {
-                font-size: 20px;
+                font-size: 24px;
+                margin-bottom: 20px;
+                letter-spacing: 2px;
+            }
+
+            .overview-title {
+                font-size: 14px;
+                margin-bottom: 16px;
+            }
+
+            .hero-description {
+                font-size: 16px;
+                padding: 20px;
+                max-width: 100%;
             }
 
             .hero-cta {
                 flex-direction: column;
                 align-items: center;
+                gap: 16px;
+                margin-top: 32px;
+            }
+
+            .cta-primary,
+            .cta-secondary {
+                padding: 16px 32px;
+                font-size: 14px;
+                width: 100%;
+                max-width: 300px;
+                justify-content: center;
+            }
+
+            .headphone-container {
+                width: 350px;
+                height: 350px;
+            }
+
+            .headphone-image img {
+                width: 320px;
+                height: 320px;
+            }
+
+            .hero-decoration {
+                width: 100px;
+                height: 100px;
+            }
+
+            .floating-orb {
+                display: none;
             }
 
             .products-section {
@@ -1072,12 +1031,21 @@
                 grid-template-columns: 1fr;
             }
 
+            .color-dot {
+                width: 16px;
+                height: 16px;
+            }
+
             .holiday-content {
                 padding: 80px 30px;
             }
 
             .holiday-title {
                 font-size: 36px;
+            }
+
+            .holiday-subtitle {
+                font-size: 18px;
             }
 
             .footer {
@@ -1088,54 +1056,161 @@
                 grid-template-columns: 1fr;
                 gap: 40px;
             }
+        }
 
-            .stats-section {
-                padding: 40px 30px 0;
+        @media (max-width: 576px) {
+            .hero {
+                padding: 80px 20px 50px;
             }
 
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 20px;
+            .hero-container {
+                gap: 40px;
             }
 
-            .headphone-carousel {
-                width: 300px;
-                height: 300px;
+            .hero-badge {
+                font-size: 11px;
+                padding: 5px 14px;
+                margin-bottom: 20px;
             }
 
-            .auto-fade-container {
+            .hero-title {
+                font-size: clamp(28px, 10vw, 36px);
+                margin-bottom: 20px;
+            }
+
+            .hero-subtitle {
+                font-size: 20px;
+                letter-spacing: 1px;
+                margin-bottom: 16px;
+            }
+
+            .overview-title {
+                font-size: 13px;
+                margin-bottom: 12px;
+            }
+
+            .hero-description {
+                font-size: 14px;
+                padding: 16px;
+                line-height: 1.6;
+            }
+
+            .hero-cta {
+                gap: 12px;
+                margin-top: 28px;
+            }
+
+            .cta-primary,
+            .cta-secondary {
+                padding: 14px 28px;
+                font-size: 13px;
+                max-width: 280px;
+            }
+
+            .headphone-container {
+                width: 280px;
+                height: 280px;
+            }
+
+            .headphone-image img {
                 width: 250px;
                 height: 250px;
             }
 
-            .headphone-slide {
-                width: 250px;
-                height: 250px;
+            .hero-decoration {
+                width: 80px;
+                height: 80px;
             }
 
-            .headphone-slide img {
-                width: 230px;
-                height: 230px;
+            .color-dot {
+                width: 14px;
+                height: 14px;
+            }
+
+            .holiday-content {
+                padding: 60px 20px;
+            }
+
+            .holiday-title {
+                font-size: 28px;
+            }
+
+            .holiday-subtitle {
+                font-size: 16px;
+            }
+
+            .shop-btn {
+                padding: 14px 30px;
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero {
+                padding: 70px 15px 40px;
+            }
+
+            .hero-badge {
+                font-size: 10px;
+                padding: 4px 12px;
+            }
+
+            .hero-title {
+                font-size: clamp(24px, 12vw, 32px);
+            }
+
+            .hero-subtitle {
+                font-size: 18px;
+            }
+
+            .hero-description {
+                font-size: 13px;
+                padding: 14px;
+            }
+
+            .cta-primary,
+            .cta-secondary {
+                padding: 12px 24px;
+                font-size: 12px;
+            }
+
+            .headphone-container {
+                width: 220px;
+                height: 220px;
+            }
+
+            .headphone-image img {
+                width: 200px;
+                height: 200px;
+            }
+
+            .holiday-content {
+                padding: 50px 15px;
+            }
+
+            .holiday-title {
+                font-size: 24px;
+            }
+
+            .holiday-subtitle {
+                font-size: 15px;
+            }
+
+            .shop-btn {
+                padding: 12px 25px;
+                font-size: 13px;
             }
         }
     </style>
 </head>
 
 <body>
-    <script>
-        // If this page is loaded from the back/forward cache, force a reload
-        window.addEventListener('pageshow', function (event) {
-            if (event.persisted) {
-                window.location.reload();
-            }
-        });
-    </script>
     <nav class="navbar" id="navbar">
         <div class="logo">
             <img src="/image/user/home/20250929_014220.png" alt="Melodia Logo" onerror="this.style.display='none';">
             Melodia
         </div>
-        <ul class="nav-links">
+        <ul class="nav-links" id="navLinks">
             <li><a href="#home">Home</a></li>
             <li><a href="/login">Products</a></li>
             <li><a href="#about">About</a></li>
@@ -1147,8 +1222,15 @@
             </div>
             <button class="login-btn" id="loginButton">Login</button>
         </div>
+
+        <div class="hamburger-menu" id="hamburgerMenu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
     </nav>
 
+    <!-- Hero Section -->
     <section class="hero" id="home">
         <div class="floating-element"></div>
         <div class="floating-element"></div>
@@ -1172,53 +1254,27 @@
                         Explore Collection
                         <span>→</span>
                     </a>
-                    <a href="#about" class="cta-secondary">
+                    <!-- <a href="/about" class="cta-secondary">
                         Learn More
-                    </a>
+                    </a> -->
                 </div>
             </div>
 
             <div class="hero-image">
-                <div class="headphone-carousel">
+                <div class="headphone-container">
                     <div class="headphone-glow"></div>
-
-                    <div class="carousel-particle"></div>
-                    <div class="carousel-particle"></div>
-                    <div class="carousel-particle"></div>
-                    <div class="carousel-particle"></div>
-
-                    <div class="auto-fade-container">
-                        <div class="headphone-slide active">
-                            <img src="/image/user/home/Joyroom-JR-OH1-Bluetooth-Wireless-Headphones-4-removebg-preview.png"
-                                alt="Premium Headphones 1"
-                                onerror="this.style.display='none'; this.parentNode.innerHTML='<div style=&quot;font-size:120px;color:#ff6b6b;&quot;>🎧</div>';">
-                        </div>
-
-                        <!-- <div class="headphone-slide">
-                            <img src="/image/user/home/headset1.jpg" alt="Premium Headphones 2" onerror="this.style.display='none'; this.parentNode.innerHTML='<div style=&quot;font-size:120px;color:#ff6b6b;&quot;>🎵</div>';">
-                            </div>
-                        
-                        <div class="headphone-slide">
-                            <img src="/image/user/home/headset2.jpg" alt="Premium Headphones 3" onerror="this.style.display='none'; this.parentNode.innerHTML='<div style=&quot;font-size:120px;color:#ff6b6b;&quot;>🎶</div>';">
-                            </div>
-                        
-                        <div class="headphone-slide">
-                            <img src="/image/user/home/headset3.jpg" alt="Premium Headphones 4" onerror="this.style.display='none'; this.parentNode.innerHTML='<div style=&quot;font-size:120px;color:#ff6b6b;&quot;>🎤</div>';">
-                            </div>
-                    </div>
-                     -->
-                        <div class="auto-progress-indicator">
-                            <div class="progress-dot active"></div>
-                            <div class="progress-dot"></div>
-                            <div class="progress-dot"></div>
-                            <div class="progress-dot"></div>
-                        </div>
+                    <div class="headphone-image">
+                        <img src="/image/user/home/headphone-icon-isolated-3d-render-illustration.png"
+                            alt="Premium Headphones"
+                            onerror="this.style.display='none'; this.parentNode.innerHTML='<div style=&quot;font-size:120px;color:#666;&quot;>🎧</div>';">
                     </div>
                 </div>
             </div>
+        </div>
     </section>
 
-    <section class="stats-section">
+    <!-- Stats Section -->
+    <!-- <section class="stats-section">
         <div class="stats-grid">
             <div class="stat-item">
                 <div class="stat-number">50K+</div>
@@ -1237,7 +1293,7 @@
                 <div class="stat-label">Average Rating</div>
             </div>
         </div>
-    </section>
+    </section>div>"" -->
 
     <section class="products-section" id="products">
         <h2 class="section-title">Premium Audio Collection</h2>
@@ -1251,7 +1307,6 @@
                         <h3 class="product-name">
                             <%= product.productName %>
                         </h3>
-                        <!-- <p class="product-price">₹<%= product.variants[0].salePrice.toLocaleString() %></p> -->
                         <div class="product-image-container">
                             <a href="/login">
                                 <img src="<%= product.mainImage %>" alt="<%= product.productName %>"
@@ -1260,24 +1315,16 @@
                         </div>
                         <div class="color-options">
                             <% product.variants.forEach((variant, variantIndex)=> { %>
-                                <% // Smart color mapping function function getColorClass(colorName) { const
-                                    color=colorName.toLowerCase(); if (color.includes('brown') ||
-                                    color.includes('chocolate') || color.includes('coffee')) return 'brown' ; if
-                                    (color.includes('black') || color.includes('dark') && color.includes('gray'))
-                                    return 'black' ; if (color.includes('blue') || color.includes('navy')) return 'blue'
-                                    ; if (color.includes('red') || color.includes('crimson') ||
-                                    color.includes('cherry')) return 'red' ; if (color.includes('green') ||
-                                    color.includes('forest') || color.includes('lime')) return 'green' ; if
-                                    (color.includes('yellow') || color.includes('gold') || color.includes('amber'))
-                                    return 'yellow' ; if (color.includes('orange') || color.includes('tangerine'))
-                                    return 'orange' ; if (color.includes('purple') || color.includes('violet') ||
-                                    color.includes('magenta')) return 'purple' ; if (color.includes('pink') ||
-                                    color.includes('rose')) return 'pink' ; if (color.includes('white') ||
-                                    color.includes('ivory') || color.includes('cream')) return 'white' ; if
-                                    (color.includes('gray') || color.includes('grey') || color.includes('silver'))
-                                    return 'gray' ; if (color.includes('light')) return 'light-gray' ; return 'gray' ;
-                                    // Default fallback } %>
-                                    <div class="color-dot <%= getColorClass(variant.color) %> <%= variantIndex === 0 ? 'active' : '' %> <%= variant.stock === 0 ? 'out-of-stock' : '' %>"
+                                <% let colorClass='gray' ; const color=variant.color.toLowerCase(); if
+                                    (color.includes('black')) colorClass='black' ; else if (color.includes('white'))
+                                    colorClass='white' ; else if (color.includes('red')) colorClass='red' ; else if
+                                    (color.includes('blue')) colorClass='blue' ; else if (color.includes('green'))
+                                    colorClass='green' ; else if (color.includes('yellow')) colorClass='yellow' ; else
+                                    if (color.includes('orange')) colorClass='orange' ; else if
+                                    (color.includes('purple')) colorClass='purple' ; else if (color.includes('pink'))
+                                    colorClass='pink' ; else if (color.includes('brown')) colorClass='brown' ; else if
+                                    (color.includes('gray') || color.includes('grey')) colorClass='gray' ; %>
+                                    <div class="color-dot <%= colorClass %> <%= variantIndex === 0 ? 'active' : '' %> <%= variant.stock === 0 ? 'out-of-stock' : '' %>"
                                         title="<%= variant.color %> - ₹<%= variant.salePrice.toLocaleString() %><%= variant.stock === 0 ? ' (Out of Stock)' : '' %>"
                                         data-variant-id="<%= variant._id %>" data-product-id="<%= product._id %>"
                                         data-stock="<%= variant.stock %>"
@@ -1290,7 +1337,6 @@
                             <!-- Fallback if no premium products -->
                             <div class="product-card">
                                 <h3 class="product-name">Premium Headphones</h3>
-                                <p class="product-price">Coming Soon</p>
                                 <div class="product-image-container">
                                     <a href="/login">
                                         <div style="font-size:80px;color:#666;">🎧</div>
@@ -1298,17 +1344,46 @@
                                 </div>
                                 <div class="color-options">
                                     <div class="color-dot black active"></div>
+                                    <div class="color-dot blue"></div>
+                                    <div class="color-dot red"></div>
+                                </div>
+                            </div>
+                            <div class="product-card">
+                                <h3 class="product-name">Wireless Earbuds</h3>
+                                <div class="product-image-container">
+                                    <a href="/login">
+                                        <div style="font-size:80px;color:#666;">🎵</div>
+                                    </a>
+                                </div>
+                                <div class="color-options">
+                                    <div class="color-dot white active"></div>
+                                    <div class="color-dot black"></div>
+                                    <div class="color-dot pink"></div>
+                                </div>
+                            </div>
+                            <div class="product-card">
+                                <h3 class="product-name">Gaming Headset</h3>
+                                <div class="product-image-container">
+                                    <a href="/login">
+                                        <div style="font-size:80px;color:#666;">🎮</div>
+                                    </a>
+                                </div>
+                                <div class="color-options">
+                                    <div class="color-dot green active"></div>
+                                    <div class="color-dot black"></div>
+                                    <div class="color-dot purple"></div>
                                 </div>
                             </div>
                             <% } %>
         </div>
     </section>
 
+    <!-- Holiday Section with Background Image -->
     <section class="holiday-section" id="holiday">
         <div class="holiday-content">
             <h2 class="holiday-title">The Beats Holiday Gift Guide</h2>
             <p class="holiday-subtitle">Perfect gifts for every music lover in your life</p>
-            <button class="shop-btn">Shop Collection</button>
+            <button class="shop-btn" onclick="window.location.href='/login'">Shop Collection</button>
         </div>
     </section>
 
@@ -1320,41 +1395,28 @@
                     Premium audio experiences crafted for those who demand excellence. Discover the perfect sound for
                     every moment.
                 </p>
-                <!-- <div class="social-icons">
-                    <a href="#" class="social-icon">📘</a>
-                    <a href="#" class="social-icon">🐦</a>
-                    <a href="#" class="social-icon">📷</a>
-                    <a href="#" class="social-icon">▶️</a>
-                </div> -->
             </div>
             <div class="footer-section">
                 <h3>Products</h3>
                 <ul>
-                    <li><a href="#">Headphones</a></li>
-                    <li><a href="#">Earbuds</a></li>
-                    <li><a href="#">Speakers</a></li>
-                    <li><a href="#">Accessories</a></li>
-                    <li><a href="#">Professional Series</a></li>
+                    <li><a href="/login">Headphones</a></li>
+                    <li><a href="/login">Earbuds</a></li>
+
                 </ul>
             </div>
             <div class="footer-section">
                 <h3>Support</h3>
                 <ul>
-                    <li><a href="#">Customer Service</a></li>
-                    <li><a href="#">Technical Support</a></li>
-                    <li><a href="#">Warranty & Repairs</a></li>
-                    <li><a href="#">User Manuals</a></li>
-                    <li><a href="#">Returns & Exchanges</a></li>
+                    <li><a href="/login">Customer Service</a></li>
+                    <li><a href="/login">Technical Support</a></li>
+
                 </ul>
             </div>
             <div class="footer-section">
                 <h3>Company</h3>
                 <ul>
-                    <li><a href="#">About Us</a></li>
-                    <li><a href="#">Careers</a></li>
-                    <li><a href="#">Press & Media</a></li>
-                    <li><a href="#">Investor Relations</a></li>
-                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="/login">About Us</a></li>
+                    <li><a href="/login">Privacy Policy</a></li>
                 </ul>
             </div>
         </div>
@@ -1364,66 +1426,6 @@
     </footer>
 
     <script>
-        // Automatic Fade Carousel Variables
-        let currentSlideIndex = 0;
-        let autoSlideInterval;
-        const slides = document.querySelectorAll('.headphone-slide');
-        const progressDots = document.querySelectorAll('.progress-dot');
-        const totalSlides = slides.length;
-        const SLIDE_DURATION = 5000; // 5 seconds per slide
-
-        // Show specific slide with fade transition
-        function showSlide(index) {
-            // Remove active class from all slides and progress dots
-            slides.forEach(slide => slide.classList.remove('active'));
-            progressDots.forEach(dot => dot.classList.remove('active'));
-
-            // Show the target slide and progress dot
-            slides[index].classList.add('active');
-            progressDots[index].classList.add('active');
-
-            currentSlideIndex = index;
-        }
-
-        // Go to next slide automatically
-        function nextSlide() {
-            const nextIndex = (currentSlideIndex + 1) % totalSlides;
-            showSlide(nextIndex);
-        }
-
-        // Start automatic slideshow
-        function startAutoSlide() {
-            autoSlideInterval = setInterval(nextSlide, SLIDE_DURATION);
-        }
-
-        // Stop automatic slideshow
-        function stopAutoSlide() {
-            clearInterval(autoSlideInterval);
-        }
-
-        // Initialize carousel
-        function initCarousel() {
-            // Show first slide
-            showSlide(0);
-
-            // Start automatic slideshow
-            startAutoSlide();
-
-            // Pause carousel when user hovers over it
-            const carouselContainer = document.querySelector('.auto-fade-container');
-            carouselContainer.addEventListener('mouseenter', stopAutoSlide);
-            carouselContainer.addEventListener('mouseleave', startAutoSlide);
-
-            // Visibility API - pause when tab is not visible
-            document.addEventListener('visibilitychange', function () {
-                if (document.hidden) {
-                    stopAutoSlide();
-                } else {
-                    startAutoSlide();
-                }
-            });
-        }
-
         // Navbar scroll effect
         window.addEventListener('scroll', () => {
             const navbar = document.getElementById('navbar');
@@ -1434,11 +1436,72 @@
             }
         });
 
+        // Hamburger menu functionality
+        function toggleMobileMenu() {
+            const navLinks = document.getElementById('navLinks');
+            const hamburgerMenu = document.getElementById('hamburgerMenu');
+
+            navLinks.classList.toggle('active');
+            hamburgerMenu.classList.toggle('active');
+        }
+
+        // Initialize hamburger menu
         document.addEventListener('DOMContentLoaded', function () {
+            const hamburgerMenu = document.getElementById('hamburgerMenu');
+            if (hamburgerMenu) {
+                hamburgerMenu.addEventListener('click', toggleMobileMenu);
+            }
+
+            // Close mobile menu when clicking nav links
+            const navLinks = document.querySelectorAll('.nav-links a');
+            navLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    const navLinksContainer = document.getElementById('navLinks');
+                    const hamburger = document.getElementById('hamburgerMenu');
+                    navLinksContainer.classList.remove('active');
+                    hamburger.classList.remove('active');
+                });
+            });
+
+            // Close mobile menu when clicking outside
+            document.addEventListener('click', (e) => {
+                const navLinks = document.getElementById('navLinks');
+                const hamburger = document.getElementById('hamburgerMenu');
+                const navbar = document.getElementById('navbar');
+
+                if (!navbar.contains(e.target) && navLinks.classList.contains('active')) {
+                    navLinks.classList.remove('active');
+                    hamburger.classList.remove('active');
+                }
+            });
+
+            // Hide search container on landing page
             const searchContainer = document.querySelector('.search-container');
             if (searchContainer) {
                 searchContainer.style.display = 'none';
             }
+
+            // Holiday section background fallback
+            const holidaySection = document.querySelector('.holiday-section');
+            if (holidaySection) {
+                const img = new Image();
+
+                img.onload = function () {
+                    // Background image loaded successfully
+                };
+
+                img.onerror = function () {
+                    holidaySection.style.background = 'linear-gradient(135deg, #8b4513 0%, #cd853f 50%, #d2691e 100%)';
+                    // Background image failed to load, using fallback gradient
+                };
+
+                img.src = '/image/user/home/bottom.jpg';
+            }
+        });
+
+        // Login button functionality
+        document.getElementById('loginButton').addEventListener('click', function () {
+            window.location.href = '/login';
         });
 
         // Smooth scrolling for navigation links
@@ -1455,7 +1518,7 @@
             });
         });
 
-        // Color dot selection
+        // Color dot selection functionality
         document.querySelectorAll('.color-dot').forEach(dot => {
             dot.addEventListener('click', function () {
                 // Remove active class from siblings
@@ -1467,99 +1530,7 @@
             });
         });
 
-        // FIXED: Login button functionality - redirects to login page
-        document.getElementById('loginButton').addEventListener('click', function () {
-            // Change this URL to match your login route
-            window.location.href = '/login';
-        });
-
-        // Alternative login functionality if you want to use a form submission
-        // document.getElementById('loginButton').addEventListener('click', function() {
-        //     // Create and submit a form to login route
-        //     const form = document.createElement('form');
-        //     form.method = 'GET';
-        //     form.action = '/login';
-        //     document.body.appendChild(form);
-        //     form.submit();
-        // });
-
-        // Shop button functionality
-        document.querySelector('.shop-btn').addEventListener('click', function () {
-            window.location.href = '/login'
-        });
-
-        // Image loading with fade-in effect
-        document.querySelectorAll('img').forEach(img => {
-            img.addEventListener('load', function () {
-                this.style.opacity = '0';
-                this.style.transform = 'scale(0.8)';
-                this.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-                setTimeout(() => {
-                    this.style.opacity = '1';
-                    this.style.transform = 'scale(1)';
-                }, 100);
-            });
-        });
-
-        // Intersection Observer for animations
-        const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -50px 0px'
-        };
-
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.style.opacity = '1';
-                    entry.target.style.transform = 'translateY(0)';
-                }
-            });
-        }, observerOptions);
-
-        // Observe elements for scroll animations
-        document.querySelectorAll('.product-card, .stat-item').forEach(el => {
-            el.style.opacity = '0';
-            el.style.transform = 'translateY(30px)';
-            el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-            observer.observe(el);
-        });
-
-        // Holiday section background fallback
-        document.addEventListener('DOMContentLoaded', function () {
-            const holidaySection = document.querySelector('.holiday-section');
-            const img = new Image();
-
-            img.onload = function () {
-                // Background image loaded successfully
-            };
-
-            img.onerror = function () {
-                holidaySection.classList.add('fallback');
-                holidaySection.style.background = 'linear-gradient(135deg, #8b4513 0%, #cd853f 50%, #d2691e 100%)';
-                // Background image failed to load, using fallback
-            };
-
-            img.src = '/image/user/home/bottom.jpg';
-
-            // Initialize the automatic carousel
-            initCarousel();
-        });
-
-        // Performance optimization - pause carousel when not in viewport
-        const carouselObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    startAutoSlide();
-                } else {
-                    stopAutoSlide();
-                }
-            });
-        }, { threshold: 0.5 });
-
-        // Observe the carousel container
-        carouselObserver.observe(document.querySelector('.headphone-carousel'));
-
-        // Interactive color selection function for landing page
+        // Landing page color selection function
         function selectLandingColor(colorDot, productId) {
             const productCard = colorDot.closest('.product-card');
             const variantId = colorDot.getAttribute('data-variant-id');
@@ -1576,6 +1547,12 @@
             // Add active class to clicked dot
             colorDot.classList.add('active');
 
+            // Update product link to include selected variant
+            const productLink = productCard.querySelector('a[href*="/login"]');
+            if (productLink) {
+                productLink.href = `/login?redirect=/products/${productId}?variant=${variantId}`;
+            }
+
             // Fetch variant data via API and update display
             fetch(`/api/variant/${variantId}`)
                 .then(response => response.json())
@@ -1588,14 +1565,6 @@
                         if (variant.images && variant.images.length > 0) {
                             const imageUrl = typeof variant.images[0] === 'string' ? variant.images[0] : variant.images[0].url;
                             productImage.src = imageUrl;
-                        }
-
-                        // Update price
-                        const priceElement = productCard.querySelector('.product-price');
-                        if (variant.salePrice === variant.regularPrice) {
-                            priceElement.innerHTML = `₹${variant.salePrice.toLocaleString()}`;
-                        } else {
-                            priceElement.innerHTML = `₹${variant.salePrice.toLocaleString()} <span style="text-decoration: line-through; color: #999; font-size: 0.9em;">₹${variant.regularPrice.toLocaleString()}</span>`;
                         }
                     }
                 })
