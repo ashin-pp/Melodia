@@ -35,7 +35,7 @@ export const applyCoupon = async (req, res) => {
                 message: 'Coupon has expired or not yet active'
             });
         }
-
+     
         // Check usage limit
         if (coupon.usageLimit && coupon.usedCount >= coupon.usageLimit) {
             return res.status(400).json({
@@ -43,6 +43,21 @@ export const applyCoupon = async (req, res) => {
                 message: 'Coupon usage limit exceeded'
             });
         }
+       
+         const Order=(await import('../../model/orderSchema.js')).default;
+         const userCouponUsage=await Order.countDocuments({
+            userId:userId,
+            couponCode:coupon.code,
+            orderStatus: {$nin:['cancelled','failed']}
+
+         })
+        
+         if(userCouponUsage>=coupon.usagePerUser){
+            return res.status(400).json({
+                success:false,
+                message:'you have already used this coupon'
+            });
+         }
 
         // Check minimum order amount
         if (orderAmount < coupon.minimumOrderAmount) {
@@ -107,22 +122,42 @@ export const removeCoupon = async (req, res) => {
 export const getAvailableCoupons = async (req, res) => {
     try {
         const { orderAmount } = req.query;
+        const userId = req.session.user.id;
         const now = new Date();
 
-        const coupons = await Coupon.find({
+        // Get all potentially available coupons
+        const allCoupons = await Coupon.find({
             isActive: true,
-            startDate: { $lte: now },
+            startDate: { $lte: now},
             endDate: { $gte: now },
             minimumOrderAmount: { $lte: orderAmount || 0 },
             $or: [
                 { usageLimit: null },
                 { $expr: { $lt: ['$usedCount', '$usageLimit'] } }
             ]
-        }).select('code name description discountType discountValue maxDiscountAmount minimumOrderAmount');
+        }).select('code name description discountType discountValue maxDiscountAmount minimumOrderAmount usagePerUser');
+
+        // Filter out coupons that user has already used up to their limit
+        const Order = (await import('../../model/orderSchema.js')).default;
+        const availableCoupons = [];
+
+        for (const coupon of allCoupons) {
+            // Check how many times this user has used this coupon
+            const userUsageCount = await Order.countDocuments({
+                userId: userId,
+                couponCode: coupon.code,
+                orderStatus: { $nin: ['Cancelled', 'cancelled', 'Failed', 'failed'] }
+            });
+
+            // Only include coupon if user hasn't reached their usage limit
+            if (userUsageCount < coupon.usagePerUser) {
+                availableCoupons.push(coupon);
+            }
+        }
 
         res.json({
             success: true,
-            data: coupons
+            data: availableCoupons
         });
     } catch (error) {
         console.error('Error fetching available coupons:', error);

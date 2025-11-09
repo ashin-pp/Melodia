@@ -77,8 +77,8 @@ const getCheckout = async (req, res) => {
     const taxRate = 0.18; // 18% GST
     const taxAmount = Math.round(subtotal * taxRate);
     
-    // Get available coupons for user
-    const availableCoupons = await Coupon.find({
+    // Get available coupons for user (excluding already used coupons)
+    const allCoupons = await Coupon.find({
       isActive: true,
       startDate: { $lte: new Date() },
       endDate: { $gte: new Date() },
@@ -87,7 +87,23 @@ const getCheckout = async (req, res) => {
         { usageLimit: null },
         { $expr: { $lt: ['$usedCount', '$usageLimit'] } }
       ]
-    }).select('code name discountType discountValue maxDiscountAmount minimumOrderAmount description');
+    }).select('code name discountType discountValue maxDiscountAmount minimumOrderAmount description usagePerUser');
+
+    // Filter out coupons that user has already used up to their limit
+    const availableCoupons = [];
+    for (const coupon of allCoupons) {
+      // Check how many times this user has used this coupon
+      const userUsageCount = await Order.countDocuments({
+        userId: userId,
+        couponCode: coupon.code,
+        orderStatus: { $nin: ['Cancelled', 'cancelled', 'Failed', 'failed'] }
+      });
+
+      // Only include coupon if user hasn't reached their usage limit
+      if (userUsageCount < coupon.usagePerUser) {
+        availableCoupons.push(coupon);
+      }
+    }
     
     const totalAmount = subtotal + shippingCost + taxAmount;
 
