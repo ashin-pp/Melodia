@@ -142,7 +142,7 @@ const userSchema = new Schema({
 userSchema.index({ 'wallet.transactions.createdAt': -1 });
 userSchema.index({ 'wallet.transactions.orderId': 1 });
 userSchema.index({ 'wallet.transactions.transactionId': 1 });
-userSchema.index({ 'referralCode': 1 });
+// userSchema.index({ 'referralCode': 1 });
 
 // Generate referral code before saving
 userSchema.pre('save', function(next) {
