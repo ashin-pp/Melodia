@@ -1258,10 +1258,6 @@ export const getContact = async (req, res) => {
 
 
 export const postContact = async (req, res) => {
-  console.log('🚀 CONTACT ROUTE HIT - Starting function');
-  console.log('📧 Request method:', req.method);
-  console.log('📧 Request URL:', req.url);
-  console.log('📧 Content-Type:', req.headers['content-type']);
 
   try {
     console.log('📧 Contact form submission received:', req.body);
@@ -1305,9 +1301,7 @@ export const postContact = async (req, res) => {
       ${userInfo}
     `;
 
-    console.log('📧 Sending email with subject:', emailSubject);
-    console.log('📧 Sending to:', process.env.NODEMAILER_EMAIL);
-
+  
     await sendMail(
       process.env.NODEMAILER_EMAIL,
       emailSubject,
@@ -1315,7 +1309,7 @@ export const postContact = async (req, res) => {
       emailHtml
     );
 
-    console.log('✅ Email sent successfully');
+    console.log(' Email sent successfully');
 
     res.json({
       success: true,

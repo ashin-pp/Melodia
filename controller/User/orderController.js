@@ -15,10 +15,9 @@ const getOrders = async (req, res) => {
     const skip = (page - 1) * limit;
     const search = req.query.search || '';
 
-    // Get full user data
+   
     const fullUser = await User.findById(userId);
     
-    // Get cart count for header
     const cart = await Cart.findOne({ userId });
     const cartCount = cart ? cart.getTotalItems() : 0;
 
