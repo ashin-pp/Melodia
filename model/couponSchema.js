@@ -65,14 +65,6 @@ const couponSchema = new mongoose.Schema({
         type: Boolean,
         default: true
     },
-    applicableCategories: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Category'
-    }],
-    applicableProducts: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Product'
-    }],
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',

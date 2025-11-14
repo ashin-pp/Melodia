@@ -269,14 +269,7 @@ const placeOrder = async (req, res) => {
       });
       
       if (coupon) {
-        if (coupon.discountType === 'percentage') {
-          couponDiscount = Math.round((subtotal * coupon.discountValue) / 100);
-          if (coupon.maxDiscountAmount && couponDiscount > coupon.maxDiscountAmount) {
-            couponDiscount = coupon.maxDiscountAmount;
-          }
-        } else {
-          couponDiscount = Math.min(coupon.discountValue, subtotal);
-        }
+        couponDiscount = coupon.calculateDiscount(subtotal);
         appliedCoupon = coupon;
       }
     }
@@ -375,7 +368,7 @@ const placeOrder = async (req, res) => {
     console.log('Creating order with data:', {
       orderId: generatedOrderId,
       userId,
-      itemsCount: itemsWithOffers.length,
+      itemsCount: itemsWithCouponDiscount.length,
       paymentMethod,
       totalAmount,
       addressData: {
@@ -543,7 +536,8 @@ const completeRazorpayOrder = async (req, res) => {
     if (!isAuthentic) {
       return res.status(400).json({
         success: false,
-        message: 'Payment verification failed'
+        message: 'Payment verification failed',
+        redirectTo: `/payment-failure?reason=Payment verification failed&paymentMethod=razorpay&totalAmount=${orderData.totalAmount}`
       });
     }
     
@@ -637,7 +631,11 @@ const completeRazorpayOrder = async (req, res) => {
       console.log('Stock updated successfully');
     } catch (stockError) {
       console.error('Stock update error:', stockError);
-      // Don't fail the order for stock update errors
+      return res.status(400).json({
+        success: false,
+        message: 'Stock update failed',
+        redirectTo: `/payment-failure?reason=Stock update failed&paymentMethod=razorpay&totalAmount=${orderData.totalAmount}`
+      });
     }
     
     // Update coupon usage
@@ -704,12 +702,48 @@ const completeRazorpayOrder = async (req, res) => {
   }
 };
 
-export { getCheckout, placeOrder, orderSuccess, completeRazorpayOrder };
+// Payment failure page
+const paymentFailure = async (req, res) => {
+  try {
+    const userId = req.session.user.id;
+    const { reason, orderId, paymentMethod, totalAmount } = req.query;
+    
+    // Get full user data
+    const fullUser = await User.findById(userId);
+
+    // Get cart count for header
+    const cart = await Cart.findOne({ userId });
+    const cartCount = cart ? cart.getTotalItems() : 0;
+
+    const orderData = {
+      orderId: orderId || null,
+      paymentMethod: paymentMethod || 'Unknown',
+      totalAmount: totalAmount ? parseFloat(totalAmount) : 0
+    };
+
+    const failureReason = reason || 'Payment could not be processed. Please try again with a different payment method.';
+
+    res.render('user/payment-failure', {
+      title: 'Payment Failed - Melodia',
+      user: fullUser,
+      cartCount,
+      orderData,
+      failureReason
+    });
+
+  } catch (error) {
+    console.error('Payment failure page error:', error);
+    res.status(500).render('error/500', { title: 'Server Error' });
+  }
+};
+
+export { getCheckout, placeOrder, orderSuccess, completeRazorpayOrder, paymentFailure };
 
 // Default export for compatibility
 export default {
   getCheckout,
   placeOrder,
   orderSuccess,
-  completeRazorpayOrder
+  completeRazorpayOrder,
+  paymentFailure
 };

@@ -6,8 +6,6 @@ import Category from '../../model/categorySchema.js';
 export const getCoupons = async (req, res) => {
     try {
         const coupons = await Coupon.find()
-            .populate('applicableCategories', 'name')
-            .populate('applicableProducts', 'productName brand')
             .sort({ createdAt: -1 });
 
         res.render('admin/coupons', {
@@ -32,12 +30,11 @@ export const createCoupon = async (req, res) => {
             startDate,
             endDate,
             usagePerUser,
-            applicableCategories,
-            applicableProducts
+            maximumDiscount,
         } = req.body;
 
         // Validation
-        if (!code || !name || !discountType || !discountValue || !startDate || !endDate) {
+        if (!code || !name || !discountType || !discountValue || !startDate || !endDate ) {
             return res.json({ success: false, message: 'All required fields must be filled' });
         }
 
@@ -69,12 +66,11 @@ export const createCoupon = async (req, res) => {
             description,
             discountType,
             discountValue: discount,
+            maxDiscountAmount: maximumDiscount ? parseFloat(maximumDiscount) : null,
             minimumOrderAmount: minimumOrderAmount ? parseFloat(minimumOrderAmount) : 0,
             startDate: start,
             endDate: end,
             usagePerUser: usagePerUser ? parseInt(usagePerUser) : 1,
-            applicableCategories: applicableCategories || [],
-            applicableProducts: applicableProducts || [],
             createdBy: req.session.admin?.id || 'admin'
         });
 
@@ -114,9 +110,7 @@ export const deleteCoupon = async (req, res) => {
 export const getCoupon = async (req, res) => {
     try {
         const { id } = req.params;
-        const coupon = await Coupon.findById(id)
-            .populate('applicableCategories', 'name')
-            .populate('applicableProducts', 'productName brand');
+        const coupon = await Coupon.findById(id);
 
         if (!coupon) {
             return res.status(404).json({
@@ -151,9 +145,7 @@ export const updateCoupon = async (req, res) => {
             minimumOrderAmount,
             startDate,
             endDate,
-            usagePerUser,
-            applicableCategories,
-            applicableProducts
+            usagePerUser
         } = req.body;
 
         // Validation

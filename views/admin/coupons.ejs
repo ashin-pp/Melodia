@@ -657,6 +657,16 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
+                                <label for="maximumDiscount" class="form-label">Max Discount Amount (₹)</label>
+                                <input type="number" class="form-control" id="maximumDiscount"
+                                    name="maximumDiscount" min="0" step="0.01" placeholder="Leave empty for no limit">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
                                 <label for="minimumOrderAmount" class="form-label">Min Order Amount (₹)</label>
                                 <input type="number" class="form-control" id="minimumOrderAmount"
                                     name="minimumOrderAmount" min="0" step="0.01" value="0">
@@ -665,8 +675,8 @@
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="usagePerUser" class="form-label">Usage Per User</label>
-                                <input type="number" class="form-control" id="usagePerUser" name="usagePerUser" min="1"
-                                    value="1">
+                                <input type="number" class="form-control" id="usagePerUser" name="usagePerUser"
+                                    min="1" value="1">
                             </div>
                         </div>
                     </div>

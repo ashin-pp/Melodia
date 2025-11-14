@@ -1457,7 +1457,7 @@
                 ondismiss: function() {
                     // Payment cancelled
                     $('#placeOrderBtn').prop('disabled', false).html('<i class="fas fa-credit-card"></i> Place Order');
-                    Swal.fire('Payment Cancelled', 'Your payment was cancelled. You can try again.', 'info');
+                    window.location.href = `/payment-failure?reason=Payment was cancelled by user&paymentMethod=razorpay&totalAmount=${orderData.totalAmount}`;
                 }
             }
         };
@@ -1498,8 +1498,11 @@
                     });
                 } else {
                     console.log('Error in response:', response.message);
-                    Swal.fire('Error', response.message, 'error');
-                    $('#placeOrderBtn').prop('disabled', false).html('<i class="fas fa-credit-card"></i> Place Order');
+                    if (response.redirectTo) {
+                        window.location.href = response.redirectTo;
+                    } else {
+                        window.location.href = `/payment-failure?reason=${encodeURIComponent(response.message)}&paymentMethod=razorpay&totalAmount=${orderData.totalAmount}`;
+                    }
                 }
             },
             error: function(xhr) {
@@ -1509,8 +1512,8 @@
                 console.log('XHR Text:', xhr.responseText);
                 
                 const response = xhr.responseJSON;
-                Swal.fire('Error', response?.message || 'Failed to complete order', 'error');
-                $('#placeOrderBtn').prop('disabled', false).html('<i class="fas fa-credit-card"></i> Place Order');
+                const errorMessage = response?.message || 'Failed to complete order';
+                window.location.href = `/payment-failure?reason=${encodeURIComponent(errorMessage)}&paymentMethod=razorpay&totalAmount=${orderData.totalAmount}`;
             }
         });
     }

@@ -127,6 +127,7 @@ router.get('/checkout', protectUser, checkoutCtrl.getCheckout);
 router.post('/checkout/place-order', protectUser, checkoutCtrl.placeOrder);
 router.post('/checkout/complete-razorpay', protectUser, checkoutCtrl.completeRazorpayOrder);
 router.get('/order-success/:orderId', protectUser, checkoutCtrl.orderSuccess);
+router.get('/payment-failure', protectUser, checkoutCtrl.paymentFailure);
 
 // Order Management routes
 router.get('/orders', protectUser, orderCtrl.getOrders);
