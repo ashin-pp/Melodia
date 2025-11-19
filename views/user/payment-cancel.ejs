@@ -1,4 +1,4 @@
-<%- include('../partials/header-common', { title: 'Payment Failed - Melodia' }) %>
+<%- include('../partials/header-common', { title: 'Payment Cancelled - Melodia' }) %>
 
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap');
@@ -26,11 +26,11 @@
     }
 
     .header {
-        background: #dc3545;
+        background: #28a745;
         color: white;
         padding: 30px;
         text-align: center;
-        border-bottom: 3px solid #c82333;
+        border-bottom: 3px solid #1e7e34;
     }
 
     .header-icon {
@@ -67,9 +67,9 @@
     }
 
     .alert {
-        background: #f8d7da;
-        border: 1px solid #f5c6cb;
-        border-left: 4px solid #dc3545;
+        background: #fff3cd;
+        border: 1px solid #ffeaa7;
+        border-left: 4px solid #f39c12;
         border-radius: 4px;
         padding: 15px;
         margin-bottom: 30px;
@@ -77,7 +77,7 @@
 
     .alert-title {
         font-weight: 600;
-        color: #721c24;
+        color: #856404;
         margin-bottom: 8px;
         display: flex;
         align-items: center;
@@ -85,7 +85,7 @@
     }
 
     .alert-text {
-        color: #721c24;
+        color: #856404;
         font-size: 14px;
         line-height: 1.5;
     }
@@ -132,8 +132,8 @@
     }
 
     .status-badge {
-        background: #dc3545;
-        color: white;
+        background: #ffc107;
+        color: #212529;
         padding: 6px 12px;
         border-radius: 20px;
         font-size: 12px;
@@ -250,6 +250,15 @@
         line-height: 1.6;
     }
 
+    .help-list {
+        margin: 15px 0;
+        padding-left: 20px;
+    }
+
+    .help-list li {
+        margin-bottom: 8px;
+    }
+
     .divider {
         height: 1px;
         background: #dee2e6;
@@ -308,20 +317,20 @@
             <div class="header-icon">
                 <i class="fas fa-times-circle"></i>
             </div>
-            <h1>Payment Failed</h1>
-            <p>We're sorry, but your payment could not be processed. Please try again or use a different payment method.</p>
+            <h1>Payment Cancelled - UPDATED VERSION</h1>
+            <p>Your payment was cancelled, but don't worry - your order is still saved and you can complete the payment anytime.</p>
         </div>
 
         <!-- Content Section -->
         <div class="content">
-            <% if (error && error.description) { %>
+            <% if (reason) { %>
             <div class="alert">
                 <div class="alert-title">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    Error Details
+                    <i class="fas fa-info-circle"></i>
+                    Cancellation Reason
                 </div>
                 <div class="alert-text">
-                    <%= error.description %>
+                    <%= reason %>
                 </div>
             </div>
             <% } %>
@@ -344,7 +353,7 @@
                 </div>
                 <div class="order-row">
                     <span class="order-label">Payment Status:</span>
-                    <span class="status-badge">Payment Failed</span>
+                    <span class="status-badge">Payment Pending</span>
                 </div>
             </div>
 
@@ -378,10 +387,10 @@
             <!-- No Order Found -->
             <div class="action-section">
                 <div class="btn-group">
-                    <a href="/cart" class="btn btn-primary">
-                        <i class="fas fa-shopping-cart"></i>
-                        Go to Cart
-                    </a>
+                    <button onclick="retryPayment()" class="btn btn-primary">
+                        <i class="fas fa-redo"></i>
+                        Retry Payment
+                    </button>
                     <a href="/product/list" class="btn btn-success">
                         <i class="fas fa-shopping-bag"></i>
                         Continue Shopping
@@ -392,15 +401,15 @@
 
             <!-- Help Section -->
             <div class="help-box">
-                <div class="help-title">Need Help?</div>
+                <div class="help-title">Why was my payment cancelled?</div>
                 <div class="help-content">
-                    <p><strong>Common reasons for payment failure:</strong></p>
-                    <ul style="margin: 10px 0; padding-left: 20px;">
-                        <li>Insufficient funds in your account</li>
-                        <li>Card expired or blocked</li>
-                        <li>Network connectivity issues</li>
-                        <li>Bank server temporarily unavailable</li>
-                        <li>Incorrect payment details entered</li>
+                    <p><strong>Common reasons for payment cancellation:</strong></p>
+                    <ul class="help-list">
+                        <li>Payment window was closed or cancelled by user</li>
+                        <li>Payment process took too long to complete</li>
+                        <li>Network connectivity issues during payment</li>
+                        <li>Browser back button was pressed during payment</li>
+                        <li>Payment gateway timeout or technical issues</li>
                     </ul>
                     <p><strong>What happens next?</strong></p>
                     <p>Your order is safely saved in our system. You can retry the payment anytime using the "Retry Payment" button above, or visit your orders page to complete the payment later.</p>
@@ -427,16 +436,22 @@
                 cancelButtonColor: '#6c757d',
                 confirmButtonText: 'Yes, Retry Payment',
                 cancelButtonText: 'Cancel',
-                reverseButtons: true
+                reverseButtons: true,
+                customClass: {
+                    popup: 'swal-classic'
+                }
             }).then((result) => {
                 if (result.isConfirmed) {
                     // Show loading
                     Swal.fire({
-                        title: 'Redirecting...',
-                        text: 'Please wait while we redirect you to the checkout page.',
+                        title: 'Preparing Payment...',
+                        text: 'Please wait while we redirect you to the payment page.',
                         allowOutsideClick: false,
                         allowEscapeKey: false,
                         showConfirmButton: false,
+                        customClass: {
+                            popup: 'swal-classic'
+                        },
                         didOpen: () => {
                             Swal.showLoading();
                         }
@@ -449,10 +464,37 @@
                 }
             });
             <% } else { %>
-            // Redirect to cart
             window.location.href = '/cart';
             <% } %>
         }
+
+        // Auto-suggest retry after some time (optional)
+        <% if (order) { %>
+        setTimeout(() => {
+            // Only show if user is still on the page and hasn't interacted much
+            if (document.hasFocus() && !document.querySelector('.btn:hover')) {
+                Swal.fire({
+                    title: 'Complete Your Order?',
+                    text: 'Your order is waiting for payment. Would you like to complete it now?',
+                    icon: 'info',
+                    showCancelButton: true,
+                    confirmButtonColor: '#007bff',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Complete Payment',
+                    cancelButtonText: 'Later',
+                    timer: 15000,
+                    timerProgressBar: true,
+                    customClass: {
+                        popup: 'swal-classic'
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        retryPayment();
+                    }
+                });
+            }
+        }, 30000); // Show after 30 seconds
+        <% } %>
 
         // Add smooth animations on page load
         document.addEventListener('DOMContentLoaded', function() {
@@ -474,6 +516,22 @@
                 });
             });
         });
+
+        // Add custom SweetAlert2 styling
+        const style = document.createElement('style');
+        style.textContent = `
+            .swal-classic {
+                font-family: 'Roboto', sans-serif !important;
+            }
+            .swal2-popup.swal-classic {
+                border-radius: 8px !important;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
+            }
+            .swal2-title {
+                font-weight: 600 !important;
+            }
+        `;
+        document.head.appendChild(style);
     </script>
 </body>
 </html>

@@ -1241,7 +1241,7 @@
 
       // Use SweetAlert2 for order status change
       const { value: formValues } = await Swal.fire({
-        title: 'Change Order Status',
+        title: 'Change Order Status - UPDATED',
         html: `
           <div style="text-align: left;">
             <label style="display: block; margin-bottom: 8px; font-weight: 500;">Order ID: <strong><%= order.orderId %></strong></label>
@@ -1257,8 +1257,7 @@
               <option value="Delivered">Delivered</option>
               <option value="Cancelled">Cancelled</option>
             </select>
-            <label style="display: block; margin-bottom: 8px; font-weight: 500;">Reason (Optional):</label>
-            <textarea id="swal-order-reason" class="swal2-textarea" placeholder="Enter reason for status change..." style="width: 100%; min-height: 80px;"></textarea>
+           
           </div>
         `,
         focusConfirm: false,
@@ -1272,7 +1271,6 @@
         },
         preConfirm: () => {
           const status = document.getElementById('swal-order-status').value;
-          const reason = document.getElementById('swal-order-reason').value;
 
           if (!status) {
             Swal.showValidationMessage('Please select a status');
@@ -1284,7 +1282,7 @@
             return false;
           }
 
-          return { status, reason };
+          return { status };
         }
       });
 
@@ -1310,18 +1308,17 @@
           });
 
           if (confirmResult.isConfirmed) {
-            updateOrderStatus(formValues.status, formValues.reason);
+            updateOrderStatus(formValues.status);
           }
         }, 100);
       }
     }
 
-    async function updateOrderStatus(status, reason) {
+    async function updateOrderStatus(status) {
       try {
         console.log('=== updateOrderStatus called ===');
         console.log('Order ID:', orderId);
         console.log('New Status:', status);
-        console.log('Reason:', reason);
 
         // Show loading with high z-index
         Swal.fire({
@@ -1341,7 +1338,7 @@
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ status, reason })
+          body: JSON.stringify({ status })
         });
 
         console.log('Response status:', response.status);

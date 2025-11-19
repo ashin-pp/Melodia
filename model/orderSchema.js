@@ -19,6 +19,11 @@ const orderItemSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
+  // Proportional coupon discount allocated to this item
+  couponDiscountShare: {
+    type: Number,
+    default: 0
+  },
   productName: {
     type: String
   },

@@ -28,6 +28,7 @@ export const createCoupon = async (req, res) => {
             description,
             discountType,
             discountValue,
+            maxDiscountAmount,
             minimumOrderAmount,
             startDate,
             endDate,
@@ -69,6 +70,7 @@ export const createCoupon = async (req, res) => {
             description,
             discountType,
             discountValue: discount,
+            maxDiscountAmount: maxDiscountAmount ? parseFloat(maxDiscountAmount) : null,
             minimumOrderAmount: minimumOrderAmount ? parseFloat(minimumOrderAmount) : 0,
             startDate: start,
             endDate: end,
@@ -148,6 +150,7 @@ export const updateCoupon = async (req, res) => {
             description,
             discountType,
             discountValue,
+            maxDiscountAmount,
             minimumOrderAmount,
             startDate,
             endDate,
@@ -217,6 +220,7 @@ export const updateCoupon = async (req, res) => {
         coupon.description = description;
         coupon.discountType = discountType;
         coupon.discountValue = parseFloat(discountValue);
+        coupon.maxDiscountAmount = maxDiscountAmount ? parseFloat(maxDiscountAmount) : null;
         coupon.minimumOrderAmount = minimumOrderAmount ? parseFloat(minimumOrderAmount) : 0;
         coupon.startDate = new Date(startDate);
         coupon.endDate = new Date(endDate);
