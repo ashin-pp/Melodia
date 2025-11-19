@@ -408,6 +408,15 @@ const placeOrder = async (req, res) => {
           couponDiscount = Math.min(coupon.discountValue, subtotal);
         }
         appliedCoupon = coupon;
+
+        // Distribute coupon discount proportionally across items
+        if (couponDiscount > 0) {
+          itemsWithOffers.forEach(item => {
+            // Calculate this item's share of the discount based on its proportion of subtotal
+            const itemProportion = item.totalPrice / subtotal;
+            item.couponDiscountShare = Math.round(couponDiscount * itemProportion);
+          });
+        }
       }
     }
 

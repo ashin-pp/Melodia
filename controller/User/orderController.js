@@ -266,11 +266,19 @@ const cancelOrder = async (req, res) => {
 
     const orderForRefund = updatedOrder || order;
 
+    // Calculate total refund including coupon discount consideration
+    let fullOrderRefund = 0;
+    for (const item of orderForRefund.items) {
+      const itemAmount = item.totalPrice - (item.couponDiscountShare || 0);
+      fullOrderRefund += itemAmount;
+    }
+
     console.log('💰 Refund eligibility check:', {
       orderId: orderForRefund.orderId,
       paymentMethod: orderForRefund.paymentMethod,
       paymentStatus: orderForRefund.paymentStatus,
       totalAmount: orderForRefund.totalAmount,
+      calculatedRefund: fullOrderRefund,
       walletAmountUsed: orderForRefund.walletAmountUsed,
       orderStatus: orderForRefund.orderStatus,
       isEligible: orderForRefund.paymentStatus === 'Paid' && orderForRefund.paymentMethod !== 'COD'
@@ -307,7 +315,7 @@ const cancelOrder = async (req, res) => {
 
         const refundResult = await walletService.addMoney(
           userId,
-          orderForRefund.totalAmount,
+          fullOrderRefund,
           `Refund for cancelled order ${orderForRefund.orderId}`,
           orderForRefund._id
         );
@@ -318,12 +326,12 @@ const cancelOrder = async (req, res) => {
           console.log('📝 Updating order refund status...');
           // Update order refund status
           orderForRefund.refundStatus = 'processed';
-          orderForRefund.refundAmount = orderForRefund.totalAmount;
+          orderForRefund.refundAmount = fullOrderRefund;
           orderForRefund.refundProcessedAt = new Date();
           await orderForRefund.save();
 
           console.log('✅ REFUND SUCCESSFUL VIA WALLET SERVICE:', {
-            refundAmount: orderForRefund.totalAmount,
+            refundAmount: fullOrderRefund,
             newBalance: refundResult.newBalance,
             transactionId: refundResult.transactionId
           });
@@ -332,7 +340,7 @@ const cancelOrder = async (req, res) => {
             success: true,
             message: 'Order cancelled and refund processed successfully',
             refund: {
-              amount: orderForRefund.totalAmount,
+              amount: fullOrderRefund,
               newWalletBalance: refundResult.newBalance,
               transactionId: refundResult.transactionId
             }
@@ -350,18 +358,18 @@ const cancelOrder = async (req, res) => {
           }
 
           const oldBalance = user.wallet.balance || 0;
-          const newBalance = oldBalance + orderForRefund.totalAmount;
+          const newBalance = oldBalance + fullOrderRefund;
           const transactionId = `REFUND${Date.now()}`;
 
           console.log('💰 Direct refund calculation:', {
             oldBalance,
-            refundAmount: orderForRefund.totalAmount,
+            refundAmount: fullOrderRefund,
             newBalance
           });
 
           const transaction = {
             type: 'credit',
-            amount: orderForRefund.totalAmount,
+            amount: fullOrderRefund,
             description: `Refund for cancelled order ${orderForRefund.orderId}`,
             orderId: orderForRefund._id,
             transactionId: transactionId,
@@ -378,12 +386,12 @@ const cancelOrder = async (req, res) => {
 
           // Update order refund status
           orderForRefund.refundStatus = 'processed';
-          orderForRefund.refundAmount = orderForRefund.totalAmount;
+          orderForRefund.refundAmount = fullOrderRefund;
           orderForRefund.refundProcessedAt = new Date();
           await orderForRefund.save();
 
           console.log('✅ DIRECT REFUND SUCCESSFUL:', {
-            refundAmount: orderForRefund.totalAmount,
+            refundAmount: fullOrderRefund,
             newBalance: savedUser.wallet.balance,
             transactionId: transactionId
           });
@@ -392,7 +400,7 @@ const cancelOrder = async (req, res) => {
             success: true,
             message: 'Order cancelled and refund processed successfully (direct method)',
             refund: {
-              amount: orderForRefund.totalAmount,
+              amount: fullOrderRefund,
               newWalletBalance: savedUser.wallet.balance,
               transactionId: transactionId
             }
@@ -515,7 +523,7 @@ const cancelOrderItems = async (req, res) => {
       });
     }
 
-    // Calculate refund amount BEFORE cancelling items
+    // Calculate refund amount BEFORE cancelling items (subtract proportional coupon discount)
     console.log('💰 Calculating refund amount before cancellation...');
     let totalRefundAmount = 0;
 
@@ -525,19 +533,31 @@ const cancelOrderItems = async (req, res) => {
       );
 
       if (orderItem) {
-        const itemRefund = (orderItem.totalPrice / orderItem.quantity) * item.quantity;
+        // Calculate base refund amount
+        const baseRefund = (orderItem.totalPrice / orderItem.quantity) * item.quantity;
+        
+        // Calculate proportional coupon discount for this cancellation
+        const couponDiscountShare = orderItem.couponDiscountShare || 0;
+        const proportionalCouponDiscount = (couponDiscountShare / orderItem.quantity) * item.quantity;
+        
+        // Final refund = base amount - coupon discount share
+        const itemRefund = baseRefund - proportionalCouponDiscount;
         totalRefundAmount += itemRefund;
+        
         console.log(`Item refund calculation:`, {
           variantId: item.variantId,
           itemTotalPrice: orderItem.totalPrice,
           itemQuantity: orderItem.quantity,
           cancelQuantity: item.quantity,
-          itemRefundAmount: itemRefund
+          baseRefund: baseRefund,
+          couponDiscountShare: couponDiscountShare,
+          proportionalCouponDiscount: proportionalCouponDiscount,
+          finalItemRefund: itemRefund
         });
       }
     }
 
-    console.log('💰 Total calculated refund amount:', totalRefundAmount);
+    console.log('💰 Total calculated refund amount (after coupon adjustment):', totalRefundAmount);
 
     // Restore stock for cancelled items
     console.log('🔄 Restoring stock for cancelled items...');
@@ -1180,7 +1200,21 @@ const returnOrderItem = async (req, res) => {
     }
 
     // Calculate refund amount (proportional to quantity if partial return)
-    const refundAmount = (item.totalPrice / item.quantity) * (quantity || item.quantity);
+    // Subtract the proportional coupon discount share
+    const baseRefund = (item.totalPrice / item.quantity) * (quantity || item.quantity);
+    const couponDiscountShare = item.couponDiscountShare || 0;
+    const proportionalCouponDiscount = (couponDiscountShare / item.quantity) * (quantity || item.quantity);
+    const refundAmount = baseRefund - proportionalCouponDiscount;
+
+    console.log('Return refund calculation:', {
+      itemTotalPrice: item.totalPrice,
+      itemQuantity: item.quantity,
+      returnQuantity: quantity || item.quantity,
+      baseRefund,
+      couponDiscountShare,
+      proportionalCouponDiscount,
+      finalRefundAmount: refundAmount
+    });
 
     // Create return request
     const returnRequest = {
