@@ -884,8 +884,8 @@
                     <div class="password-container">
                         <input type="password" id="password" name="password" class="form-input"
                             placeholder="Enter your Password" required minlength="6"
-                            pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{6,}$"
-                            title="Password must be at least 6 characters with at least one uppercase, one lowercase, and one number">
+                            pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$"
+                            title="Password must be at least 6 characters with at least one uppercase, one lowercase, one number, and can include special characters">
                         <button type="button" class="password-toggle" onclick="togglePassword('password')">👁</button>
                     </div>
                     <div class="password-strength" id="passwordStrength"></div>

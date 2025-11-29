@@ -20,8 +20,7 @@ const getCheckout = async (req, res) => {
 
     // Handle retry order scenario
     if (retryOrder) {
-      console.log('=== RETRY ORDER CHECKOUT ===');
-      console.log('Retry Order ID:', retryOrder);
+      
 
       const existingOrder = await Order.findOne({
         orderId: retryOrder,
@@ -453,8 +452,10 @@ const placeOrder = async (req, res) => {
         });
       }
 
-      // Generate unique order ID for Razorpay
-      const razorpayOrderId = Math.floor(Math.random() * 100000000).toString().padStart(8, '0');
+      // Generate unique order ID for Razorpay using new short format
+      const timestamp = Date.now().toString().slice(-6);
+      const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+      const razorpayOrderId = `${timestamp}${random}`;
 
       const razorpayOrder = await razorpay.orders.create({
         amount: Math.round(totalAmount * 100), // Convert to paise
@@ -503,8 +504,10 @@ const placeOrder = async (req, res) => {
       totalAmount = 0; // Remaining amount after wallet payment
     }
 
-    // Generate unique order ID
-    const generatedOrderId = Math.floor(Math.random() * 100000000).toString().padStart(8, '0');
+    // Generate unique order ID using new short format
+    const timestamp = Date.now().toString().slice(-6); // Last 6 digits of timestamp
+    const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+    const generatedOrderId = `${timestamp}${random}`;
 
     // Create order
     console.log('Creating order with data:', {

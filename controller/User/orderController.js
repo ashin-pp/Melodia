@@ -1340,15 +1340,11 @@ const getPaymentCancel = async (req, res) => {
     const { orderId } = req.params;
     const { reason } = req.query;
 
-    console.log('=== GET PAYMENT CANCEL PAGE ===');
-    console.log('Order ID:', orderId);
-    console.log('Cancel Reason:', reason);
-
     // Find the order
     const order = await Order.findOne({ orderId: orderId }).populate('items.variantId');
 
     if (!order) {
-      console.log('❌ Order not found');
+      console.log(' Order not found');
       return res.render('user/payment-cancel-new', {
         order: null,
         reason: reason || 'Order not found',
@@ -1356,9 +1352,7 @@ const getPaymentCancel = async (req, res) => {
       });
     }
 
-    console.log('✅ Order found');
-    console.log('Order Status:', order.orderStatus);
-    console.log('Payment Method:', order.paymentMethod);
+   
 
     // Determine the cancellation reason
     let cancelReason = reason;
@@ -1378,7 +1372,7 @@ const getPaymentCancel = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('❌ Error loading payment cancel page:', error);
+    console.error(' Error loading payment cancel page:', error);
     res.render('user/payment-cancel-new', {
       order: null,
       reason: 'An error occurred while loading the page',
