@@ -26,7 +26,7 @@ router.get('/', (req, res) => {
   }
   if (req.session?.user) {
     return res.redirect('/home');
-  } else { 
+  } else {
     return userCtrl.loadLandingPage(req, res);
   }
 });
@@ -87,8 +87,8 @@ router.post('/password/change', protectUser, profileCtrl.ChangePassword);
 router.get('/about', userCtrl.loadAboutPage);
 
 //Contact page route
-router.get('/contact',userCtrl.getContact);
-router.post('/contact',userCtrl.postContact);
+router.get('/contact', userCtrl.getContact);
+router.post('/contact', userCtrl.postContact);
 
 // Product & Category routes
 router.get('/product/list', productCtrl.getShop);
@@ -126,11 +126,13 @@ router.put('/addresses/:id/default', protectUser, addressCtrl.setDefaultAddress)
 router.get('/checkout', protectUser, checkoutCtrl.getCheckout);
 router.post('/checkout/place-order', protectUser, checkoutCtrl.placeOrder);
 router.post('/checkout/complete-razorpay', protectUser, checkoutCtrl.completeRazorpayOrder);
+router.post('/checkout/retry-payment', protectUser, checkoutCtrl.retryPayment);
 router.get('/order-success/:orderId', protectUser, checkoutCtrl.orderSuccess);
 
 // Order Management routes
 router.get('/orders', protectUser, orderCtrl.getOrders);
 router.get('/orders/:orderId', protectUser, orderCtrl.getOrderDetails);
+router.get('/orders/:orderId/cancel', protectUser, orderCtrl.getCancelOrderPage);
 router.post('/orders/:orderId/cancel', protectUser, orderCtrl.cancelOrder);
 router.post('/orders/:orderId/cancel-items', protectUser, orderCtrl.cancelOrderItems);
 router.post('/orders/:orderId/return', protectUser, orderCtrl.returnOrder);
@@ -146,6 +148,7 @@ router.post('/payment/wallet', protectUser, paymentCtrl.processWalletPayment);
 // Payment result pages
 router.get('/payment/success/:orderId', protectUser, orderCtrl.getPaymentSuccess);
 router.get('/payment/failure/:orderId', protectUser, orderCtrl.getPaymentFailure);
+router.get('/payment/cancel/:orderId', protectUser, orderCtrl.getPaymentCancel);
 
 // Coupon routes
 router.post('/coupons/apply', protectUser, couponCtrl.applyCoupon);

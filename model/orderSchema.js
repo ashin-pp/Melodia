@@ -19,6 +19,11 @@ const orderItemSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
+  // Proportional coupon discount allocated to this item
+  couponDiscountShare: {
+    type: Number,
+    default: 0
+  },
   productName: {
     type: String
   },
@@ -242,12 +247,12 @@ const orderSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Generate unique order ID
+// Generate unique order ID - using short format
 orderSchema.pre('save', async function (next) {
   if (!this.orderId) {
-    const timestamp = Date.now().toString();
+    const timestamp = Date.now().toString().slice(-6); // Last 6 digits of timestamp
     const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-    this.orderId = `ORD${timestamp}${random}`;
+    this.orderId = `${timestamp}${random}`; // 9-digit short order ID
   }
   next();
 });

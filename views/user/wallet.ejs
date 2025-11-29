@@ -650,7 +650,8 @@
                                             month: 'long', 
                                             day: 'numeric',
                                             hour: '2-digit',
-                                            minute: '2-digit'
+                                            minute: '2-digit',
+                                            timeZone: 'Asia/Kolkata'
                                         }) %>
                                         <% if (transaction.transactionId) { %>
                                             <span>• ID: <%= transaction.transactionId %></span>
@@ -836,7 +837,8 @@
                     month: 'long',
                     day: 'numeric',
                     hour: '2-digit',
-                    minute: '2-digit'
+                    minute: '2-digit',
+                    timeZone: 'Asia/Kolkata'
                 });
 
                 html += `
@@ -1054,7 +1056,8 @@
                 const joinDate = new Date(referral.joinedAt).toLocaleDateString('en-IN', {
                     year: 'numeric',
                     month: 'short',
-                    day: 'numeric'
+                    day: 'numeric',
+                    timeZone: 'Asia/Kolkata'
                 });
                 
                 html += `

@@ -356,15 +356,15 @@
                 </div>
             <% } %>
             
-            <div class="resend-text">
+            <div class="resend-text" id="resendSection" style="display: none;">
                 Didn't receive the code? 
                 <div class="resend-container">
                     <a href="#" class="resend-link" id="resendLink" onclick="resendOTP(event)">Resend</a>
                     <div class="resend-progress" id="resendProgress"></div>
                 </div>
             </div>
-            <div class="resend-timer-info" id="resendTimerInfo" style="display: none;">
-                You can request a new OTP every 60 seconds to prevent spam
+            <div class="resend-timer-info" id="resendTimerInfo">
+                Resend OTP will be available in <span id="resendCountdown">60</span> seconds
             </div>
             
             <div class="back-to-login">
@@ -511,8 +511,9 @@
         
         // Resend timer variables
         let resendTimer = null;
-        let resendTimeLeft = 0;
+        let resendTimeLeft = 60; // Start with 60 seconds
         const RESEND_COOLDOWN = 60; // 60 seconds cooldown
+        let initialTimerStarted = false;
         
         // Resend OTP function with timer
         function resendOTP(event) {
@@ -547,7 +548,8 @@
                 if (data.success) {
                     showSuccess('OTP has been resent to your email!');
                     
-                    // Start resend cooldown timer
+                    // Start resend cooldown timer (60 seconds)
+                    resendTimeLeft = 60;
                     startResendTimer();
                     
                     // Reset OTP timer if available
@@ -623,22 +625,21 @@
             const resendLink = document.getElementById('resendLink');
             const resendProgress = document.getElementById('resendProgress');
             const resendTimerInfo = document.getElementById('resendTimerInfo');
+            const resendSection = document.getElementById('resendSection');
+            const resendCountdown = document.getElementById('resendCountdown');
             
             if (resendTimeLeft > 0) {
-                resendLink.classList.add('disabled');
-                resendLink.textContent = `Resend in ${resendTimeLeft}s`;
-                
-                // Update progress bar
-                const progressPercent = ((RESEND_COOLDOWN - resendTimeLeft) / RESEND_COOLDOWN) * 100;
-                resendProgress.style.width = `${progressPercent}%`;
-                
-                // Show timer info
+                // Hide resend button, show timer message
+                resendSection.style.display = 'none';
                 resendTimerInfo.style.display = 'block';
+                resendCountdown.textContent = resendTimeLeft;
             } else {
+                // Show resend button, hide timer message
+                resendSection.style.display = 'block';
+                resendTimerInfo.style.display = 'none';
                 resendLink.classList.remove('disabled');
                 resendLink.textContent = 'Resend';
                 resendProgress.style.width = '0%';
-                resendTimerInfo.style.display = 'none';
             }
         }
         
@@ -692,17 +693,11 @@
         document.addEventListener('DOMContentLoaded', function() {
             otpInputs[0].focus();
             
-            // Check if there's a stored resend cooldown (optional enhancement)
-            const storedCooldown = sessionStorage.getItem('otpResendCooldown');
-            if (storedCooldown) {
-                const cooldownEnd = parseInt(storedCooldown);
-                const now = Date.now();
-                const timeLeft = Math.max(0, Math.ceil((cooldownEnd - now) / 1000));
-                
-                if (timeLeft > 0) {
-                    resendTimeLeft = timeLeft;
-                    startResendTimer();
-                }
+            // Start the initial 60-second timer before showing resend button
+            if (!initialTimerStarted) {
+                initialTimerStarted = true;
+                resendTimeLeft = 60;
+                startResendTimer();
             }
         });
         

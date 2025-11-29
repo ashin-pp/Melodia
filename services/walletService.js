@@ -238,8 +238,35 @@ export const walletService = {
             const totalTransactions = transactions.length;
             const paginatedTransactions = transactions.slice(skip, skip + limit);
 
+            // Fix order IDs in descriptions - replace MongoDB ObjectIDs with short order IDs
+            const transactionsWithFixedOrderIds = await Promise.all(
+                paginatedTransactions.map(async (transaction) => {
+                    const transactionObj = transaction.toObject ? transaction.toObject() : { ...transaction };
+                    
+                    // Check if transaction has an orderId and description contains "order"
+                    if (transactionObj.orderId && transactionObj.description && transactionObj.description.toLowerCase().includes('order')) {
+                        try {
+                            // Try to find the order by MongoDB _id
+                            const order = await Order.findById(transactionObj.orderId).select('orderId');
+                            if (order && order.orderId) {
+                                // Replace the MongoDB ObjectID in the description with the short orderId
+                                transactionObj.description = transactionObj.description.replace(
+                                    transactionObj.orderId.toString(),
+                                    order.orderId
+                                );
+                            }
+                        } catch (err) {
+                            // If order not found or error, keep original description
+                            console.log('Could not find order for transaction:', transactionObj.orderId);
+                        }
+                    }
+                    
+                    return transactionObj;
+                })
+            );
+
             return {
-                transactions: paginatedTransactions,
+                transactions: transactionsWithFixedOrderIds,
                 pagination: {
                     currentPage: page,
                     totalPages: Math.ceil(totalTransactions / limit),

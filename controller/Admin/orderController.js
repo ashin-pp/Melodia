@@ -1364,9 +1364,47 @@ export const approveReturnRequest = async (req, res) => {
         item.returnedAt = new Date();
         item.returnReason = reason || 'Return approved by admin';
 
-
-        const refundAmount = item.totalPrice;
-
+        // Find the return request to get the correct refund amount (with coupon discount deducted)
+        let refundAmount = item.totalPrice; // Default fallback
+        
+        if (order.returnRequests && order.returnRequests.length > 0) {
+            const returnRequest = order.returnRequests.find(req =>
+                req.itemId && req.itemId.toString() === itemId
+            );
+            if (returnRequest) {
+                // Use the calculated refund amount from return request (already has coupon discount deducted)
+                refundAmount = returnRequest.refundAmount;
+                returnRequest.status = 'approved';
+                returnRequest.processedAt = new Date();
+                returnRequest.adminReason = reason || 'Return approved by admin';
+                
+                console.log('Using refund amount from return request:', {
+                    itemTotalPrice: item.totalPrice,
+                    couponDiscountShare: item.couponDiscountShare || 0,
+                    calculatedRefund: refundAmount
+                });
+            } else {
+                // No return request found, calculate refund manually (subtract coupon discount)
+                const couponDiscountShare = item.couponDiscountShare || 0;
+                refundAmount = item.totalPrice - couponDiscountShare;
+                
+                console.log('No return request found, calculating refund manually:', {
+                    itemTotalPrice: item.totalPrice,
+                    couponDiscountShare: couponDiscountShare,
+                    calculatedRefund: refundAmount
+                });
+            }
+        } else {
+            // No return requests at all, calculate refund manually
+            const couponDiscountShare = item.couponDiscountShare || 0;
+            refundAmount = item.totalPrice - couponDiscountShare;
+            
+            console.log('No return requests array, calculating refund manually:', {
+                itemTotalPrice: item.totalPrice,
+                couponDiscountShare: couponDiscountShare,
+                calculatedRefund: refundAmount
+            });
+        }
 
         const walletService = (await import('../../services/walletService.js')).default;
         
@@ -1382,18 +1420,6 @@ export const approveReturnRequest = async (req, res) => {
         }
 
         console.log('Return refund processed successfully:', refundResult);
-
-        // Update any pending return request for this item
-        if (order.returnRequests && order.returnRequests.length > 0) {
-            const returnRequest = order.returnRequests.find(req =>
-                req.itemId && req.itemId.toString() === itemId
-            );
-            if (returnRequest) {
-                returnRequest.status = 'approved';
-                returnRequest.processedAt = new Date();
-                returnRequest.adminReason = reason || 'Return approved by admin';
-            }
-        }
 
         // Save the order
         await order.save();
@@ -1546,14 +1572,19 @@ export const processReturnRequestLegacy = async (req, res) => {
             returnRequest.processedAt = new Date();
             returnRequest.adminReason = 'Return approved by admin';
 
-
             item.status = 'Returned';
             item.returnedAt = new Date();
             item.returnReason = 'Return approved by admin';
 
-
-            const refundAmount = item.totalPrice;
-
+            // Use the calculated refund amount from return request (already has coupon discount deducted)
+            const refundAmount = returnRequest.refundAmount || (item.totalPrice - (item.couponDiscountShare || 0));
+            
+            console.log('Legacy return refund calculation:', {
+                itemTotalPrice: item.totalPrice,
+                couponDiscountShare: item.couponDiscountShare || 0,
+                returnRequestRefund: returnRequest.refundAmount,
+                finalRefundAmount: refundAmount
+            });
 
             const walletService = (await import('../../services/walletService.js')).default;
             
